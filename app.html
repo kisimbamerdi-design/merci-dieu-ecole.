@@ -160,7 +160,7 @@ td.r,th.r{text-align:right}
 .boot .box{width:min(820px,100%);text-align:center;color:#fff}
 .boot img{width:120px;height:120px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #f2b81c90,0 18px 40px #0007}
 .boot h1{font-size:34px;margin:20px 0 6px}.boot p{color:#cfe5d8;margin:0 0 28px}
-.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .roles button{background:#ffffff12;border:1px solid #ffffff26;border-radius:18px;padding:22px 14px;color:#fff;cursor:pointer;transition:.15s;text-align:center}
 .roles button:hover{background:#ffffff22;transform:translateY(-3px)}
 .roles button b{display:block;font:800 16px Manrope;margin:8px 0 4px}.roles button small{color:#bcd5c7;line-height:1.5;display:block}
@@ -223,7 +223,7 @@ const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+Stri
 const today=()=>ymd(new Date());
 const fmtDate=d=>d?new Date(d).toLocaleDateString('fr-FR'):'—';
 const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
-const ROLES={promoteur:'Promoteur',direction:'Direction',comptable:'Comptable-secrétaire',professeur:'Professeur'};
+const ROLES={promoteur:'Promoteur',direction:'Directeur Général',directeur_etudes:'Directeur des Études',prefet_discipline:'Préfet de Discipline',comptable:'Comptable-secrétaire',professeur:'Professeur'};
 const TABLES=['profiles','classes','teacher_classes','students','online_registrations','fee_rates','payments','cash_closings','staff','staff_pay','salary_advances','attendance','grades','timetable','settings','audit_log'];
 const MONTHS=['Septembre','Octobre','Novembre','Décembre','Janvier','Février','Mars','Avril','Mai','Juin'];
 const REASONS=[...MONTHS.map(m=>'Frais mensuel — '+m),"Frais de l'État — 1ère tranche","Frais de l'État — 2e tranche","Frais de l'État — 3e tranche",'Frais technique','Minervale','Autre'];
@@ -328,7 +328,7 @@ function quality(){const out=[],y=new Date().getFullYear();
 /* =====================================================================
    MENU
    ===================================================================== */
-const ALL=['promoteur','direction','comptable','professeur'];
+const ALL=['promoteur','direction','directeur_etudes','prefet_discipline','comptable','professeur'];
 const MENU=[
  ['Pilotage'],
  {id:'dash',i:'◩',l:'Tableau de bord',r:ALL},
@@ -336,10 +336,10 @@ const MENU=[
  ['Scolarité'],
  {id:'eleves',i:'☺',l:'Élèves',r:ALL},
  {id:'online',i:'✉',l:'Inscriptions en ligne',r:['promoteur','comptable'],badge:()=>D.online_registrations.filter(x=>!x.processed).length},
- {id:'classes',i:'▦',l:'Classes et promotions',r:['promoteur','direction','comptable']},
- {id:'presences',i:'✔',l:'Présences',r:['promoteur','direction','professeur']},
- {id:'notes',i:'✎',l:'Notes et résultats',r:['promoteur','direction','professeur']},
- {id:'horaires',i:'◷',l:'Emplois du temps',r:['promoteur','direction','professeur']},
+ {id:'classes',i:'▦',l:'Classes et promotions',r:['promoteur','direction','directeur_etudes','comptable']},
+ {id:'presences',i:'✔',l:'Présences',r:['promoteur','direction','prefet_discipline','professeur']},
+ {id:'notes',i:'✎',l:'Notes et résultats',r:['promoteur','direction','directeur_etudes','professeur']},
+ {id:'horaires',i:'◷',l:'Emplois du temps',r:['promoteur','direction','directeur_etudes','professeur']},
  ['Finances'],
  {id:'paiements',i:'₣',l:'Paiements',r:['promoteur','comptable']},
  {id:'soldes',i:'⚖',l:'Soldes et arriérés',r:['promoteur','comptable']},
@@ -581,7 +581,7 @@ A.exportPaie=()=>csvDown('salaires-'+Q.pm+'.csv',[['Personnel','Fonction','Base'
 /* =====================================================================
    CLASSES, PRÉSENCES, NOTES, HORAIRES
    ===================================================================== */
-P.classes=()=>{const w=can('promoteur','direction'),m=can('promoteur','comptable');
+P.classes=()=>{const w=can('promoteur','direction','directeur_etudes'),m=can('promoteur','comptable');
  return head('Classes et promotions','Effectifs, titulaires et passage à la classe suivante.',w?`<button class="btn pri" onclick="A.classForm()">＋ Nouvelle classe</button>`:'')+
  `<div class="tw"><table><thead><tr><th>Classe</th><th>Section</th><th class="r">Effectif</th><th>Enseignants affectés</th><th></th></tr></thead><tbody>${D.classes.map(c=>{const t=D.teacher_classes.filter(x=>x.class_id===c.id).map(x=>(byId('profiles',x.teacher_id)||{}).full_name).filter(Boolean);return `<tr><td><b>${esc(clsLabel(c))}</b></td><td>${esc(c.section)}</td><td class="r">${D.students.filter(s=>s.class_id===c.id).length}</td><td>${t.map(n=>chip(n)).join(' ')||'—'}</td><td class="r">${w?`<button class="btn sm" onclick="A.assign('${c.id}')">Affecter</button>`:''}</td></tr>`}).join('')}</tbody></table></div>
  ${m?`<div class="card mt"><h3>Passage à la classe suivante (rentrée)</h3><p style="color:var(--mut);margin-top:-6px">Choisissez la classe de départ et la classe d'arrivée : tous les élèves validés de la classe sont déplacés. Faites une sauvegarde avant.</p><div class="tools"><select id="pr_a">${D.classes.map(c=>`<option value="${c.id}">${esc(clsLabel(c))}</option>`).join('')}</select><select id="pr_b">${D.classes.map(c=>`<option value="${c.id}">${esc(clsLabel(c))}</option>`).join('')}</select><button class="btn gold" onclick="A.promote()">Faire passer</button></div></div>`:''}`};
@@ -599,7 +599,7 @@ const myClasses=()=>D.classes;
 Q.pr={c:'',d:today(),st:{}};
 P.presences=()=>{const cs=myClasses();if(!Q.pr.c||!cs.some(c=>c.id===Q.pr.c))Q.pr.c=(cs[0]||{}).id||'';
  return head('Présences',can('professeur')?'Prenez les présences de vos classes.':'Consultation des présences.')+`<div class="tools"><select onchange="Q.pr.c=this.value;Q.pr.st={};render()">${cs.map(c=>`<option value="${c.id}" ${Q.pr.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select><input type="date" value="${Q.pr.d}" style="flex:none" onchange="Q.pr.d=this.value;Q.pr.st={};render()"></div><div id="prl"></div>`};
-AFTER.presences=()=>{const l=D.students.filter(s=>s.class_id===Q.pr.c&&s.status==='valide').sort((a,b)=>a.full_name.localeCompare(b.full_name,'fr')),w=can('professeur');
+AFTER.presences=()=>{const l=D.students.filter(s=>s.class_id===Q.pr.c&&s.status==='valide').sort((a,b)=>a.full_name.localeCompare(b.full_name,'fr')),w=can('professeur','prefet_discipline','promoteur');
  l.forEach(s=>{if(!Q.pr.st[s.id]){const a=D.attendance.find(x=>x.student_id===s.id&&x.day===Q.pr.d);Q.pr.st[s.id]=a?a.state:'present'}});
  const c={present:0,absent:0,retard:0,excuse:0};l.forEach(s=>c[Q.pr.st[s.id]]++);
  $('#prl').innerHTML=`<div class="pill-row" style="margin-bottom:12px">${chip(c.present+' présents','ok')}${chip(c.absent+' absents','bad')}${chip(c.retard+' en retard','warn')}${chip(c.excuse+' excusés','info')}</div><div class="tw"><table><tbody>${l.map(s=>`<tr><td><b>${esc(s.full_name)}</b></td><td class="r"><div class="seg">${[['present','p','Présent'],['absent','a','Absent'],['retard','t','Retard'],['excuse','e','Excusé']].map(([k,cl,t])=>`<button class="${Q.pr.st[s.id]===k?'on '+cl:''}" ${w?`onclick="Q.pr.st['${s.id}']='${k}';AFTER.presences()"`:'disabled'}>${t}</button>`).join('')}</div></td></tr>`).join('')||`<tr><td>${none('Aucun élève validé dans cette classe.')}</td></tr>`}</tbody></table></div>${w&&l.length?`<div style="margin-top:16px"><button class="btn pri" onclick="A.savePr()">Enregistrer les présences</button></div>`:''}`};
@@ -612,7 +612,7 @@ P.notes=()=>{const cs=myClasses();if(!Q.nt.c||!cs.some(c=>c.id===Q.nt.c))Q.nt.c=
  return head('Notes et résultats',can('professeur')?'Saisissez les notes de vos classes.':'Consultation des notes et des résultats.')+`<div class="tabs"><a class="${Q.nt.tab==='saisie'?'on':''}" onclick="Q.nt.tab='saisie';render()">${can('professeur')?'Saisie':'Notes'}</a><a class="${Q.nt.tab==='res'?'on':''}" onclick="Q.nt.tab='res';render()">Résultats et conseil de classe</a></div>
  <div class="tools"><select onchange="Q.nt.c=this.value;render()">${cs.map(c=>`<option value="${c.id}" ${Q.nt.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select><select onchange="Q.nt.p=this.value;render()">${PERIODS.map(p=>`<option ${Q.nt.p===p?'selected':''}>${p}</option>`).join('')}</select>${Q.nt.tab==='saisie'?`<input list="subj" value="${esc(Q.nt.s)}" placeholder="Matière" style="flex:none;min-width:170px" onchange="Q.nt.s=this.value;render()"><datalist id="subj">${['Mathématiques','Français','Anglais','Sciences','Histoire','Géographie','Informatique','Religion','Éducation civique','Électricité'].map(s=>`<option>${s}</option>`).join('')}</datalist><input type="number" value="${Q.nt.m}" style="flex:none;max-width:110px" title="Note maximale" onchange="Q.nt.m=+this.value||20;render()">`:''}</div><div id="ntl"></div>`};
 AFTER.notes=()=>{const l=D.students.filter(s=>s.class_id===Q.nt.c&&s.status==='valide').sort((a,b)=>a.full_name.localeCompare(b.full_name,'fr'));
- if(Q.nt.tab==='saisie'){const w=can('professeur');
+ if(Q.nt.tab==='saisie'){const w=can('professeur','directeur_etudes','promoteur');
   $('#ntl').innerHTML=`<div class="tw"><table><thead><tr><th>Élève</th><th class="r">Note / ${Q.nt.m}</th></tr></thead><tbody>${l.map(s=>{const g=D.grades.find(x=>x.student_id===s.id&&x.period===Q.nt.p&&x.subject===Q.nt.s);return `<tr><td><b>${esc(s.full_name)}</b></td><td class="r"><input class="gi" data-s="${s.id}" type="number" step="0.5" min="0" max="${Q.nt.m}" value="${g?g.score:''}" ${w?'':'disabled'} style="width:100px;text-align:right;border:1.5px solid var(--line);border-radius:9px;padding:7px 9px"></td></tr>`}).join('')||`<tr><td colspan="2">${none('Aucun élève validé.')}</td></tr>`}</tbody></table></div>${w&&l.length?`<div style="margin-top:16px"><button class="btn pri" onclick="A.saveNotes()">Enregistrer les notes</button></div>`:''}`}
  else{const r=l.map(s=>{const g=D.grades.filter(x=>x.student_id===s.id&&x.period===Q.nt.p);const avg=g.length?g.reduce((a,x)=>a+pct(x),0)/g.length:null;return {s,avg,n:g.length}}).sort((a,b)=>(b.avg??-1)-(a.avg??-1));
   $('#ntl').innerHTML=`<div class="tw"><table><thead><tr><th>Rang</th><th>Élève</th><th class="r">Matières</th><th class="r">Moyenne</th><th>Décision</th><th></th></tr></thead><tbody>${r.map((x,i)=>`<tr><td>${x.avg===null?'—':i+1}</td><td><b>${esc(x.s.full_name)}</b></td><td class="r">${x.n}</td><td class="r">${x.avg===null?'—':x.avg.toFixed(1)+' %'}</td><td>${x.avg===null?'':x.avg>=50?chip('Admis','ok'):chip('En difficulté','bad')}</td><td class="r"><button class="btn sm" onclick="A.bulletin('${x.s.id}')">Bulletin</button></td></tr>`).join('')||`<tr><td colspan="6">${none('Aucun élève.')}</td></tr>`}</tbody></table></div><p style="color:var(--mut);margin-top:10px">Seuil indicatif de réussite : 50 %. La décision finale revient au conseil de classe.</p>`}};
@@ -631,7 +631,7 @@ A.bulletin=id=>{const s=stu(id),g=D.grades.filter(x=>x.student_id===id),subs=[..
 A.printBull=()=>printHTML(window.__bul,'A4');
 
 Q.tt={c:''};
-P.horaires=()=>{const cs=myClasses();if(!Q.tt.c||!cs.some(c=>c.id===Q.tt.c))Q.tt.c=(cs[0]||{}).id||'';const DAYS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],w=can('promoteur','direction');
+P.horaires=()=>{const cs=myClasses();if(!Q.tt.c||!cs.some(c=>c.id===Q.tt.c))Q.tt.c=(cs[0]||{}).id||'';const DAYS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],w=can('promoteur','direction','directeur_etudes');
  const l=D.timetable.filter(x=>x.class_id===Q.tt.c);
  return head('Emplois du temps','',w?`<button class="btn pri" onclick="A.ttForm()">＋ Ajouter un cours</button>`:'')+`<div class="tools"><select onchange="Q.tt.c=this.value;render()">${cs.map(c=>`<option value="${c.id}" ${Q.tt.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select></div>
  <div class="grid g3">${DAYS.map(d=>`<div class="card"><h3>${d}</h3>${l.filter(x=>x.day===d).sort((a,b)=>a.start_time.localeCompare(b.start_time)).map(x=>`<div style="padding:9px 0;border-bottom:1px solid #eff3f0"><b>${String(x.start_time).slice(0,5)} – ${String(x.end_time).slice(0,5)}</b> · ${esc(x.subject)}<br><small style="color:var(--mut)">${esc((byId('profiles',x.teacher_id)||{}).full_name||'')}</small>${w?` <a style="float:right;color:var(--red);cursor:pointer" onclick="A.ttDel('${x.id}')">✕</a>`:''}</div>`).join('')||'<div style="color:var(--mut)">Aucun cours</div>'}</div>`).join('')}</div>`};
@@ -699,7 +699,7 @@ P.journal=()=>head('Journal des opérations','Qui a fait quoi, et quand.')+`<div
 /* =====================================================================
    ASSISTANT (local : ne voit que les données autorisées au rôle)
    ===================================================================== */
-const SUG={promoteur:['Y a-t-il des doublons ?','Qui a des arriérés ?','Contrôler les données'],direction:['Y a-t-il des doublons ?','Avances à signer','Contrôler les données'],comptable:['Qui a des arriérés ?','Y a-t-il des doublons ?','Contrôler les données'],professeur:['Mes classes','Qui est absent aujourd\'hui ?']};
+const SUG={promoteur:['Y a-t-il des doublons ?','Qui a des arriérés ?','Contrôler les données'],direction:['Y a-t-il des doublons ?','Avances à signer','Contrôler les données'],directeur_etudes:['Y a-t-il des doublons ?','Contrôler les données'],prefet_discipline:['Qui est absent aujourd\'hui ?','Contrôler les données'],comptable:['Qui a des arriérés ?','Y a-t-il des doublons ?','Contrôler les données'],professeur:['Mes classes','Qui est absent aujourd\'hui ?']};
 function findStudents(q){const qt=norm(q).split(' ').filter(w=>w.length>1);if(!qt.length)return[];
  return D.students.map(s=>{const st=norm(s.full_name).split(' ');let sc=0;for(const t of qt){let b=0;for(const w of st){if(w===t)b=Math.max(b,2);else if(w.startsWith(t)&&t.length>=3)b=Math.max(b,1.5);else if(t.length>=4&&lev(w,t)<=1)b=Math.max(b,1.2);else if(t.length>=6&&lev(w,t)<=2)b=Math.max(b,.8)}sc+=b}return {s,sc:sc/qt.length}}).filter(x=>x.sc>=.8).sort((a,b)=>b.sc-a.sc).slice(0,6).map(x=>x.s)}
 function say(t,me){const c=$('#chat');const d=document.createElement('div');d.className='msg '+(me?'me':'bot');d.innerHTML=t;c.appendChild(d);c.scrollTop=c.scrollHeight}
@@ -725,8 +725,8 @@ function start(){$('#boot').hidden=true;$('#app').hidden=false;$('#fab').hidden=
  const h=location.hash.slice(1);go(allowed(h)?h:'dash')}
 function bootDemo(){
  $('#boot').innerHTML=`<div class="boot"><div class="box"><img src="logo.png" alt=""><h1>Merci-Dieu Smart School</h1><p>Démonstration avec des données fictives. Choisissez un rôle pour voir ce qu'il voit.</p><div class="roles">
- ${[['promoteur','👑','Promoteur','Voit tout, sans exception'],['direction','🏫','Direction','Élèves, personnel, avances — sans la caisse'],['comptable','🧾','Comptable-secrétaire','Inscriptions, paiements, reçus'],['professeur','📚','Professeur','Ses classes : présences et notes']].map(([k,i,t,d])=>`<button onclick="A.demo('${k}')"><i>${i}</i><b>${t}</b><small>${d}</small></button>`).join('')}</div></div></div>`}
-A.demo=async role=>{const who={promoteur:['p-promo','Promoteur Démo'],direction:['p-dir','Directeur Démo'],comptable:['p-comp','Caissière Démo'],professeur:['p-prof','Professeur Démo']}[role];S={role,uid:who[0],name:who[1]};seedDemo();demoRestrict();await loadAll();start()};
+ ${[['promoteur','👑','Promoteur','Voit tout, sans exception'],['direction','🏫','Directeur Général','Élèves, personnel, avances — sans la caisse'],['directeur_etudes','📘','Directeur des Études','Classes, horaires, notes — toutes les classes'],['prefet_discipline','🛡️','Préfet de Discipline','Présences et discipline — toutes les classes'],['comptable','🧾','Comptable-secrétaire','Inscriptions, paiements, reçus'],['professeur','📚','Professeur','Ses classes : présences et notes']].map(([k,i,t,d])=>`<button onclick="A.demo('${k}')"><i>${i}</i><b>${t}</b><small>${d}</small></button>`).join('')}</div></div></div>`}
+A.demo=async role=>{const who={promoteur:['p-promo','Promoteur Démo'],direction:['p-dir','Directeur Général Démo'],directeur_etudes:['p-etudes','Directeur des Études Démo'],prefet_discipline:['p-prefet','Préfet de Discipline Démo'],comptable:['p-comp','Caissière Démo'],professeur:['p-prof','Professeur Démo']}[role];S={role,uid:who[0],name:who[1]};seedDemo();demoRestrict();await loadAll();start()};
 (async()=>{
  if('serviceWorker' in navigator&&LIVE)navigator.serviceWorker.register('sw.js').catch(()=>{});
  if(LIVE){const {data}=await db.auth.getSession();if(!data.session){location.href='connexion.html';return}
@@ -752,8 +752,8 @@ function seedDemo(){let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;retu
  function rate2(k){return {MATERNELLE:25000,PRIMAIRE:15000,'7_8':25000,SEC_1_3:25000,SEC_4:34000}[k]||15000}
  D.students.filter(s=>s.status==='valide').slice(0,4).forEach(s=>{pays.push({id:'p'+(++rc),student_id:s.id,reason:'Frais mensuel — '+MONTHS[Math.min(n,10)-1],amount:rate2(levelKey(cls(s.class_id))),method:'Espèces',paid_on:today(),status:'confirme',receipt_no:'MD-REC-'+String(++D._rn).padStart(6,'0'),print_count:0,qr_token:'pt'+rc,confirmed_by:'p-comp',created_at:new Date().toISOString()})});
  D.payments=pays;
- D.profiles=[['p-promo','Promoteur Démo','promoteur'],['p-dir','Directeur Démo','direction'],['p-comp','Caissière Démo','comptable'],['p-prof','Professeur Démo','professeur'],['p-prof2','Autre Professeur','professeur']].map(p=>({id:p[0],full_name:p[1],role:p[2],active:true}));
- D.staff=[['Directeur Démo','Directeur','Direction','p-dir'],['Caissière Démo','Comptable-secrétaire','Administration','p-comp'],['Professeur Démo','Enseignant Secondaire','Secondaire','p-prof'],['Autre Professeur','Enseignant Primaire','Primaire','p-prof2'],['Mukendi Grâce','Enseignant Primaire','Primaire',null],['Ilunga Joël','Enseignant Secondaire','Secondaire',null]].map((s,i)=>({id:'st'+i,full_name:s[0],function:s[1],section:s[2],profile_id:s[3],phone:'0997'+String(100000+i*7919)}));
+ D.profiles=[['p-promo','Promoteur Démo','promoteur'],['p-dir','Directeur Général Démo','direction'],['p-etudes','Directeur des Études Démo','directeur_etudes'],['p-prefet','Préfet de Discipline Démo','prefet_discipline'],['p-comp','Caissière Démo','comptable'],['p-prof','Professeur Démo','professeur'],['p-prof2','Autre Professeur','professeur']].map(p=>({id:p[0],full_name:p[1],role:p[2],active:true}));
+ D.staff=[['Directeur Général Démo','Directeur Général','Direction','p-dir'],['Directeur des Études Démo','Directeur des études','Direction','p-etudes'],['Préfet de Discipline Démo','Préfet de discipline','Direction','p-prefet'],['Caissière Démo','Comptable-secrétaire','Administration','p-comp'],['Professeur Démo','Enseignant Secondaire','Secondaire','p-prof'],['Autre Professeur','Enseignant Primaire','Primaire','p-prof2'],['Mukendi Grâce','Enseignant Primaire','Primaire',null],['Ilunga Joël','Enseignant Secondaire','Secondaire',null]].map((s,i)=>({id:'st'+i,full_name:s[0],function:s[1],section:s[2],profile_id:s[3],phone:'0997'+String(100000+i*7919)}));
  D.staff_pay=D.staff.map(s=>({id:'sp'+s.id,staff_id:s.id,base_salary:150000+Math.floor(rnd()*250000/5000)*5000}));
  D.salary_advances=[{id:'a1',staff_id:'st2',amount:50000,reason:'Frais médicaux',deduct_month:MONTHS[Math.min(n,10)-1],status:'demandee',requested_at:new Date().toISOString()},{id:'a2',staff_id:'st4',amount:80000,reason:'Rentrée scolaire',deduct_month:MONTHS[Math.min(n,10)-1],status:'signee',requested_at:new Date(Date.now()-86400000*2).toISOString()},{id:'a3',staff_id:'st5',amount:40000,reason:'Transport',deduct_month:MONTHS[Math.min(n,10)-1],status:'versee',requested_at:new Date(Date.now()-86400000*9).toISOString()}];
  D.teacher_classes=[{teacher_id:'p-prof',class_id:'c5'},{teacher_id:'p-prof',class_id:'c6'},{teacher_id:'p-prof2',class_id:'c1'}];
@@ -766,6 +766,8 @@ function seedDemo(){let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;retu
  D.audit_log=[{id:'l1',at:new Date().toISOString(),user_id:'p-comp',action:'Paiement confirmé',ref:'MD-REC-000001',detail:'démonstration'}]}
 function demoRestrict(){const r=S.role;
  if(r==='direction'){['payments','cash_closings','fee_rates','online_registrations','audit_log'].forEach(t=>D[t]=[])}
+ if(r==='directeur_etudes'){['payments','cash_closings','fee_rates','online_registrations','audit_log','staff_pay'].forEach(t=>D[t]=[])}
+ if(r==='prefet_discipline'){['payments','cash_closings','fee_rates','online_registrations','audit_log','staff_pay','grades'].forEach(t=>D[t]=[])}
  if(r==='comptable'){['attendance','grades','timetable','staff_pay','audit_log'].forEach(t=>D[t]=[])}
  if(r==='professeur'){const mine=D.teacher_classes.filter(x=>x.teacher_id===S.uid).map(x=>x.class_id);
   D.classes=D.classes.filter(c=>mine.includes(c.id));D.students=D.students.filter(s=>mine.includes(s.class_id));

@@ -4,9 +4,13 @@
 --  À coller dans : Supabase > SQL Editor > New query > Run
 -- ============================================================
 --  RÔLES
---   promoteur  : voit tout, sans exception
---   direction  : élèves, suivi scolaire, personnel, avances (avec montants) ;
---                AUCUN accès aux paiements, caisse, reçus
+--   promoteur         : voit tout, sans exception
+--   direction          : Directeur Général — élèves, suivi scolaire, personnel,
+--                avances (avec montants) ; AUCUN accès aux paiements, caisse, reçus
+--   directeur_etudes   : Directeur des Études — classes, horaires, notes,
+--                TOUTES les classes ; pas d'accès à l'argent ni au personnel
+--   prefet_discipline  : Préfet de Discipline — présences/discipline,
+--                TOUTES les classes ; pas d'accès aux notes, à l'argent ni au personnel
 --   comptable  : comptable-secrétaire : inscriptions, paiements, reçus
 --                (seul rôle qui imprime les reçus), versement des avances
 --   professeur : élèves, présences et notes de SES classes uniquement
@@ -15,7 +19,7 @@
 create extension if not exists pgcrypto;
 
 do $$ begin
-  create type app_role as enum ('promoteur','direction','comptable','professeur');
+  create type app_role as enum ('promoteur','direction','directeur_etudes','prefet_discipline','comptable','professeur');
 exception when duplicate_object then null; end $$;
 
 -- ---------- Comptes ----------
@@ -327,16 +331,16 @@ create policy profiles_admin on profiles for all
 -- classes : tout compte actif les voit ; le promoteur et la direction les gèrent
 create policy classes_read on classes for select using (my_role() is not null);
 create policy classes_write on classes for all
-  using (my_role() in ('promoteur','direction')) with check (my_role() in ('promoteur','direction'));
+  using (my_role() in ('promoteur','direction','directeur_etudes')) with check (my_role() in ('promoteur','direction','directeur_etudes'));
 
 create policy tc_read on teacher_classes for select using (
   teacher_id = auth.uid() or my_role() in ('promoteur','direction'));
 create policy tc_write on teacher_classes for all
-  using (my_role() in ('promoteur','direction')) with check (my_role() in ('promoteur','direction'));
+  using (my_role() in ('promoteur','direction','directeur_etudes')) with check (my_role() in ('promoteur','direction','directeur_etudes'));
 
 -- élèves : professeur = seulement ses classes
 create policy students_read on students for select using (
-  my_role() in ('promoteur','direction','comptable')
+  my_role() in ('promoteur','direction','directeur_etudes','prefet_discipline','comptable')
   or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 create policy students_write on students for all
   using (my_role() in ('promoteur','comptable'))
@@ -355,20 +359,20 @@ create policy fees_write on fee_rates for all
   using (my_role() = 'promoteur') with check (my_role() = 'promoteur');
 
 create policy pay_read on payments for select using (my_role() in ('promoteur','comptable'));
-create policy pay_insert on payments for insert with check (my_role() = 'comptable');
+create policy pay_insert on payments for insert with check (my_role() in ('comptable','promoteur'));
 create policy pay_update on payments for update
-  using (my_role() = 'comptable') with check (my_role() = 'comptable');
+  using (my_role() in ('comptable','promoteur')) with check (my_role() in ('comptable','promoteur'));
 -- aucune règle de suppression : un paiement ne se supprime jamais, il s'annule avec un motif
 
 create policy cash_read on cash_closings for select using (my_role() in ('promoteur','comptable'));
-create policy cash_insert on cash_closings for insert with check (my_role() = 'comptable');
+create policy cash_insert on cash_closings for insert with check (my_role() in ('comptable','promoteur'));
 
 -- impression d'un reçu : réservée au comptable-secrétaire (compte les impressions)
 create or replace function print_receipt(p_id uuid) returns payments
 language plpgsql security definer set search_path = public as $$
 declare p payments;
 begin
-  if my_role() <> 'comptable' then
+  if my_role() not in ('comptable','promoteur') then
     raise exception 'Seul le comptable-secrétaire peut imprimer les reçus.';
   end if;
   update payments set print_count = print_count + 1
@@ -398,24 +402,28 @@ create policy adv_update on salary_advances for update
 
 -- présences et notes : professeur = ses classes ; direction et promoteur consultent tout
 create policy att_read on attendance for select using (
-  my_role() in ('promoteur','direction')
+  my_role() in ('promoteur','direction','prefet_discipline')
   or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 create policy att_write on attendance for all
-  using (my_role() = 'professeur' and class_id in (select my_class_ids()))
-  with check (my_role() = 'professeur' and class_id in (select my_class_ids()));
+  using (my_role() in ('promoteur','prefet_discipline')
+    or (my_role() = 'professeur' and class_id in (select my_class_ids())))
+  with check (my_role() in ('promoteur','prefet_discipline')
+    or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 
 create policy grades_read on grades for select using (
-  my_role() in ('promoteur','direction')
+  my_role() in ('promoteur','direction','directeur_etudes')
   or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 create policy grades_write on grades for all
-  using (my_role() = 'professeur' and class_id in (select my_class_ids()))
-  with check (my_role() = 'professeur' and class_id in (select my_class_ids()));
+  using (my_role() in ('promoteur','directeur_etudes')
+    or (my_role() = 'professeur' and class_id in (select my_class_ids())))
+  with check (my_role() in ('promoteur','directeur_etudes')
+    or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 
 create policy tt_read on timetable for select using (
-  my_role() in ('promoteur','direction')
+  my_role() in ('promoteur','direction','directeur_etudes')
   or (my_role() = 'professeur' and (teacher_id = auth.uid() or class_id in (select my_class_ids()))));
 create policy tt_write on timetable for all
-  using (my_role() in ('promoteur','direction')) with check (my_role() in ('promoteur','direction'));
+  using (my_role() in ('promoteur','direction','directeur_etudes')) with check (my_role() in ('promoteur','direction','directeur_etudes'));
 
 -- réglages : lecture par le comptable (forme du reçu), écriture par le promoteur
 create policy set_read on settings for select using (my_role() in ('promoteur','direction','comptable'));
