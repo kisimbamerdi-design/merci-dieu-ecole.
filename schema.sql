@@ -7,10 +7,13 @@
 --   promoteur         : voit tout, sans exception
 --   direction          : Directeur Général — élèves, suivi scolaire, personnel,
 --                avances (avec montants) ; AUCUN accès aux paiements, caisse, reçus
---   directeur_etudes   : Directeur des Études — classes, horaires, notes,
---                TOUTES les classes ; pas d'accès à l'argent ni au personnel
---   prefet_discipline  : Préfet de Discipline — présences/discipline,
---                TOUTES les classes ; pas d'accès aux notes, à l'argent ni au personnel
+--   directeur_etudes   : Directeur des Études — classes, horaires, notes ;
+--                rattaché à une section (profiles.section) : Primaire (Maternelle+Primaire,
+--                affiché "Directeur") ou Secondaire (Éducation de Base+Secondaire, affiché
+--                "Préfet") ; section = null -> toutes les sections. Pas d'accès à l'argent ni au personnel.
+--   prefet_discipline  : Directeur de Discipline — présences/discipline, même logique de
+--                section que ci-dessus (un titulaire + un second par section, même rôle,
+--                même section). Pas d'accès aux notes, à l'argent ni au personnel.
 --   comptable  : comptable-secrétaire : inscriptions, paiements, reçus
 --                (seul rôle qui imprime les reçus), versement des avances
 --   professeur : élèves, présences et notes de SES classes uniquement
@@ -28,6 +31,8 @@ create table if not exists profiles (
   full_name   text not null default '',
   role        app_role not null default 'professeur',
   active      boolean not null default false,   -- le compte reste bloqué tant que le promoteur ne l'active pas
+  section     text check (section is null or section in ('Maternelle','Primaire','Éducation de Base','Secondaire')),
+                                                 -- pour directeur_etudes / prefet_discipline : section supervisée (null = toutes)
   phone       text,
   created_at  timestamptz not null default now()
 );
@@ -35,6 +40,11 @@ create table if not exists profiles (
 create or replace function my_role() returns app_role
 language sql stable security definer set search_path = public as $$
   select role from profiles where id = auth.uid() and active
+$$;
+
+create or replace function my_section() returns text
+language sql stable security definer set search_path = public as $$
+  select section from profiles where id = auth.uid() and active
 $$;
 
 create or replace function handle_new_user() returns trigger
@@ -331,16 +341,26 @@ create policy profiles_admin on profiles for all
 -- classes : tout compte actif les voit ; le promoteur et la direction les gèrent
 create policy classes_read on classes for select using (my_role() is not null);
 create policy classes_write on classes for all
-  using (my_role() in ('promoteur','direction','directeur_etudes')) with check (my_role() in ('promoteur','direction','directeur_etudes'));
+  using (my_role() in ('promoteur','direction')
+    or (my_role() = 'directeur_etudes' and (my_section() is null or section = my_section())))
+  with check (my_role() in ('promoteur','direction')
+    or (my_role() = 'directeur_etudes' and (my_section() is null or section = my_section())));
 
 create policy tc_read on teacher_classes for select using (
-  teacher_id = auth.uid() or my_role() in ('promoteur','direction'));
+  teacher_id = auth.uid() or my_role() in ('promoteur','direction','directeur_etudes'));
 create policy tc_write on teacher_classes for all
-  using (my_role() in ('promoteur','direction','directeur_etudes')) with check (my_role() in ('promoteur','direction','directeur_etudes'));
+  using (my_role() in ('promoteur','direction')
+    or (my_role() = 'directeur_etudes'
+      and (my_section() is null or exists(select 1 from classes c where c.id = teacher_classes.class_id and c.section = my_section()))))
+  with check (my_role() in ('promoteur','direction')
+    or (my_role() = 'directeur_etudes'
+      and (my_section() is null or exists(select 1 from classes c where c.id = teacher_classes.class_id and c.section = my_section()))));
 
 -- élèves : professeur = seulement ses classes
 create policy students_read on students for select using (
-  my_role() in ('promoteur','direction','directeur_etudes','prefet_discipline','comptable')
+  my_role() in ('promoteur','direction','comptable')
+  or (my_role() in ('directeur_etudes','prefet_discipline')
+    and (my_section() is null or exists(select 1 from classes c where c.id = students.class_id and c.section = my_section())))
   or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 create policy students_write on students for all
   using (my_role() in ('promoteur','comptable'))
@@ -402,28 +422,47 @@ create policy adv_update on salary_advances for update
 
 -- présences et notes : professeur = ses classes ; direction et promoteur consultent tout
 create policy att_read on attendance for select using (
-  my_role() in ('promoteur','direction','prefet_discipline')
+  my_role() = 'promoteur'
+  or (my_role() in ('direction','prefet_discipline')
+    and (my_role() = 'direction' or my_section() is null or exists(select 1 from classes c where c.id = attendance.class_id and c.section = my_section())))
   or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 create policy att_write on attendance for all
-  using (my_role() in ('promoteur','prefet_discipline')
+  using (my_role() = 'promoteur'
+    or (my_role() = 'prefet_discipline'
+      and (my_section() is null or exists(select 1 from classes c where c.id = attendance.class_id and c.section = my_section())))
     or (my_role() = 'professeur' and class_id in (select my_class_ids())))
-  with check (my_role() in ('promoteur','prefet_discipline')
+  with check (my_role() = 'promoteur'
+    or (my_role() = 'prefet_discipline'
+      and (my_section() is null or exists(select 1 from classes c where c.id = attendance.class_id and c.section = my_section())))
     or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 
 create policy grades_read on grades for select using (
-  my_role() in ('promoteur','direction','directeur_etudes')
+  my_role() in ('promoteur','direction')
+  or (my_role() = 'directeur_etudes'
+    and (my_section() is null or exists(select 1 from classes c where c.id = grades.class_id and c.section = my_section())))
   or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 create policy grades_write on grades for all
-  using (my_role() in ('promoteur','directeur_etudes')
+  using (my_role() = 'promoteur'
+    or (my_role() = 'directeur_etudes'
+      and (my_section() is null or exists(select 1 from classes c where c.id = grades.class_id and c.section = my_section())))
     or (my_role() = 'professeur' and class_id in (select my_class_ids())))
-  with check (my_role() in ('promoteur','directeur_etudes')
+  with check (my_role() = 'promoteur'
+    or (my_role() = 'directeur_etudes'
+      and (my_section() is null or exists(select 1 from classes c where c.id = grades.class_id and c.section = my_section())))
     or (my_role() = 'professeur' and class_id in (select my_class_ids())));
 
 create policy tt_read on timetable for select using (
-  my_role() in ('promoteur','direction','directeur_etudes')
+  my_role() in ('promoteur','direction')
+  or (my_role() = 'directeur_etudes'
+    and (my_section() is null or exists(select 1 from classes c where c.id = timetable.class_id and c.section = my_section())))
   or (my_role() = 'professeur' and (teacher_id = auth.uid() or class_id in (select my_class_ids()))));
 create policy tt_write on timetable for all
-  using (my_role() in ('promoteur','direction','directeur_etudes')) with check (my_role() in ('promoteur','direction','directeur_etudes'));
+  using (my_role() in ('promoteur','direction')
+    or (my_role() = 'directeur_etudes'
+      and (my_section() is null or exists(select 1 from classes c where c.id = timetable.class_id and c.section = my_section()))))
+  with check (my_role() in ('promoteur','direction')
+    or (my_role() = 'directeur_etudes'
+      and (my_section() is null or exists(select 1 from classes c where c.id = timetable.class_id and c.section = my_section()))));
 
 -- réglages : lecture par le comptable (forme du reçu), écriture par le promoteur
 create policy set_read on settings for select using (my_role() in ('promoteur','direction','comptable'));
