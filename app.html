@@ -213,6 +213,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
+const APP_VERSION='2026.10.25.3';
 const {SUPABASE_URL,SUPABASE_ANON}=window.MDSS;
 const LIVE=!SUPABASE_URL.includes('VOTRE-PROJET');
 const db=LIVE?supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:true,autoRefreshToken:true}}):null;
@@ -425,13 +426,14 @@ A.fiche=id=>{const s=stu(id),c=cls(s.class_id),m=can('promoteur','comptable'),[t
   pay=`<h4 style="margin:20px 0 10px">Situation financière</h4>${so?`<p style="margin:0 0 10px">Mensualité : <b>${fc(so.monthly)}</b> · attendu à ce jour : <b>${fc(so.expected)}</b> · payé : <b>${fc(so.paid)}</b> · ${so.due>0?`reste <b style="color:var(--red)">${fc(so.due)}</b>`:'<b style="color:var(--g)">à jour</b>'}</p>`:''}
   <div class="tw" style="max-height:220px"><table><tbody>${ps.map(p=>`<tr><td>${fmtDate(p.paid_on)}</td><td>${esc(p.reason)}</td><td class="r">${fc(p.amount)}</td><td>${p.status==='confirme'?chip(p.receipt_no||'ok','ok'):chip(p.status,p.status==='annule'?'bad':'warn')}</td></tr>`).join('')||`<tr><td>${none('Aucun paiement')}</td></tr>`}</tbody></table></div>`}
  modal(`<div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1;min-width:240px"><h3>${esc(s.full_name)}</h3><p class="sub">${esc(clsLabel(c))} · ${chip(t,k)}</p>
- <dl class="kv"><dt>Sexe</dt><dd>${esc(s.sex||'—')}</dd><dt>Naissance</dt><dd>${fmtDate(s.birth_date)} ${s.birth_place?'à '+esc(s.birth_place):''}</dd><dt>École précédente</dt><dd>${esc(s.prev_school||'—')}</dd><dt>N° permanent</dt><dd>${esc(s.perm_number||'—')}</dd><dt>Père</dt><dd>${esc(s.father_name||'—')}</dd><dt>Mère</dt><dd>${esc(s.mother_name||'—')}</dd><dt>Téléphone</dt><dd>${esc(s.parent_phone||'—')}</dd><dt>Adresse</dt><dd>${esc([s.address,s.sector,s.province].filter(Boolean).join(', ')||'—')}</dd></dl></div>
+ <dl class="kv"><dt>Matricule</dt><dd>${esc(s.matricule||'—')}</dd><dt>Sexe</dt><dd>${esc(s.sex||'—')}</dd><dt>Naissance</dt><dd>${fmtDate(s.birth_date)} ${s.birth_place?'à '+esc(s.birth_place):''}</dd><dt>École précédente</dt><dd>${esc(s.prev_school||'—')}</dd><dt>N° permanent</dt><dd>${esc(s.perm_number||'—')}</dd><dt>Père</dt><dd>${esc(s.father_name||'—')}</dd><dt>Mère</dt><dd>${esc(s.mother_name||'—')}</dd><dt>Téléphone</dt><dd>${esc(s.parent_phone||'—')}</dd><dt>Adresse</dt><dd>${esc([s.address,s.sector,s.province].filter(Boolean).join(', ')||'—')}</dd></dl></div>
  ${s.status==='valide'&&s.qr_token?`<div style="text-align:center"><div data-url="${esc(qrURL('s',s))}" data-size="120" style="display:flex;justify-content:center"></div><small style="color:var(--mut)">QR de validation<br>d'inscription</small></div>`:''}</div>${pay}
- <div class="foot">${can('promoteur','comptable')&&s.status!=='valide'?`<button class="btn pri" onclick="A.validate('${id}')">✓ Valider l'inscription</button>`:''}${can('promoteur','comptable')?`<button class="btn line" onclick="A.studentForm('${id}')">Modifier</button>`:''}${can('promoteur','direction','professeur')?`<button class="btn line" onclick="A.bulletin('${id}')">Bulletin</button>`:''}${can('comptable','promoteur')?`<button class="btn gold" onclick="A.payForm('${id}')">Encaisser</button>`:''}<button class="btn" onclick="A.close()">Fermer</button></div>`,true);drawQRs($('#modal'))};
+ <div class="foot">${can('promoteur','comptable')&&s.status!=='valide'?`<button class="btn pri" onclick="A.validate('${id}')">✓ Valider l'inscription</button>`:''}${can('promoteur','comptable')?`<button class="btn line" onclick="A.studentForm('${id}')">Modifier</button>`:''}${can('promoteur','comptable')?`<button class="btn line" onclick="A.inscriptionDoc('${id}')">🧾 Facture d'inscription</button>`:''}${can('promoteur','direction','professeur')?`<button class="btn line" onclick="A.bulletin('${id}')">Bulletin</button>`:''}${can('comptable','promoteur')?`<button class="btn gold" onclick="A.payForm('${id}')">Encaisser</button>`:''}<button class="btn" onclick="A.close()">Fermer</button></div>`,true);drawQRs($('#modal'))};
 A.validate=async id=>{try{await upd('students',id,{status:'valide'});await audit('Inscription validée',sname(id));toast('Inscription validée ✓');renderNav();render();A.fiche(id)}catch(e){toast(e.message,1)}};
 A.studentForm=(id,pre)=>{const s=id?stu(id):(pre||{}),o=(k)=>esc(s[k]||'');
  modal(`<h3>${id?'Modifier la fiche':'Nouvel élève'}</h3><p class="sub">Les doublons sont vérifiés avant l'enregistrement.</p><div class="f">
  <div class="full"><label>Nom complet (nom, postnom, prénom)</label><input id="f_full_name" value="${o('full_name')}"></div>
+ <div><label>Matricule</label><input id="f_matricule" value="${o('matricule')}"></div>
  <div><label>Sexe</label><select id="f_sex"><option></option><option ${s.sex==='Masculin'?'selected':''}>Masculin</option><option ${s.sex==='Féminin'?'selected':''}>Féminin</option></select></div>
  <div><label>Date de naissance</label><input id="f_birth_date" type="date" value="${o('birth_date')}"></div>
  <div><label>Lieu de naissance</label><input id="f_birth_place" value="${o('birth_place')}"></div>
@@ -442,10 +444,12 @@ A.studentForm=(id,pre)=>{const s=id?stu(id):(pre||{}),o=(k)=>esc(s[k]||'');
  <div><label>Nom de la mère</label><input id="f_mother_name" value="${o('mother_name')}"></div>
  <div><label>Téléphone du parent</label><input id="f_parent_phone" value="${o('parent_phone')}" inputmode="tel"></div>
  <div><label>Adresse</label><input id="f_address" value="${o('address')}"></div>
+ <div><label>Province</label><input id="f_province" value="${o('province')}"></div>
+ <div><label>Secteur</label><input id="f_sector" value="${o('sector')}"></div>
  <div class="full"><label style="display:flex;gap:8px;align-items:center;font-size:13.5px"><input type="checkbox" id="f_social_case" style="width:auto" ${s.social_case?'checked':''}> Cas social (gratuité)</label></div></div>
  <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStudent('${id||''}',${pre&&pre._reg?`'${pre._reg}'`:'null'})">Enregistrer</button></div>`)};
 A.saveStudent=async(id,reg,force)=>{
- const r={};['full_name','sex','birth_date','birth_place','class_id','prev_school','perm_number','father_name','mother_name','parent_phone','address'].forEach(k=>{r[k]=val('f_'+k)||null});r.social_case=$('#f_social_case').checked;
+ const r={};['full_name','matricule','sex','birth_date','birth_place','class_id','prev_school','perm_number','father_name','mother_name','parent_phone','address','province','sector'].forEach(k=>{r[k]=val('f_'+k)||null});r.social_case=$('#f_social_case').checked;
  if(!r.full_name)return toast('Le nom est obligatoire.',1);
  const ph=String(r.parent_phone||'').replace(/\D/g,'');if(r.parent_phone&&(ph.length<9||/^(\d)\1+$/.test(ph))&&!force)return A.warnConfirm("Le numéro de téléphone semble invalide. Enregistrer quand même ?",()=>A.saveStudent(id,reg,true));
  const n=norm(r.full_name),dup=D.students.filter(s=>s.id!==id&&(norm(s.full_name)===n||(n.length>=8&&lev(norm(s.full_name),n)<=2)));
@@ -501,17 +505,46 @@ A.savePay=async()=>{const sid=$('#pf_s').value,amount=+val('pf_a');if(!sid)retur
 A.cancelPay=async id=>{const m=prompt("Motif de l'annulation (obligatoire) :");if(!m||m.trim().length<5)return toast('Motif trop court : annulation non effectuée.',1);
  try{await upd('payments',id,{status:'annule',cancel_reason:m.trim()});await audit('Paiement annulé',byId('payments',id).receipt_no,m);toast('Paiement annulé');render()}catch(e){toast(e.message,1)}};
 
-const DEFTPL={paper_mm:80,show_logo:true,show_qr:true,header:'COLLÈGE MERCI-DIEU',subheader:'Distinction · Docilité · Charité',fields:['date','student','class','reason','amount','amount_words','method','cashier'],footer:'Merci de votre confiance.',show_stamp_box:true};
-function receiptHTML(p,tpl){const t={...DEFTPL,...(tpl||getSetting('receipt_template')||{})},s=stu(p.student_id),c=cls(s.class_id),who=(byId('profiles',p.confirmed_by)||{}).full_name||S.name||'';
- const rows={date:['Date',fmtDate(p.paid_on)],student:['Élève',s.full_name],class:['Classe',clsLabel(c)],reason:['Motif',p.reason],method:['Mode',p.method],cashier:['Caissier',who]};
+const DEFTPL={paper_mm:80,show_logo:true,show_qr:true,header:'COLLÈGE MERCI-DIEU',subheader:'Distinction · Docilité · Charité',fields:['matricule','date','student','niveau','class','option','reason','amount','balance','amount_words','method','cashier'],footer:'Merci de votre confiance.',show_stamp_box:true};
+function receiptHTML(p,tpl){const t={...DEFTPL,...(tpl||getSetting('receipt_template')||{})},s=stu(p.student_id),c=cls(s.class_id)||{},who=(byId('profiles',p.confirmed_by)||{}).full_name||S.name||'',so=soldeOf(p.student_id);
+ const rows={matricule:['Matricule',s.matricule||'—'],date:['Date',fmtDate(p.paid_on)],student:['Élève',s.full_name],niveau:['Niveau',c.section||'—'],class:['Classe',c.name||'—'],option:['Option',c.option||'—'],reason:['Motif',p.reason],balance:['Reste',so&&so.due>0?fc(so.due):'0 FC'],method:['Mode',p.method],cashier:['Caissier',who]};
  const f=t.fields||[];
+ const body=f.map(k=>{
+  if(k==='amount')return `<hr><div class="big">${fc(p.amount)}</div>`;
+  if(k==='amount_words')return `<div class="c" style="font-size:10.5px">${esc(cap(nf(+p.amount)))} francs congolais</div>`;
+  if(rows[k])return `<div class="row"><span>${rows[k][0]}</span><span>${esc(rows[k][1])}</span></div>`;
+  return '';
+ }).join('');
  return `<div class="rcpt">${t.show_logo?'<img class="lg" src="logo.png" alt="">':''}<div class="rh">${esc(t.header)}</div><div class="rs">${esc(t.subheader)}</div><hr><div class="rn">REÇU N° ${esc(p.receipt_no||'—')}</div><hr>
- ${['date','student','class','reason'].filter(k=>f.includes(k)).map(k=>`<div class="row"><span>${rows[k][0]}</span><span>${esc(rows[k][1])}</span></div>`).join('')}
- ${f.includes('amount')?`<hr><div class="big">${fc(p.amount)}</div>`:''}
- ${f.includes('amount_words')?`<div class="c" style="font-size:10.5px">${esc(cap(nf(+p.amount)))} francs congolais</div>`:''}
- ${['method','cashier'].filter(k=>f.includes(k)).map(k=>`<div class="row"><span>${rows[k][0]}</span><span>${esc(rows[k][1])}</span></div>`).join('')}
+ ${body}
  ${t.show_qr&&p.qr_token?`<div class="rq" data-url="${esc(qrURL('p',p))}" data-size="96"></div><div class="c" style="font-size:9.5px">Scannez pour vérifier ce paiement</div>`:''}
  ${t.show_stamp_box?'<div class="stamp">Cachet et signature</div>':''}<div class="ft">${esc(t.footer)}</div></div>`}
+
+function inscriptionHTML(s){const c=cls(s.class_id)||{},tp={...DEFTPL,...(getSetting('receipt_template')||{})};
+ return `<div class="rcpt">${tp.show_logo?'<img class="lg" src="logo.png" alt="">':''}<div class="rh">${esc(tp.header)}</div><div class="rs">${esc(tp.subheader)}</div><hr><div class="rn">FACTURE D'INSCRIPTION</div><hr>
+ <div class="row"><span>Date</span><span>${fmtDate(s.created_at)}</span></div>
+ <div class="c" style="font-weight:700;margin:8px 0 4px">ÉLÈVE</div>
+ <div class="row"><span>Nom</span><span>${esc(s.full_name)}</span></div>
+ ${s.matricule?`<div class="row"><span>Matricule</span><span>${esc(s.matricule)}</span></div>`:''}
+ <div class="row"><span>Sexe</span><span>${esc(s.sex||'—')}</span></div>
+ <div class="row"><span>Naissance</span><span>${fmtDate(s.birth_date)}${s.birth_place?' à '+esc(s.birth_place):''}</span></div>
+ <div class="row"><span>Niveau</span><span>${esc(c.section||'—')}</span></div>
+ <div class="row"><span>Classe</span><span>${esc(c.name||'—')}</span></div>
+ <div class="row"><span>Option</span><span>${esc(c.option||'—')}</span></div>
+ <hr><div class="c" style="font-weight:700;margin:8px 0 4px">FILIATION</div>
+ <div class="row"><span>Père</span><span>${esc(s.father_name||'—')}</span></div>
+ <div class="row"><span>Mère</span><span>${esc(s.mother_name||'—')}</span></div>
+ <div class="row"><span>Tél. parent</span><span>${esc(s.parent_phone||'—')}</span></div>
+ <hr><div class="c" style="font-weight:700;margin:8px 0 4px">ORIGINE</div>
+ <div class="row"><span>Province</span><span>${esc(s.province||'—')}</span></div>
+ <div class="row"><span>Secteur</span><span>${esc(s.sector||'—')}</span></div>
+ <div class="row"><span>Adresse</span><span>${esc(s.address||'—')}</span></div>
+ ${tp.show_qr&&s.qr_token?`<div class="rq" data-url="${esc(qrURL('s',s))}" data-size="96"></div><div class="c" style="font-size:9.5px">Scannez pour vérifier l'inscription</div>`:''}
+ ${tp.show_stamp_box?'<div class="stamp">Cachet et signature</div>':''}<div class="ft">Merci de votre confiance.</div></div>`}
+A.inscriptionDoc=id=>{const s=stu(id);if(!s)return;
+ modal(`<h3>Facture d'inscription</h3><p class="sub">Format papier thermique 80 mm</p><div class="rwrap">${inscriptionHTML(s)}</div>
+ <div class="foot"><button class="btn pri" onclick="A.printInscription('${id}')">🖨 Imprimer</button><button class="btn" onclick="A.close()">Fermer</button></div>`,false);drawQRs($('#modal'))};
+A.printInscription=async id=>{const s=stu(id);if(!s)return;printHTML(inscriptionHTML(s),'80mm auto');try{await audit("Facture d'inscription imprimée",s.full_name)}catch(e){}};
 A.receipt=id=>{const p=byId('payments',id);if(!p)return;
  modal(`<h3>Reçu ${esc(p.receipt_no)}</h3><p class="sub">Format papier thermique 80 mm · imprimé ${p.print_count||0} fois</p><div class="rwrap">${receiptHTML(p)}</div>
  <div class="foot">${can('comptable')?`<button class="btn pri" onclick="A.printReceipt('${id}')">🖨 Imprimer le reçu</button>`:`<span style="color:var(--mut);align-self:center;margin-right:auto">Seul le comptable-secrétaire imprime les reçus.</span>`}<button class="btn" onclick="A.close()">Fermer</button></div>`,false);drawQRs($('#modal'))};
@@ -675,19 +708,20 @@ A.impGo=async()=>{const rows=impRows().filter(r=>!r._dup);if(!rows.length)return
    PARAMÈTRES
    ===================================================================== */
 Q.pa={tab:'recu'};
-P.params=()=>{const T=[['recu','Forme du reçu'],['tarifs','Tarifs'],...(can('promoteur')?[['users','Utilisateurs'],['save','Sauvegarde']]:[])];if(!T.some(t=>t[0]===Q.pa.tab))Q.pa.tab='recu';
+P.params=()=>{const T=[['recu','Forme du reçu'],['tarifs','Tarifs'],...(can('promoteur')?[['users','Utilisateurs'],['save','Sauvegarde'],['maj','Mises à jour']]:[])];if(!T.some(t=>t[0]===Q.pa.tab))Q.pa.tab='recu';
  return head('Paramètres')+`<div class="tabs">${T.map(t=>`<a class="${Q.pa.tab===t[0]?'on':''}" onclick="Q.pa.tab='${t[0]}';render()">${t[1]}</a>`).join('')}</div><div id="pab"></div>`};
 AFTER.params=()=>{const b=$('#pab'),t=Q.pa.tab;
  if(t==='recu'){const tp={...DEFTPL,...(getSetting('receipt_template')||{})};window.__tp=tp;
   const sample=paidOK()[0]||{receipt_no:'MD-REC-000001',student_id:(D.students[0]||{}).id,reason:'Frais mensuel — Octobre',amount:25000,method:'Espèces',paid_on:today(),qr_token:'apercu'};
   b.innerHTML=`<div class="grid g2"><div class="card"><h3>Modifier le reçu</h3><div class="f"><div class="full"><label>En-tête</label><input id="rt_h" value="${esc(tp.header)}" oninput="A.rtPrev()"></div><div class="full"><label>Sous-titre</label><input id="rt_s" value="${esc(tp.subheader)}" oninput="A.rtPrev()"></div><div class="full"><label>Pied de page</label><input id="rt_f" value="${esc(tp.footer)}" oninput="A.rtPrev()"></div></div>
-  <p style="margin:18px 0 8px;font-weight:700">Informations à afficher</p><div class="pill-row">${[['date','Date'],['student','Élève'],['class','Classe'],['reason','Motif'],['amount','Montant'],['amount_words','Montant en lettres'],['method','Mode de paiement'],['cashier','Caissier']].map(([k,l])=>`<label class="chip" style="cursor:pointer;padding:7px 12px"><input type="checkbox" class="rtf" value="${k}" ${tp.fields.includes(k)?'checked':''} onchange="A.rtPrev()"> ${l}</label>`).join('')}</div>
+  <p style="margin:18px 0 8px;font-weight:700">Informations à afficher</p><div class="pill-row">${[['matricule','Matricule'],['date','Date'],['student','Élève'],['niveau','Niveau'],['class','Classe'],['option','Option'],['reason','Motif'],['amount','Montant'],['balance','Reste à payer'],['amount_words','Montant en lettres'],['method','Mode de paiement'],['cashier','Caissier']].map(([k,l])=>`<label class="chip" style="cursor:pointer;padding:7px 12px"><input type="checkbox" class="rtf" value="${k}" ${tp.fields.includes(k)?'checked':''} onchange="A.rtPrev()"> ${l}</label>`).join('')}</div>
   <div class="pill-row" style="margin-top:14px">${[['rt_l','Logo',tp.show_logo],['rt_q','Code QR',tp.show_qr],['rt_c','Case cachet',tp.show_stamp_box]].map(([i,l,v])=>`<label class="chip" style="cursor:pointer;padding:7px 12px"><input type="checkbox" id="${i}" ${v?'checked':''} onchange="A.rtPrev()"> ${l}</label>`).join('')}</div>
   <div style="margin-top:20px"><button class="btn pri" onclick="A.rtSave()">Enregistrer</button></div></div>
   <div class="card"><h3>Aperçu avant impression (80 mm)</h3><div class="rwrap" id="rtp"></div></div></div>`;window.__sample=sample;A.rtPrev()}
  else if(t==='tarifs'){b.innerHTML=`<div class="card"><h3>Tarifs en vigueur</h3><div class="note" style="margin-bottom:14px">Ces montants viennent de votre classeur : vérifiez-les.</div><div class="tw"><table><tbody>${D.fee_rates.map(r=>`<tr><td>${esc(r.label)}</td><td class="r"><b>${fc(r.amount)}</b></td><td class="r">${can('promoteur')?`<button class="btn sm" onclick="A.rateEdit('${r.key}')">Modifier</button>`:''}</td></tr>`).join('')}</tbody></table></div></div>`}
  else if(t==='users'){const SECOPT=['','Maternelle','Primaire','Éducation de Base','Secondaire'];b.innerHTML=`<div class="note info" style="margin-bottom:16px">Pour créer un compte : dans Supabase → <b>Authentication → Users → Add user</b> (adresse = identifiant<b>@merci-dieu.app</b> + mot de passe). Il apparaît ici « inactif » : choisissez son rôle puis activez-le. Pour un Directeur des Études ou un Directeur de Discipline, choisissez aussi sa section (laissez vide = toutes les sections) — plusieurs comptes peuvent partager la même section (ex. un titulaire et son second).</div><div class="tw"><table><thead><tr><th>Nom</th><th>Rôle</th><th>Section</th><th>Actif</th><th></th></tr></thead><tbody>${D.profiles.map(p=>`<tr><td><input id="u_n_${p.id}" value="${esc(p.full_name||'')}" style="border:1.5px solid var(--line);border-radius:9px;padding:7px 9px"></td><td><select id="u_r_${p.id}" style="border:1.5px solid var(--line);border-radius:9px;padding:7px 9px">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${p.role===k?'selected':''}>${v}</option>`).join('')}</select></td><td><select id="u_s_${p.id}" style="border:1.5px solid var(--line);border-radius:9px;padding:7px 9px">${SECOPT.map(s=>`<option value="${s}" ${p.section===s||(!p.section&&s==='')?'selected':''}>${s||'— Toutes —'}</option>`).join('')}</select></td><td><input type="checkbox" id="u_a_${p.id}" ${p.active?'checked':''}></td><td class="r"><button class="btn sm pri" onclick="A.saveUser('${p.id}')">Enregistrer</button></td></tr>`).join('')}</tbody></table></div>`}
- else{b.innerHTML=`<div class="card"><h3>Sauvegarde</h3><p style="color:var(--mut)">Téléchargez une copie complète des données de l'école. Conservez-la hors de l'ordinateur de l'école.</p><button class="btn pri" onclick="A.backup()">⇩ Télécharger la sauvegarde</button></div>`}};
+ else if(t==='maj'){b.innerHTML=`<div class="card" style="max-width:520px"><h3>Mises à jour de l'application</h3><p style="color:var(--mut)">Version installée : <b>${APP_VERSION}</b></p><div id="majr" style="margin:14px 0"></div><button class="btn pri" onclick="A.checkUpdate()">🔄 Vérifier les mises à jour</button></div>`}
+else{b.innerHTML=`<div class="card"><h3>Sauvegarde</h3><p style="color:var(--mut)">Téléchargez une copie complète des données de l'école. Conservez-la hors de l'ordinateur de l'école.</p><button class="btn pri" onclick="A.backup()">⇩ Télécharger la sauvegarde</button></div>`}};
 A.rtTpl=()=>({paper_mm:80,header:val('rt_h'),subheader:val('rt_s'),footer:val('rt_f'),fields:[...document.querySelectorAll('.rtf:checked')].map(x=>x.value),show_logo:$('#rt_l').checked,show_qr:$('#rt_q').checked,show_stamp_box:$('#rt_c').checked});
 A.rtPrev=()=>{$('#rtp').innerHTML=receiptHTML(window.__sample,A.rtTpl());drawQRs($('#rtp'))};
 A.rtSave=async()=>{try{await ups('settings',{key:'receipt_template',value:A.rtTpl()},['key']);await audit('Forme du reçu modifiée');toast('Forme du reçu enregistrée ✓')}catch(e){toast(e.message,1)}};
@@ -695,6 +729,14 @@ A.rateEdit=k=>{const r=D.fee_rates.find(x=>x.key===k),n=prompt(r.label+' (FC) :'
  (async()=>{try{if(LIVE){const {error}=await db.from('fee_rates').update({amount:v}).eq('key',k);if(error)throw error}r.amount=v;dirty();await audit('Tarif modifié',r.label,fc(v));render()}catch(e){toast(e.message,1)}})()};
 A.saveUser=async id=>{try{await upd('profiles',id,{full_name:val('u_n_'+id),role:val('u_r_'+id),section:val('u_s_'+id)||null,active:$('#u_a_'+id).checked});await audit('Compte modifié',val('u_n_'+id));toast('Compte mis à jour ✓')}catch(e){toast(e.message,1)}};
 A.backup=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),data:D},null,1)],{type:'application/json'}));a.download='sauvegarde-merci-dieu-'+today()+'.json';a.click();audit('Sauvegarde téléchargée')};
+A.checkUpdate=async()=>{const r=$('#majr');if(!r)return;r.innerHTML='Vérification…';
+ try{const res=await fetch('version.json?t='+Date.now(),{cache:'no-store'});const v=await res.json();
+  if(v.version&&v.version!==APP_VERSION){r.innerHTML=`<div class="note">Nouvelle version disponible : <b>${esc(v.version)}</b>${v.notes?'<br>'+esc(v.notes):''}</div><button class="btn gold" style="margin-top:10px" onclick="A.applyUpdate()">⬇ Mettre à jour maintenant</button>`}
+  else{r.innerHTML='<div class="note info">Vous utilisez déjà la dernière version.</div>'}
+ }catch(e){r.innerHTML='<p style="color:var(--red)">Vérification impossible (connexion).</p>'}};
+A.applyUpdate=async()=>{try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();for(const reg of rs)await reg.unregister()}
+ if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}
+ }finally{location.reload()}};
 
 P.journal=()=>head('Journal des opérations','Qui a fait quoi, et quand.')+`<div class="tw"><table><thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Référence</th><th>Détail</th></tr></thead><tbody>${D.audit_log.slice().sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,300).map(l=>`<tr><td style="white-space:nowrap">${new Date(l.at).toLocaleString('fr-FR')}</td><td>${esc((byId('profiles',l.user_id)||{}).full_name||'—')}</td><td><b>${esc(l.action)}</b></td><td>${esc(l.ref||'')}</td><td>${esc(l.detail||'')}</td></tr>`).join('')||`<tr><td colspan="5">${none('Journal vide.')}</td></tr>`}</tbody></table></div>`;
 
