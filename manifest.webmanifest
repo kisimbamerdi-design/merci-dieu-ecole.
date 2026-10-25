@@ -1,0 +1,10 @@
+{
+  "name": "Merci-Dieu Smart School",
+  "short_name": "Merci-Dieu",
+  "description": "Gestion du Collège Merci-Dieu",
+  "start_url": "connexion.html",
+  "display": "standalone",
+  "background_color": "#0d3b2a",
+  "theme_color": "#0d3b2a",
+  "icons": [{"src": "logo.png", "sizes": "640x640", "type": "image/png", "purpose": "any"}]
+}

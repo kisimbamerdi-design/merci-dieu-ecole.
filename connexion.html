@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connexion — Merci-Dieu Smart School</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="logo.png">
+<meta name="theme-color" content="#0d3b2a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0d3b2a;--navy2:#124d38;--green:#176b52;--green2:#238264;--gold:#f2b81c;--ink:#20323b;--muted:#7d8b8e;--line:#e1e8e3;--paper:#f4f6f4;--err:#b4503f}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--paper)}
+.wrap{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)}
+
+/* ---------- Panneau gauche : identité du collège ---------- */
+.hero{position:relative;overflow:hidden;color:#fff;padding:48px 56px;display:flex;flex-direction:column;justify-content:space-between;
+  background:radial-gradient(1200px 600px at 10% -10%,#2e9a42 0%,transparent 60%),linear-gradient(160deg,var(--navy) 0%,#082a1f 100%)}
+.hero:before{content:'MD';position:absolute;right:-40px;bottom:-120px;font:900 380px Manrope;letter-spacing:-30px;color:#ffffff07;pointer-events:none}
+.hero:after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 38px,#ffffff04 38px 39px);pointer-events:none}
+.brand{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+.crest{width:84px;height:84px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;
+  background:linear-gradient(145deg,#f7d36a,#c9971a);color:#17384a;font:900 26px Manrope;box-shadow:0 0 0 3px #ffffff30,0 10px 28px #0007}
+.crest img{width:100%;height:100%;object-fit:cover;display:block}
+.brand h1{font:800 18px Manrope;letter-spacing:.4px;margin:0}
+.brand p{margin:6px 0 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#bfd2d4}
+.pitch{position:relative;z-index:1;max-width:520px}
+.eyebrow{color:var(--gold);font-size:11px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;margin-bottom:16px}
+.pitch h2{font:800 40px/1.12 Manrope;letter-spacing:-1.2px;margin:0 0 18px}
+.pitch h2 em{font-style:normal;color:var(--gold)}
+.pitch p{margin:0;color:#c7d8d6;line-height:1.75;font-size:15px}
+.pillars{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+.pillar{border:1px solid #ffffff2a;background:#ffffff0d;border-radius:999px;padding:9px 16px;font-size:12px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#f2e1b8}
+.foot-l{position:relative;z-index:1;font-size:12px;color:#8ba7ac}
+
+/* ---------- Panneau droit : formulaire ---------- */
+.panel{display:grid;place-items:center;padding:40px 28px;background:#fff}
+.card{width:min(410px,100%)}
+.card .mini-crest{display:none}
+.card h3{font:800 26px Manrope;letter-spacing:-.7px;margin:0 0 8px}
+.card .sub{color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 28px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:12px;font-weight:700;color:#53696e;margin-bottom:8px}
+.input{position:relative}
+.input input{width:100%;height:50px;border:1.5px solid var(--line);border-radius:12px;padding:0 48px 0 16px;font:inherit;font-size:15px;color:var(--ink);background:#fbfcfb;outline:none;transition:.15s}
+.input input:focus{border-color:var(--green2);background:#fff;box-shadow:0 0 0 4px #e3f3ea}
+.eye{position:absolute;right:6px;top:6px;height:38px;width:38px;border:0;background:transparent;border-radius:9px;color:#6d8387;cursor:pointer;font-size:17px}
+.eye:hover{background:#eef3ef}
+.row{display:flex;justify-content:space-between;align-items:center;margin:2px 0 22px;font-size:13px}
+.row a{color:var(--green);font-weight:700;text-decoration:none;cursor:pointer}
+.row label{display:flex;gap:8px;align-items:center;color:#53696e;cursor:pointer}
+.btn{width:100%;height:52px;border:0;border-radius:12px;background:linear-gradient(90deg,var(--green),var(--green2));color:#fff;font:700 15px 'DM Sans';cursor:pointer;box-shadow:0 10px 22px #176b5230;transition:.15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 14px 26px #176b5238}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.msg{display:none;margin:0 0 18px;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.5}
+.msg.err{display:block;background:#fbeeea;color:var(--err);border:1px solid #f1d4cc}
+.msg.ok{display:block;background:#e8f5ed;color:var(--green);border:1px solid #cfe7d9}
+.secure{margin-top:26px;padding-top:20px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:flex-start;color:var(--muted);font-size:12px;line-height:1.6}
+.secure b{color:var(--ink)}
+.lock{flex:none;width:34px;height:34px;border-radius:10px;background:#e9f5ef;color:var(--green);display:grid;place-items:center;font-size:16px}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  .hero{display:none}
+  .panel{min-height:100vh;align-items:start;padding-top:48px;background:linear-gradient(180deg,#fff,#f6f8f6)}
+  .card .mini-crest{display:grid;width:76px;height:76px;margin:0 auto 20px;border-radius:50%;place-items:center;overflow:hidden;background:linear-gradient(145deg,#f7d36a,#c9971a);color:#17384a;font:900 24px Manrope;box-shadow:0 8px 20px #0002}
+  .card .mini-crest img{width:100%;height:100%;object-fit:cover}
+  .card h3,.card .sub{text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <aside class="hero">
+    <div class="brand">
+      <div class="crest"><img src="logo.png" alt="" onerror="this.remove()">MD</div>
+      <div><h1>COLLÈGE MERCI-DIEU</h1><p>Smart School · Kasumbalesa</p></div>
+    </div>
+    <div class="pitch">
+      <div class="eyebrow">L'excellence au service de l'éducation</div>
+      <h2>Toute l'école, <em>au même endroit.</em></h2>
+      <p>Inscriptions, paiements, présences, notes et personnel : une seule application, avec pour chacun uniquement ce qui le concerne.</p>
+      <div class="pillars"><span class="pillar">Distinction</span><span class="pillar">Docilité</span><span class="pillar">Charité</span></div>
+    </div>
+    <div class="foot-l">La connaissance forme l'avenir.</div>
+  </aside>
+
+  <main class="panel">
+    <div class="card">
+      <div class="mini-crest"><img src="logo.png" alt="" onerror="this.remove()">MD</div>
+      <h3>Connexion</h3>
+      <p class="sub">Entrez les identifiants personnels qui vous ont été remis par la direction.</p>
+
+      <div id="msg" class="msg" role="alert"></div>
+
+      <form id="form" autocomplete="on" novalidate>
+        <div class="field">
+          <label for="id">Identifiant ou adresse e-mail</label>
+          <div class="input"><input id="id" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex. kasongo.alain" required></div>
+        </div>
+        <div class="field">
+          <label for="pw">Mot de passe</label>
+          <div class="input">
+            <input id="pw" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+            <button type="button" class="eye" id="eye" aria-label="Afficher le mot de passe">👁</button>
+          </div>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="remember" checked> Rester connecté</label>
+          <a id="forgot">Mot de passe oublié ?</a>
+        </div>
+        <button class="btn" id="go" type="submit">Se connecter</button>
+      </form>
+
+      <p id="demo" style="display:none;margin:18px 0 0;text-align:center;font-size:13px"><a href="app.html?demo=1" style="color:#1f7a2e;font-weight:700">Voir la démonstration de l'application →</a></p>
+      <div class="secure">
+        <div class="lock">🔒</div>
+        <div><b>Accès réservé au personnel du collège.</b><br>Votre espace s'adapte automatiquement à votre fonction. Ne partagez jamais votre mot de passe.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script>
+const {SUPABASE_URL,SUPABASE_ANON,APP_PAGE,LOGIN_DOMAIN}=window.MDSS;
+
+const $ = id => document.getElementById(id);
+const msg = (t, k='err') => { const m=$('msg'); m.textContent=t; m.className='msg '+k; };
+const clear = () => { $('msg').className='msg'; };
+const configured = !SUPABASE_URL.includes('VOTRE-PROJET');
+const db = configured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth:{ persistSession:true, autoRefreshToken:true }
+}) : null;
+
+// identifiant -> adresse interne (les enseignants n'ont pas tous une adresse e-mail)
+const toEmail = v => { v=v.trim().toLowerCase(); return v.includes('@') ? v : v.replace(/\s+/g,'.')+'@'+LOGIN_DOMAIN; };
+
+$('eye').onclick = () => {
+  const p=$('pw'), show=p.type==='password';
+  p.type = show?'text':'password';
+  $('eye').setAttribute('aria-label', show?'Masquer le mot de passe':'Afficher le mot de passe');
+};
+
+async function enter(session){
+  const { data:prof, error } = await db.from('profiles').select('role,active,full_name').eq('id', session.user.id).single();
+  if (error || !prof) { await db.auth.signOut(); return msg("Votre compte n'est pas encore configuré. Contactez la direction."); }
+  if (!prof.active)   { await db.auth.signOut(); return msg("Votre compte n'est pas encore activé par le promoteur."); }
+  sessionStorage.setItem('mdss_role', prof.role);          // pour l'affichage seulement : les droits réels sont vérifiés par le serveur
+  sessionStorage.setItem('mdss_name', prof.full_name || '');
+  location.href = APP_PAGE;
+}
+
+$('form').addEventListener('submit', async e => {
+  e.preventDefault(); clear();
+  if (!configured) return msg("Page non configurée : renseignez SUPABASE_URL et SUPABASE_ANON en haut du script.");
+  const id=$('id').value, pw=$('pw').value;
+  if (!id.trim() || !pw) return msg('Entrez votre identifiant et votre mot de passe.');
+  $('go').disabled = true; $('go').textContent = 'Connexion…';
+  const { data, error } = await db.auth.signInWithPassword({ email: toEmail(id), password: pw });
+  $('go').disabled = false; $('go').textContent = 'Se connecter';
+  if (error) return msg('Identifiant ou mot de passe incorrect.');
+  await enter(data.session);
+});
+
+$('forgot').onclick = async () => {
+  clear();
+  const v=$('id').value.trim();
+  if (!v.includes('@')) return msg("Pour réinitialiser votre mot de passe, demandez-le à la direction : elle vous en attribuera un nouveau.", 'ok');
+  if (!configured) return msg('Page non configurée.');
+  const { error } = await db.auth.resetPasswordForEmail(v);
+  error ? msg("Impossible d'envoyer le message pour le moment.") : msg('Un message de réinitialisation a été envoyé à cette adresse.', 'ok');
+};
+
+// déjà connecté ? on va directement à l'espace
+if(!configured) document.getElementById('demo').style.display='block';
+if (configured) db.auth.getSession().then(({data}) => { if (data.session) enter(data.session); });
+</script>
+</body>
+</html>

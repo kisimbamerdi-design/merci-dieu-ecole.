@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d3b2a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="logo.png">
+<title>Merci-Dieu Smart School</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--g:#1f7a2e;--g2:#2e9a42;--gd:#0d3b2a;--gd2:#124d38;--gold:#f2b81c;--gold2:#c9971a;--red:#d0202a;--blue:#2457c5;
+--ink:#1d2b26;--mut:#73837b;--line:#e4eae6;--bg:#f3f6f3;--card:#fff;--soft:#eef4ef}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:14.5px}
+h1,h2,h3,h4{font-family:Manrope,'DM Sans',sans-serif;margin:0;letter-spacing:-.4px}
+button,input,select,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.app{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+/* ----- menu latéral ----- */
+.side{background:linear-gradient(180deg,var(--gd) 0%,#082a1f 100%);color:#d9e8df;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.side:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 40px,#ffffff05 40px 41px);pointer-events:none}
+.brand{display:flex;gap:12px;align-items:center;padding:22px 20px 18px;position:relative}
+.brand img{width:52px;height:52px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #f2b81c80,0 6px 16px #0006}
+.brand b{display:block;font:800 15px Manrope;color:#fff;letter-spacing:.2px}
+.brand small{font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold)}
+.nav{flex:1;overflow:auto;padding:4px 12px 12px;position:relative}
+.nav h6{margin:16px 10px 6px;font:700 10px 'DM Sans';letter-spacing:1.8px;text-transform:uppercase;color:#7da593}
+.nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:11px;color:#cfe2d7;text-decoration:none;cursor:pointer;font-weight:500;margin-bottom:2px;transition:.12s}
+.nav a i{font-style:normal;width:22px;text-align:center;font-size:15px;opacity:.9}
+.nav a:hover{background:#ffffff12;color:#fff}
+.nav a.on{background:linear-gradient(90deg,#f2b81c,#e5a50f);color:#0d3b2a;font-weight:700;box-shadow:0 6px 14px #0004}
+.nav a .n{margin-left:auto;background:var(--red);color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:1px 7px}
+.me{position:relative;padding:14px 16px;border-top:1px solid #ffffff14;display:flex;align-items:center;gap:11px}
+.av{width:38px;height:38px;border-radius:50%;background:#f2b81c;color:#0d3b2a;display:grid;place-items:center;font:800 14px Manrope;flex:none}
+.me b{display:block;color:#fff;font-size:13.5px;line-height:1.25}
+.me small{color:#8fb3a1;font-size:11.5px}
+.me button{margin-left:auto;background:#ffffff14;border:0;color:#d9e8df;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:15px}
+.me button:hover{background:#ffffff26}
+/* ----- zone principale ----- */
+.main{min-width:0}
+.top{display:none;position:sticky;top:0;z-index:20;background:var(--gd);color:#fff;padding:10px 14px;align-items:center;gap:12px}
+.top button{background:#ffffff18;border:0;color:#fff;width:40px;height:40px;border-radius:11px;font-size:19px}
+.top b{font:800 15px Manrope}
+.content{padding:30px 34px 60px;max-width:1280px}
+.ph{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:22px}
+.ph h2{font-size:27px}
+.ph p{margin:6px 0 0;color:var(--mut)}
+.acts{display:flex;gap:10px;flex-wrap:wrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 1px 2px #0d3b2a08,0 10px 28px -18px #0d3b2a30}
+.card h3{font-size:16.5px;margin-bottom:14px}
+.grid{display:grid;gap:18px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g21{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.mt{margin-top:18px}
+.hello{position:relative;overflow:hidden;border-radius:22px;padding:28px 30px;color:#fff;background:radial-gradient(900px 300px at 100% 0,#2e9a42 0%,transparent 60%),linear-gradient(120deg,#0d3b2a,#14573f);display:flex;align-items:center;gap:22px;margin-bottom:20px}
+.hello img{width:96px;height:96px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #f2b81c90,0 12px 30px #0006;flex:none}
+.hello h2{font-size:26px}
+.hello p{margin:8px 0 0;color:#cfe5d8;max-width:560px;line-height:1.6}
+.hello .dt{position:absolute;right:26px;top:20px;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:#f2d98a;font-weight:700}
+.kpi{position:relative;overflow:hidden}
+.kpi small{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+.kpi b{display:block;font:800 30px Manrope;margin:8px 0 4px;letter-spacing:-1px}
+.kpi span{color:var(--mut);font-size:12.5px}
+.kpi:after{content:'';position:absolute;right:-18px;top:-18px;width:76px;height:76px;border-radius:50%;background:var(--soft)}
+.kpi.gold:after{background:#fdf1cb}.kpi.red:after{background:#fbe3e4}.kpi.blue:after{background:#e3ebfb}
+.kpi.red b{color:var(--red)}
+.btn{border:0;border-radius:11px;padding:10px 16px;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center;transition:.12s;background:var(--soft);color:var(--gd)}
+.btn:hover{filter:brightness(.96)}
+.btn.pri{background:linear-gradient(90deg,var(--g),var(--g2));color:#fff;box-shadow:0 8px 18px #1f7a2e30}
+.btn.gold{background:linear-gradient(90deg,#f2b81c,#e8a90f);color:#0d3b2a}
+.btn.red{background:#fbe3e4;color:var(--red)}
+.btn.line{background:#fff;border:1.5px solid var(--line)}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:9px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chip{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700;background:var(--soft);color:var(--gd2);white-space:nowrap}
+.chip.ok{background:#e1f5e6;color:#17692a}.chip.warn{background:#fdf0cc;color:#8a6200}.chip.bad{background:#fbe3e4;color:#b01c25}.chip.info{background:#e3ebfb;color:#2048a6}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
+table{border-collapse:collapse;width:100%}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.9px;color:var(--mut);text-align:left;padding:12px 14px;background:#f8faf8;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0}
+td{padding:12px 14px;border-bottom:1px solid #eff3f0;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr.cl{cursor:pointer}tbody tr.cl:hover td{background:#f6faf7}
+td.r,th.r{text-align:right}
+.empty{padding:34px;text-align:center;color:var(--mut)}
+.bar{display:grid;grid-template-columns:150px 1fr 44px;gap:10px;align-items:center;margin:9px 0;font-size:13px}
+.bar i{display:block;height:11px;border-radius:99px;background:linear-gradient(90deg,var(--g2),var(--g))}
+.bar div{background:var(--soft);border-radius:99px;overflow:hidden}
+.bar.gd i{background:linear-gradient(90deg,#f7cf5a,var(--gold2))}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.tools input,.tools select,.f input,.f select,.f textarea{border:1.5px solid var(--line);background:#fbfcfb;border-radius:11px;padding:10px 13px;outline:none;min-width:0}
+.tools input{flex:1;min-width:200px}
+.tools input:focus,.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--g2);box-shadow:0 0 0 4px #e1f3e6;background:#fff}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.f label{display:block;font-size:12px;font-weight:700;color:#53696e;margin-bottom:6px}
+.f .full{grid-column:1/-1}
+.f input,.f select,.f textarea{width:100%}
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tabs a{padding:9px 16px;border-radius:99px;background:#fff;border:1px solid var(--line);cursor:pointer;font-weight:600;color:var(--mut)}
+.tabs a.on{background:var(--gd);border-color:var(--gd);color:#fff}
+.mask{position:fixed;inset:0;background:#0b1f17b3;backdrop-filter:blur(3px);display:grid;place-items:start center;z-index:60;padding:28px 16px;overflow:auto}
+.dlg{background:#fff;border-radius:20px;width:min(580px,100%);padding:26px;box-shadow:0 30px 80px #0007;animation:up .18s ease}
+.dlg.wide{width:min(940px,100%)}
+@keyframes up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.dlg h3{font-size:20px;margin-bottom:4px}.dlg .sub{color:var(--mut);margin:0 0 18px}
+.dlg .foot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--gd);color:#fff;padding:13px 20px;border-radius:13px;z-index:90;box-shadow:0 14px 34px #0005;font-weight:600;max-width:92vw}
+.toast.err{background:var(--red)}
+.note{background:#fdf6df;border:1px solid #f1deaa;color:#7a5a00;border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6}
+.note.info{background:#e8f0fe;border-color:#cfdcf7;color:#27489a}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;font-size:14px}.kv dt{color:var(--mut)}.kv dd{margin:0;font-weight:600}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:7px 12px;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--mut)}
+.seg button.on.p{background:#e1f5e6;color:#17692a}.seg button.on.a{background:#fbe3e4;color:#b01c25}.seg button.on.t{background:#fdf0cc;color:#8a6200}.seg button.on.e{background:#e3ebfb;color:#2048a6}
+.todo{list-style:none;margin:0;padding:0}.todo li{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #eff3f0}.todo li:last-child{border:0}
+.todo li i{font-style:normal;width:30px;height:30px;border-radius:9px;background:var(--soft);display:grid;place-items:center;flex:none}
+/* ----- assistant ----- */
+.fab{position:fixed;right:22px;bottom:22px;z-index:40;width:60px;height:60px;border-radius:50%;border:0;background:linear-gradient(135deg,#f2b81c,#e08a0b);color:#0d3b2a;font-size:26px;cursor:pointer;box-shadow:0 12px 28px #0005}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:#fff;z-index:70;box-shadow:-20px 0 60px #0004;display:flex;flex-direction:column;transform:translateX(105%);transition:.22s}
+.drawer.open{transform:none}
+.drawer header{background:linear-gradient(120deg,var(--gd),#14573f);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:12px}
+.drawer header h4{font-size:16px}.drawer header small{color:#cfe5d8}
+.drawer header button{margin-left:auto;background:#ffffff1c;border:0;color:#fff;width:34px;height:34px;border-radius:10px;cursor:pointer}
+.chat{flex:1;overflow:auto;padding:18px;background:#f6f9f6;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:92%;padding:12px 14px;border-radius:15px;line-height:1.55;font-size:14px}
+.msg.bot{background:#fff;border:1px solid var(--line);align-self:flex-start;border-top-left-radius:4px}
+.msg.me{background:var(--g);color:#fff;align-self:flex-end;border-top-right-radius:4px}
+.msg ul{margin:6px 0 0;padding-left:18px}.msg a{color:var(--g);font-weight:700;cursor:pointer}
+.sugs{display:flex;gap:7px;flex-wrap:wrap;padding:10px 16px 0;background:#f6f9f6}
+.sugs button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:12.5px;cursor:pointer;font-weight:600}
+.ask{display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--line)}
+.ask input{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;outline:none}
+/* ----- reçu 80 mm ----- */
+.rwrap{background:#e9eeea;border-radius:14px;padding:20px;display:flex;justify-content:center}
+.rcpt{width:80mm;background:#fff;color:#000;font:12px/1.35 'Courier New',monospace;padding:5mm 4mm;box-shadow:0 8px 24px #0003}
+.rcpt .c{text-align:center}.rcpt img.lg{width:20mm;height:20mm;display:block;margin:0 auto 2mm}
+.rcpt .rh{font:bold 15px 'Courier New',monospace;text-align:center}.rcpt .rs{text-align:center;font-size:10.5px}
+.rcpt hr{border:0;border-top:1px dashed #000;margin:2.5mm 0}
+.rcpt .rn{text-align:center;font-weight:bold;font-size:13px;margin:1mm 0}
+.rcpt .row{display:flex;justify-content:space-between;gap:6px;margin:1mm 0}.rcpt .row span:first-child{flex:none}.rcpt .row span:last-child{text-align:right;font-weight:bold}
+.rcpt .big{font:bold 17px 'Courier New',monospace;text-align:center;margin:2mm 0}
+.rcpt .rq{display:flex;justify-content:center;margin:3mm 0 1mm}
+.rcpt .stamp{border:1px dashed #000;height:18mm;text-align:center;font-size:10px;padding-top:1mm;margin-top:2mm}
+.rcpt .ft{text-align:center;font-size:10.5px;margin-top:2mm}
+.a4{width:210mm;min-height:297mm;background:#fff;color:#000;padding:14mm;font:13px/1.4 'DM Sans',sans-serif}
+.a4 table{font-size:12px}.a4 th,.a4 td{border:1px solid #999;padding:6px 8px}
+#printzone{display:none}
+@media print{
+  body.printing .app,body.printing .mask,body.printing .fab,body.printing .drawer,body.printing .toast,body.printing .top{display:none!important}
+  body.printing #printzone{display:block}
+  body.printing{background:#fff}
+  .rcpt{box-shadow:none}
+}
+/* ----- démo ----- */
+.boot{min-height:100vh;display:grid;place-items:center;padding:30px;background:radial-gradient(900px 500px at 15% 0,#2e9a42 0%,transparent 55%),linear-gradient(160deg,#0d3b2a,#082a1f)}
+.boot .box{width:min(820px,100%);text-align:center;color:#fff}
+.boot img{width:120px;height:120px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #f2b81c90,0 18px 40px #0007}
+.boot h1{font-size:34px;margin:20px 0 6px}.boot p{color:#cfe5d8;margin:0 0 28px}
+.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.roles button{background:#ffffff12;border:1px solid #ffffff26;border-radius:18px;padding:22px 14px;color:#fff;cursor:pointer;transition:.15s;text-align:center}
+.roles button:hover{background:#ffffff22;transform:translateY(-3px)}
+.roles button b{display:block;font:800 16px Manrope;margin:8px 0 4px}.roles button small{color:#bcd5c7;line-height:1.5;display:block}
+.roles button i{font-style:normal;font-size:28px}
+.demo-bar{background:#f2b81c;color:#0d3b2a;font-weight:700;text-align:center;padding:6px;font-size:12.5px}
+@media(max-width:1000px){.g4{grid-template-columns:repeat(2,1fr)}.g3,.g21{grid-template-columns:1fr}.roles{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;left:0;top:0;bottom:0;width:280px;z-index:55;transform:translateX(-105%);transition:.2s}
+  .side.open{transform:none}
+  .top{display:flex}.content{padding:20px 16px 90px}
+  .g2,.f{grid-template-columns:1fr}.hello{flex-direction:column;text-align:center}.hello .dt{position:static}
+  .bar{grid-template-columns:100px 1fr 40px}
+}
+@media(max-width:560px){.g4{grid-template-columns:1fr}.roles{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="boot"></div>
+<div id="app" class="app" hidden>
+  <aside class="side" id="side">
+    <div class="brand"><img src="logo.png" alt=""><div><b>Merci-Dieu</b><small>Smart School</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="me"><div class="av" id="av"></div><div><b id="meName"></b><small id="meRole"></small></div><button title="Se déconnecter" onclick="A.logout()">⏻</button></div>
+  </aside>
+  <div class="main">
+    <div id="demobar" class="demo-bar" hidden>MODE DÉMONSTRATION · données fictives · rien n'est enregistré</div>
+    <div class="top"><button onclick="A.toggleNav()">☰</button><img src="logo.png" alt="" style="width:34px;height:34px;border-radius:50%;background:#fff"><b>Merci-Dieu Smart School</b></div>
+    <div class="content" id="main"></div>
+  </div>
+</div>
+<button class="fab" id="fab" title="Assistant" onclick="A.assistant()" hidden>✦</button>
+<aside class="drawer" id="drawer">
+  <header><div style="font-size:24px">✦</div><div><h4>Assistant Merci-Dieu</h4><small id="asRole"></small></div><button onclick="A.assistant()">✕</button></header>
+  <div class="chat" id="chat"></div>
+  <div class="sugs" id="sugs"></div>
+  <form class="ask" onsubmit="A.ask(event)"><input id="askIn" placeholder="Posez une question…" autocomplete="off"><button class="btn pri">Envoyer</button></form>
+</aside>
+<div id="modal"></div>
+<div id="printzone"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   MERCI-DIEU SMART SCHOOL — application principale
+   Les droits réels sont appliqués par le serveur (schema.sql).
+   Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
+   ===================================================================== */
+const {SUPABASE_URL,SUPABASE_ANON}=window.MDSS;
+const LIVE=!SUPABASE_URL.includes('VOTRE-PROJET');
+const db=LIVE?supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:true,autoRefreshToken:true}}):null;
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fc=n=>new Intl.NumberFormat('fr-FR').format(Math.round(+n||0)).replace(/[\u202f\u00a0]/g,' ')+' FC';
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>ymd(new Date());
+const fmtDate=d=>d?new Date(d).toLocaleDateString('fr-FR'):'—';
+const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
+const ROLES={promoteur:'Promoteur',direction:'Direction',comptable:'Comptable-secrétaire',professeur:'Professeur'};
+const TABLES=['profiles','classes','teacher_classes','students','online_registrations','fee_rates','payments','cash_closings','staff','staff_pay','salary_advances','attendance','grades','timetable','settings','audit_log'];
+const MONTHS=['Septembre','Octobre','Novembre','Décembre','Janvier','Février','Mars','Avril','Mai','Juin'];
+const REASONS=[...MONTHS.map(m=>'Frais mensuel — '+m),"Frais de l'État — 1ère tranche","Frais de l'État — 2e tranche","Frais de l'État — 3e tranche",'Frais technique','Minervale','Autre'];
+const A={},P={},AFTER={};
+let S={},D={},Q={},SC=null;
+
+/* ---------- outils ---------- */
+const can=(...r)=>r.includes(S.role);
+const byId=(t,id)=>D[t].find(x=>x.id===id);
+const stu=id=>byId('students',id)||{};
+const cls=id=>byId('classes',id)||{};
+const clsLabel=c=>c&&c.name?c.name+(c.option&&c.option!==c.section&&c.option!==c.name?' · '+c.option:''):'—';
+const sname=id=>stu(id).full_name||'—';
+const getSetting=k=>(D.settings.find(x=>x.key===k)||{}).value;
+let _seq=1000;const uid=()=>'d'+(++_seq);
+function toast(t,err){const e=document.createElement('div');e.className='toast'+(err?' err':'');e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),err?5200:2600)}
+function modal(html,wide){$('#modal').innerHTML=`<div class="mask" onmousedown="if(event.target===this)A.close()"><div class="dlg ${wide?'wide':''}">${html}</div></div>`}
+A.close=()=>{$('#modal').innerHTML=''};
+const chip=(t,k='')=>`<span class="chip ${k}">${esc(t)}</span>`;
+const kpi=(l,v,s,k='')=>`<div class="card kpi ${k}"><small>${l}</small><b>${v}</b><span>${s||''}</span></div>`;
+const head=(t,s,a='')=>`<div class="ph"><div><h2>${t}</h2>${s?`<p>${s}</p>`:''}</div><div class="acts">${a}</div></div>`;
+const none=t=>`<div class="empty">${t}</div>`;
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z ]/g,' ').split(/\s+/).filter(Boolean).sort().join(' ');
+function lev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){let c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function csvDown(name,rows){const t=rows.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download=name;a.click()}
+const val=id=>{const e=document.getElementById(id);return e?e.value.trim():''};
+
+/* nombre en lettres (français) */
+function nf(n){n=Math.floor(+n||0);if(n===0)return 'zéro';
+ const u=['zéro','un','deux','trois','quatre','cinq','six','sept','huit','neuf','dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'],t=['','','vingt','trente','quarante','cinquante','soixante'];
+ const b100=n=>{if(n<20)return u[n];if(n<70){const d=Math.floor(n/10),r=n%10;return t[d]+(r===1?' et un':r?'-'+u[r]:'')}if(n<80){const r=n-60;return 'soixante'+(r===11?' et onze':'-'+u[r])}const r=n-80;return 'quatre-vingt'+(r?'-'+u[r]:'s')};
+ const b1000=(n,fin)=>{if(n<100)return b100(n);const c=Math.floor(n/100),r=n%100;let s=(c>1?u[c]+' ':'')+'cent';if(c>1&&r===0&&fin)s+='s';return r?s+' '+b100(r):s};
+ const fix=s=>s.replace(/(cent|vingt)s$/,'$1');
+ let out=[];const mi=Math.floor(n/1e6),th=Math.floor(n%1e6/1000),re=n%1000;
+ if(mi)out.push(mi===1?'un million':b1000(mi,false)+' millions');
+ if(th)out.push(th===1?'mille':fix(b1000(th,true))+' mille');
+ if(re)out.push(b1000(re,true));
+ return out.join(' ').replace(/\s+/g,' ').trim()}
+
+/* ---------- données ---------- */
+async function fetchAll(t){let out=[],from=0;for(;;){const {data,error}=await db.from(t).select('*').range(from,from+999);if(error||!data)return out;out=out.concat(data);if(data.length<1000)break;from+=1000}return out}
+async function loadAll(){await Promise.all(TABLES.map(async t=>{D[t]=LIVE?await fetchAll(t):(D[t]||[])}));dirty()}
+function dirty(){SC=null}
+function demoTrig(t,r,op,old){
+ if(t==='students'&&op==='ins'){r.qr_token=r.qr_token||Math.random().toString(36).slice(2,18)}
+ if(t==='payments'){if(op==='ins'){r.status='en_attente';r.receipt_no=null;r.print_count=0;r.qr_token=Math.random().toString(36).slice(2,18);r.created_by=S.uid}
+  else if(old.status==='en_attente'&&r.status==='confirme'){r.receipt_no='MD-REC-'+String(++D._rn).padStart(6,'0');r.confirmed_by=S.uid;r.confirmed_at=new Date().toISOString()}}
+ if(t==='salary_advances'&&op==='ins')r.status='demandee';
+}
+async function ins(t,row){
+ if(!LIVE){row={id:uid(),created_at:new Date().toISOString(),...row};demoTrig(t,row,'ins');D[t].push(row);dirty();return row}
+ const {data,error}=await db.from(t).insert(row).select().single();if(error)throw error;D[t].push(data);dirty();return data}
+async function upd(t,id,patch){
+ const r=byId(t,id);
+ if(!LIVE){const old={...r};Object.assign(r,patch);demoTrig(t,r,'upd',old);dirty();return r}
+ const {data,error}=await db.from(t).update(patch).eq('id',id).select().single();if(error)throw error;Object.assign(r,data);dirty();return r}
+async function delRow(t,match){
+ if(LIVE){let q=db.from(t).delete();for(const k in match)q=q.eq(k,match[k]);const {error}=await q;if(error)throw error}
+ D[t]=D[t].filter(x=>!Object.keys(match).every(k=>x[k]===match[k]));dirty()}
+async function ups(t,row,keys){
+ const ex=D[t].find(x=>keys.every(k=>x[k]===row[k]));
+ if(LIVE){const {data,error}=await db.from(t).upsert(row,{onConflict:keys.join(',')}).select().single();if(error)throw error;if(ex)Object.assign(ex,data);else D[t].push(data)}
+ else{if(ex)Object.assign(ex,row);else D[t].push({id:uid(),...row})}dirty()}
+async function audit(action,ref,detail){
+ const row={at:new Date().toISOString(),user_id:S.uid,action,ref:ref||'',detail:detail||''};
+ if(LIVE){try{await db.from('audit_log').insert({action,ref,detail})}catch(e){}}else D.audit_log.unshift({id:uid(),...row})}
+
+/* ---------- calculs ---------- */
+function monthsElapsed(){const i=(new Date().getMonth()+4)%12;return Math.min(i,9)+1}
+const rate=k=>{const r=D.fee_rates.find(x=>x.key===k);return r?+r.amount:0};
+function levelKey(c){if(!c||!c.section)return null;if(c.section==='Maternelle')return 'MATERNELLE';if(c.section==='Primaire')return 'PRIMAIRE';if(c.section==='Éducation de Base')return '7_8';return /^4/.test(c.name)?'SEC_4':'SEC_1_3'}
+function soldes(){if(SC)return SC;const n=monthsElapsed(),out=[];
+ for(const s of D.students){if(s.status!=='valide')continue;const c=cls(s.class_id),k=levelKey(c),monthly=k?rate('NIVEAU_'+k):0,expected=s.social_case?0:monthly*n;
+  const paid=D.payments.filter(p=>p.student_id===s.id&&p.status==='confirme'&&/^Frais mensuel/.test(p.reason)).reduce((a,p)=>a+ +p.amount,0);
+  out.push({s,c,monthly,expected,paid,due:expected-paid})}
+ return SC=out}
+const soldeOf=id=>soldes().find(x=>x.s.id===id);
+const paidOK=()=>D.payments.filter(p=>p.status==='confirme');
+function qrURL(kind,o){
+ if(LIVE)return new URL('verifier.html?t='+o.qr_token,location.href).href;
+ let info;
+ if(kind==='p'){const s=stu(o.student_id);info={type:'paiement',eleve:s.full_name,classe:clsLabel(cls(s.class_id)),motif:o.reason,montant:o.amount,date:o.paid_on,recu:o.receipt_no,valide:o.status==='confirme'}}
+ else info={type:'inscription',eleve:o.full_name,classe:clsLabel(cls(o.class_id)),valide:o.status==='valide'};
+ return new URL('verifier.html?d='+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(info))))),location.href).href}
+function drawQRs(root){(root||document).querySelectorAll('[data-url]:not([data-done])').forEach(el=>{el.dataset.done=1;const sz=+el.dataset.size||110;try{new QRCode(el,{text:el.dataset.url,width:sz,height:sz,correctLevel:QRCode.CorrectLevel.M})}catch(e){el.textContent='QR'}})}
+
+/* ---------- qualité des données et doublons ---------- */
+function dupes(){const idx={},pairs=[],seen=new Set();const L=D.students.map(s=>({s,n:norm(s.full_name)}));
+ for(const o of L)for(const t of new Set(o.n.split(' ').filter(w=>w.length>=4)))(idx[t]=idx[t]||[]).push(o);
+ for(const k in idx){const g=idx[k];if(g.length>60)continue;for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const a=g[i],b=g[j],key=a.s.id+'|'+b.s.id;if(seen.has(key))continue;seen.add(key);
+  if(Math.abs(a.n.length-b.n.length)>2)continue;const d=lev(a.n,b.n);if(d<=2&&a.n.length>=8)pairs.push({a:a.s,b:b.s,d})}}
+ return pairs}
+function quality(){const out=[],y=new Date().getFullYear();
+ for(const p of dupes())out.push({k:'Doublon possible',t:`${p.a.full_name} ↔ ${p.b.full_name}`,id:p.a.id});
+ for(const s of D.students){const ph=String(s.parent_phone||'').replace(/\D/g,'');
+  if(!ph||ph.length<9||/^(\d)\1+$/.test(ph))out.push({k:'Téléphone manquant ou invalide',t:s.full_name,id:s.id});
+  if(!s.class_id)out.push({k:'Sans classe',t:s.full_name,id:s.id});
+  if(s.birth_date){const by=+String(s.birth_date).slice(0,4);if(by<y-30||by>y-2)out.push({k:'Date de naissance improbable',t:`${s.full_name} (${fmtDate(s.birth_date)})`,id:s.id})}}
+ if(can('promoteur','comptable'))for(const p of D.payments)if(+p.amount>3000000)out.push({k:'Montant très élevé',t:`${sname(p.student_id)} : ${fc(p.amount)}`,id:p.student_id});
+ return out}
+
+/* =====================================================================
+   MENU
+   ===================================================================== */
+const ALL=['promoteur','direction','comptable','professeur'];
+const MENU=[
+ ['Pilotage'],
+ {id:'dash',i:'◩',l:'Tableau de bord',r:ALL},
+ {id:'journal',i:'☰',l:"Journal des opérations",r:['promoteur']},
+ ['Scolarité'],
+ {id:'eleves',i:'☺',l:'Élèves',r:ALL},
+ {id:'online',i:'✉',l:'Inscriptions en ligne',r:['promoteur','comptable'],badge:()=>D.online_registrations.filter(x=>!x.processed).length},
+ {id:'classes',i:'▦',l:'Classes et promotions',r:['promoteur','direction','comptable']},
+ {id:'presences',i:'✔',l:'Présences',r:['promoteur','direction','professeur']},
+ {id:'notes',i:'✎',l:'Notes et résultats',r:['promoteur','direction','professeur']},
+ {id:'horaires',i:'◷',l:'Emplois du temps',r:['promoteur','direction','professeur']},
+ ['Finances'],
+ {id:'paiements',i:'₣',l:'Paiements',r:['promoteur','comptable']},
+ {id:'soldes',i:'⚖',l:'Soldes et arriérés',r:['promoteur','comptable']},
+ {id:'recus',i:'🧾',l:'Reçus',r:['promoteur','comptable']},
+ {id:'caisse',i:'▣',l:'Clôture de caisse',r:['promoteur','comptable']},
+ ['Personnel'],
+ {id:'personnel',i:'☷',l:'Personnel',r:['promoteur','direction','comptable']},
+ {id:'avances',i:'↺',l:'Avances sur salaire',r:ALL,badge:()=>can('direction','promoteur')?D.salary_advances.filter(x=>x.status==='demandee').length:can('comptable')?D.salary_advances.filter(x=>x.status==='signee').length:0},
+ {id:'paie',i:'▤',l:'Salaires',r:['promoteur','direction']},
+ ['Outils'],
+ {id:'import',i:'⇪',l:'Importer des données',r:['promoteur','comptable']},
+ {id:'params',i:'⚙',l:'Paramètres',r:['promoteur','comptable']}
+];
+const allowed=p=>{const m=MENU.find(x=>x.id===p);return m&&m.r.includes(S.role)};
+function renderNav(){let h='',pend='';
+ for(const m of MENU){if(Array.isArray(m)){pend=m[0];continue}if(!m.r.includes(S.role))continue;
+  if(pend){h+=`<h6>${pend}</h6>`;pend=''}
+  const b=m.badge?m.badge():0;
+  h+=`<a class="${S.page===m.id?'on':''}" onclick="go('${m.id}')"><i>${m.i}</i>${m.l}${b?`<span class="n">${b}</span>`:''}</a>`}
+ $('#nav').innerHTML=h}
+function go(p){if(!allowed(p))p='dash';S.page=p;try{history.replaceState(null,'','#'+p)}catch(e){}renderNav();render();$('#side').classList.remove('open');window.scrollTo(0,0)}
+function render(){const m=$('#main');try{m.innerHTML=P[S.page]();if(AFTER[S.page])AFTER[S.page]();drawQRs(m)}catch(e){console.error(e);m.innerHTML=`<div class="card"><h3>Une erreur est survenue</h3><p>${esc(e.message)}</p></div>`}}
+A.toggleNav=()=>$('#side').classList.toggle('open');
+
+/* =====================================================================
+   TABLEAU DE BORD
+   ===================================================================== */
+P.dash=()=>{
+ const st=D.students,valid=st.filter(s=>s.status==='valide').length,verify=st.filter(s=>s.status==='a_verifier'||s.status==='a_completer').length;
+ const hr=new Date().getHours(),hi=hr<12?'Bonjour':hr<18?'Bon après-midi':'Bonsoir';
+ const msg={promoteur:"Vue complète de l'école : élèves, finances, personnel et journal.",direction:"Suivi des élèves, du personnel et des avances à signer.",comptable:"Inscriptions, paiements, reçus et clôture de caisse.",professeur:"Vos classes, vos présences et vos notes."}[S.role];
+ let k='',left='',right='';
+ const effectif=()=>{const m={};st.forEach(s=>{const c=cls(s.class_id);const l=clsLabel(c);m[l]=(m[l]||0)+1});const e=Object.entries(m).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...e.map(x=>x[1]));return e.map(([l,n])=>`<div class="bar"><span>${esc(l)}</span><div><i style="width:${n/mx*100}%"></i></div><b>${n}</b></div>`).join('')||none('Aucun élève')};
+ if(can('promoteur','comptable')){
+  const t=today(),ok=paidOK(),jour=ok.filter(p=>p.paid_on===t).reduce((a,p)=>a+ +p.amount,0),mois=ok.filter(p=>String(p.paid_on).slice(0,7)===t.slice(0,7)).reduce((a,p)=>a+ +p.amount,0),arr=soldes().reduce((a,x)=>a+Math.max(0,x.due),0);
+  k=kpi('Élèves inscrits',st.length,`${valid} validés · ${verify} à vérifier`)+kpi("Encaissé aujourd'hui",fc(jour),'paiements confirmés','gold')+kpi('Encaissé ce mois',fc(mois),'depuis le 1er','blue')+kpi('Arriérés (mensualités)',fc(arr),soldes().filter(x=>x.due>0).length+' élèves en retard','red');
+  const mm={};ok.forEach(p=>{const m=String(p.paid_on).slice(0,7);mm[m]=(mm[m]||0)+ +p.amount});const ms=Object.keys(mm).sort().slice(-6),mx=Math.max(1,...ms.map(m=>mm[m]));
+  right=`<div class="card"><h3>Encaissements des 6 derniers mois</h3>${ms.map(m=>`<div class="bar gd"><span>${new Date(m+'-15').toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</span><div><i style="width:${mm[m]/mx*100}%"></i></div><b style="font-size:11px">${Math.round(mm[m]/1000)}k</b></div>`).join('')||none('Aucun paiement')}</div>`;
+ }else if(S.role==='direction'){
+  k=kpi('Élèves inscrits',st.length,`${valid} validés`)+kpi('Personnel',D.staff.length,'enseignants et administration','blue')+kpi('Avances à signer',D.salary_advances.filter(x=>x.status==='demandee').length,'en attente de la direction','gold')+kpi('Dossiers à vérifier',verify,'inscriptions incomplètes','red');
+ }else{
+  const my=D.classes;const today_=D.attendance.filter(a=>a.day===today());const sans=my.filter(c=>!today_.some(a=>a.class_id===c.id));
+  k=kpi('Mes classes',my.length,my.map(c=>c.name).join(' · '))+kpi('Mes élèves',st.length,'dans mes classes','blue')+kpi('Présences du jour',my.length-sans.length+' / '+my.length,'classes faites aujourd\'hui','gold')+kpi('Notes saisies',D.grades.length,'dans mes classes');
+ }
+ const todo=[];
+ if(can('promoteur','comptable')){const o=D.online_registrations.filter(x=>!x.processed).length;if(o)todo.push(['✉',`${o} inscription(s) en ligne à traiter`,'online']);
+  const ar=soldes().filter(x=>x.due>0).length;if(ar)todo.push(['⚖',`${ar} élève(s) avec arriérés`,'soldes']);
+  if(!D.cash_closings.some(c=>c.day===today()))todo.push(['▣',"La caisse du jour n'est pas encore clôturée",'caisse']);
+  const sg=D.salary_advances.filter(x=>x.status==='signee').length;if(sg)todo.push(['↺',`${sg} avance(s) signée(s) à verser`,'avances'])}
+ if(can('direction','promoteur')){const a=D.salary_advances.filter(x=>x.status==='demandee').length;if(a)todo.push(['✍',`${a} avance(s) à signer`,'avances'])}
+ if(can('professeur')){D.classes.filter(c=>!D.attendance.some(a=>a.class_id===c.id&&a.day===today())).forEach(c=>todo.push(['✔',`Faire les présences de ${c.name}`,'presences']))}
+ const q=quality().length;if(q&&can('promoteur','comptable','direction'))todo.push(['✦',`${q} point(s) de données à vérifier — demandez à l'assistant`,'']);
+ left=`<div class="card"><h3>Effectif par classe</h3>${effectif()}</div>`;
+ return `<div class="hello"><img src="logo.png" alt=""><div><h2>${hi}, ${esc((S.name||'').split(' ')[0]||ROLES[S.role])}</h2><p>${msg}</p></div><div class="dt">${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div>
+ <div class="grid g4">${k}</div>
+ <div class="grid ${right?'g2':''} mt">${left}${right}</div>
+ <div class="card mt"><h3>À faire</h3>${todo.length?`<ul class="todo">${todo.map(t=>`<li><i>${t[0]}</i><div style="flex:1;padding-top:5px">${t[1]}</div>${t[2]?`<button class="btn sm" onclick="go('${t[2]}')">Ouvrir</button>`:`<button class="btn sm" onclick="A.assistant()">Demander</button>`}</li>`).join('')}</ul>`:none('✓ Tout est à jour.')}</div>`};
+
+/* =====================================================================
+   ÉLÈVES
+   ===================================================================== */
+Q.el={q:'',c:'',s:''};
+const STAT={valide:['Validé','ok'],a_verifier:['À vérifier','warn'],a_completer:['À compléter','info'],refuse:['Refusé','bad']};
+P.eleves=()=>{
+ const add=can('promoteur','comptable')?`<button class="btn pri" onclick="A.studentForm()">＋ Nouvel élève</button>`:'';
+ return head('Élèves',can('professeur')?'Les élèves de vos classes uniquement.':'Liste complète des élèves du collège.',`<button class="btn line" onclick="A.exportStudents()">⇩ Exporter</button>${add}`)+
+ `<div class="tools"><input id="elq" placeholder="Rechercher un nom, un numéro, un parent…" oninput="Q.el.q=this.value;A.elList()" value="${esc(Q.el.q)}">
+ <select onchange="Q.el.c=this.value;A.elList()"><option value="">Toutes les classes</option>${D.classes.map(c=>`<option value="${c.id}" ${Q.el.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select>
+ <select onchange="Q.el.s=this.value;A.elList()"><option value="">Tous les statuts</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${Q.el.s===k?'selected':''}>${v[0]}</option>`).join('')}</select></div>
+ <div class="tw"><table><thead><tr><th>Nom complet</th><th>Sexe</th><th>Classe</th><th>Parent</th><th>Téléphone</th>${can('promoteur','comptable')?'<th class="r">Solde</th>':''}<th>Statut</th></tr></thead><tbody id="elb"></tbody></table></div><p id="elc" style="color:var(--mut)"></p>`};
+AFTER.eleves=()=>A.elList();
+function fStudents(){const q=norm(Q.el.q).split(' ').filter(Boolean);return D.students.filter(s=>{if(Q.el.c&&s.class_id!==Q.el.c)return false;if(Q.el.s&&s.status!==Q.el.s)return false;
+ if(!q.length)return true;const h=norm([s.full_name,s.father_name,s.mother_name,s.parent_phone,s.matricule,s.perm_number].join(' ')).replace(/ /g,' ')+' '+String(s.parent_phone||'');return q.every(t=>h.includes(t))}).sort((a,b)=>String(a.full_name).localeCompare(b.full_name,'fr'))}
+A.elList=()=>{const l=fStudents(),m=can('promoteur','comptable');
+ $('#elb').innerHTML=l.slice(0,300).map(s=>{const so=m?soldeOf(s.id):null,[t,k]=STAT[s.status]||['—',''];
+  return `<tr class="cl" onclick="A.fiche('${s.id}')"><td><b>${esc(s.full_name)}</b>${s.social_case?' '+chip('Cas social','info'):''}</td><td>${esc(s.sex||'')}</td><td>${esc(clsLabel(cls(s.class_id)))}</td><td>${esc(s.father_name||s.mother_name||'')}</td><td>${esc(s.parent_phone||'')}</td>${m?`<td class="r">${so?(so.due>0?chip(fc(so.due),'bad'):chip('À jour','ok')):'—'}</td>`:''}<td>${chip(t,k)}</td></tr>`}).join('')||`<tr><td colspan="7">${none('Aucun élève trouvé.')}</td></tr>`;
+ $('#elc').textContent=l.length+' élève(s)'+(l.length>300?' · 300 premiers affichés, affinez la recherche':'')};
+A.exportStudents=()=>csvDown('eleves.csv',[['Nom','Sexe','Naissance','Classe','Père','Mère','Téléphone','Statut'],...fStudents().map(s=>[s.full_name,s.sex,s.birth_date,clsLabel(cls(s.class_id)),s.father_name,s.mother_name,s.parent_phone,(STAT[s.status]||[''])[0]])]);
+A.fiche=id=>{const s=stu(id),c=cls(s.class_id),m=can('promoteur','comptable'),[t,k]=STAT[s.status]||['—',''];
+ let pay='';if(m){const ps=D.payments.filter(p=>p.student_id===id).sort((a,b)=>String(b.paid_on).localeCompare(a.paid_on)),so=soldeOf(id);
+  pay=`<h4 style="margin:20px 0 10px">Situation financière</h4>${so?`<p style="margin:0 0 10px">Mensualité : <b>${fc(so.monthly)}</b> · attendu à ce jour : <b>${fc(so.expected)}</b> · payé : <b>${fc(so.paid)}</b> · ${so.due>0?`reste <b style="color:var(--red)">${fc(so.due)}</b>`:'<b style="color:var(--g)">à jour</b>'}</p>`:''}
+  <div class="tw" style="max-height:220px"><table><tbody>${ps.map(p=>`<tr><td>${fmtDate(p.paid_on)}</td><td>${esc(p.reason)}</td><td class="r">${fc(p.amount)}</td><td>${p.status==='confirme'?chip(p.receipt_no||'ok','ok'):chip(p.status,p.status==='annule'?'bad':'warn')}</td></tr>`).join('')||`<tr><td>${none('Aucun paiement')}</td></tr>`}</tbody></table></div>`}
+ modal(`<div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap"><div style="flex:1;min-width:240px"><h3>${esc(s.full_name)}</h3><p class="sub">${esc(clsLabel(c))} · ${chip(t,k)}</p>
+ <dl class="kv"><dt>Sexe</dt><dd>${esc(s.sex||'—')}</dd><dt>Naissance</dt><dd>${fmtDate(s.birth_date)} ${s.birth_place?'à '+esc(s.birth_place):''}</dd><dt>École précédente</dt><dd>${esc(s.prev_school||'—')}</dd><dt>N° permanent</dt><dd>${esc(s.perm_number||'—')}</dd><dt>Père</dt><dd>${esc(s.father_name||'—')}</dd><dt>Mère</dt><dd>${esc(s.mother_name||'—')}</dd><dt>Téléphone</dt><dd>${esc(s.parent_phone||'—')}</dd><dt>Adresse</dt><dd>${esc([s.address,s.sector,s.province].filter(Boolean).join(', ')||'—')}</dd></dl></div>
+ ${s.status==='valide'&&s.qr_token?`<div style="text-align:center"><div data-url="${esc(qrURL('s',s))}" data-size="120" style="display:flex;justify-content:center"></div><small style="color:var(--mut)">QR de validation<br>d'inscription</small></div>`:''}</div>${pay}
+ <div class="foot">${can('promoteur','comptable')&&s.status!=='valide'?`<button class="btn pri" onclick="A.validate('${id}')">✓ Valider l'inscription</button>`:''}${can('promoteur','comptable')?`<button class="btn line" onclick="A.studentForm('${id}')">Modifier</button>`:''}${can('promoteur','direction','professeur')?`<button class="btn line" onclick="A.bulletin('${id}')">Bulletin</button>`:''}${can('comptable','promoteur')?`<button class="btn gold" onclick="A.payForm('${id}')">Encaisser</button>`:''}<button class="btn" onclick="A.close()">Fermer</button></div>`,true);drawQRs($('#modal'))};
+A.validate=async id=>{try{await upd('students',id,{status:'valide'});await audit('Inscription validée',sname(id));toast('Inscription validée ✓');renderNav();render();A.fiche(id)}catch(e){toast(e.message,1)}};
+A.studentForm=(id,pre)=>{const s=id?stu(id):(pre||{}),o=(k)=>esc(s[k]||'');
+ modal(`<h3>${id?'Modifier la fiche':'Nouvel élève'}</h3><p class="sub">Les doublons sont vérifiés avant l'enregistrement.</p><div class="f">
+ <div class="full"><label>Nom complet (nom, postnom, prénom)</label><input id="f_full_name" value="${o('full_name')}"></div>
+ <div><label>Sexe</label><select id="f_sex"><option></option><option ${s.sex==='Masculin'?'selected':''}>Masculin</option><option ${s.sex==='Féminin'?'selected':''}>Féminin</option></select></div>
+ <div><label>Date de naissance</label><input id="f_birth_date" type="date" value="${o('birth_date')}"></div>
+ <div><label>Lieu de naissance</label><input id="f_birth_place" value="${o('birth_place')}"></div>
+ <div><label>Classe</label><select id="f_class_id"><option value="">—</option>${D.classes.map(c=>`<option value="${c.id}" ${s.class_id===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select></div>
+ <div><label>École précédente</label><input id="f_prev_school" value="${o('prev_school')}"></div>
+ <div><label>N° permanent</label><input id="f_perm_number" value="${o('perm_number')}"></div>
+ <div><label>Nom du père</label><input id="f_father_name" value="${o('father_name')}"></div>
+ <div><label>Nom de la mère</label><input id="f_mother_name" value="${o('mother_name')}"></div>
+ <div><label>Téléphone du parent</label><input id="f_parent_phone" value="${o('parent_phone')}" inputmode="tel"></div>
+ <div><label>Adresse</label><input id="f_address" value="${o('address')}"></div>
+ <div class="full"><label style="display:flex;gap:8px;align-items:center;font-size:13.5px"><input type="checkbox" id="f_social_case" style="width:auto" ${s.social_case?'checked':''}> Cas social (gratuité)</label></div></div>
+ <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStudent('${id||''}',${pre&&pre._reg?`'${pre._reg}'`:'null'})">Enregistrer</button></div>`)};
+A.saveStudent=async(id,reg,force)=>{
+ const r={};['full_name','sex','birth_date','birth_place','class_id','prev_school','perm_number','father_name','mother_name','parent_phone','address'].forEach(k=>{r[k]=val('f_'+k)||null});r.social_case=$('#f_social_case').checked;
+ if(!r.full_name)return toast('Le nom est obligatoire.',1);
+ const ph=String(r.parent_phone||'').replace(/\D/g,'');if(r.parent_phone&&(ph.length<9||/^(\d)\1+$/.test(ph))&&!force)return A.warnConfirm("Le numéro de téléphone semble invalide. Enregistrer quand même ?",()=>A.saveStudent(id,reg,true));
+ const n=norm(r.full_name),dup=D.students.filter(s=>s.id!==id&&(norm(s.full_name)===n||(n.length>=8&&lev(norm(s.full_name),n)<=2)));
+ if(dup.length&&!force)return A.warnConfirm(`Un élève très semblable existe déjà : <b>${esc(dup.map(d=>d.full_name+' ('+clsLabel(cls(d.class_id))+')').join(', '))}</b>. S'agit-il de la même personne ?`,()=>A.saveStudent(id,reg,true),'Créer quand même');
+ try{if(id){await upd('students',id,r);await audit('Fiche modifiée',r.full_name)}else{r.status='a_verifier';r.created_by=S.uid;const s=await ins('students',r);await audit('Élève inscrit',s.full_name);
+   if(reg)await upd('online_registrations',reg,{processed:true,student_id:s.id})}
+  A.close();toast('Enregistré ✓');renderNav();render()}catch(e){toast("Erreur : "+e.message,1)}};
+A.warnConfirm=(html,fn,label='Enregistrer quand même')=>{window.__wc=fn;const d=document.createElement('div');d.className='mask';d.style.zIndex=80;d.innerHTML=`<div class="dlg"><h3>⚠ Vérification</h3><p style="line-height:1.6">${html}</p><div class="foot"><button class="btn" onclick="this.closest('.mask').remove()">Revenir</button><button class="btn gold" onclick="this.closest('.mask').remove();window.__wc()">${label}</button></div></div>`;document.body.appendChild(d)};
+
+/* ---------- inscriptions en ligne ---------- */
+P.online=()=>{const l=D.online_registrations.slice().sort((a,b)=>String(b.received_at).localeCompare(String(a.received_at)));
+ return head('Inscriptions en ligne','Les demandes envoyées par les parents depuis le site arrivent ici, sans Google Sheets ni Telegram.')+
+ `<div class="tw"><table><thead><tr><th>Reçue le</th><th>Élève</th><th>Classe demandée</th><th>Téléphone</th><th>État</th><th></th></tr></thead><tbody>${l.map(r=>{const p=r.payload||{};return `<tr><td>${fmtDate(r.received_at)}</td><td><b>${esc(p.full_name)}</b></td><td>${esc(p.class_label||'')}</td><td>${esc(p.parent_phone||'')}</td><td>${r.processed?chip('Traitée','ok'):chip('À traiter','warn')}</td><td class="r">${r.processed?'':`<button class="btn pri sm" onclick="A.treatReg('${r.id}')">Traiter</button> <button class="btn red sm" onclick="A.rejectReg('${r.id}')">Rejeter</button>`}</td></tr>`}).join('')||`<tr><td colspan="6">${none('Aucune demande.')}</td></tr>`}</tbody></table></div>`};
+A.treatReg=id=>{const r=byId('online_registrations',id),p=r.payload||{};const c=D.classes.find(c=>norm(clsLabel(c))===norm(p.class_label)||norm(c.name)===norm(p.class_label));A.studentForm(null,{...p,class_id:c?c.id:'',_reg:id})};
+A.rejectReg=async id=>{try{await upd('online_registrations',id,{processed:true});await audit('Demande rejetée',id);renderNav();render()}catch(e){toast(e.message,1)}};
+
+/* =====================================================================
+   PAIEMENTS, REÇUS, QR
+   ===================================================================== */
+Q.pay={q:'',m:''};
+P.paiements=()=>head('Paiements','Chaque paiement confirmé reçoit un numéro de reçu définitif.',can('comptable')?`<button class="btn gold" onclick="A.payForm()">＋ Encaisser</button>`:'')+
+ `<div class="tools"><input placeholder="Rechercher un élève, un reçu, un motif…" oninput="Q.pay.q=this.value;A.payList()" value="${esc(Q.pay.q)}"><input type="month" onchange="Q.pay.m=this.value;A.payList()" style="max-width:190px;flex:none"></div>
+ <div class="tw"><table><thead><tr><th>Date</th><th>Reçu</th><th>Élève</th><th>Motif</th><th class="r">Montant</th><th>État</th><th></th></tr></thead><tbody id="pyb"></tbody></table></div><p id="pyc" style="color:var(--mut)"></p>`;
+AFTER.paiements=()=>A.payList();
+A.payList=()=>{const q=norm(Q.pay.q);let l=D.payments.filter(p=>(!Q.pay.m||String(p.paid_on).slice(0,7)===Q.pay.m)&&(!q||norm([sname(p.student_id),p.reason,p.receipt_no].join(' ')).includes(q)||String(p.receipt_no||'').toLowerCase().includes(Q.pay.q.toLowerCase()))).sort((a,b)=>String(b.paid_on+b.created_at).localeCompare(a.paid_on+a.created_at));
+ const tot=l.filter(p=>p.status==='confirme').reduce((a,p)=>a+ +p.amount,0);
+ $('#pyb').innerHTML=l.slice(0,200).map(p=>`<tr><td>${fmtDate(p.paid_on)}</td><td>${esc(p.receipt_no||'—')}</td><td><b>${esc(sname(p.student_id))}</b></td><td>${esc(p.reason)}</td><td class="r"><b>${fc(p.amount)}</b></td><td>${p.status==='confirme'?chip('Confirmé','ok'):p.status==='annule'?chip('Annulé','bad'):chip('En attente','warn')}</td><td class="r">${p.status==='confirme'?`<button class="btn sm" onclick="A.receipt('${p.id}')">Reçu</button>`:''} ${p.status==='confirme'&&can('comptable')?`<button class="btn red sm" onclick="A.cancelPay('${p.id}')">Annuler</button>`:''}</td></tr>`).join('')||`<tr><td colspan="7">${none('Aucun paiement.')}</td></tr>`;
+ $('#pyc').innerHTML=`${l.length} paiement(s) · total confirmé : <b>${fc(tot)}</b>`};
+A.payForm=sid=>{if(!can('comptable','promoteur'))return;
+ const opts=D.students.filter(s=>s.status!=='refuse').sort((a,b)=>String(a.full_name).localeCompare(b.full_name,'fr'));
+ modal(`<h3>Encaisser un paiement</h3><p class="sub">Choisissez l'élève, le motif et le montant.</p><div class="f">
+ <div class="full"><label>Élève</label><input id="pf_q" placeholder="Taper pour filtrer…" oninput="A.payFilter()" style="margin-bottom:8px"><select id="pf_s" size="5" onchange="A.payAuto()">${opts.map(s=>`<option value="${s.id}" ${sid===s.id?'selected':''}>${esc(s.full_name)} — ${esc(clsLabel(cls(s.class_id)))}</option>`).join('')}</select></div>
+ <div><label>Motif</label><select id="pf_r" onchange="A.payAuto()">${REASONS.map(r=>`<option>${esc(r)}</option>`).join('')}</select></div>
+ <div><label>Montant (FC)</label><input id="pf_a" type="number" min="0" inputmode="numeric"></div>
+ <div><label>Mode de paiement</label><select id="pf_m"><option>Espèces</option><option>Mobile money</option><option>Banque</option></select></div>
+ <div><label>Date</label><input id="pf_d" type="date" value="${today()}"></div>
+ <div class="full" id="pf_w"></div></div>
+ <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.savePay()">Encaisser et générer le reçu</button></div>`);
+ if(sid){const m=MONTHS[Math.min(monthsElapsed(),10)-1];$('#pf_r').value='Frais mensuel — '+m}A.payAuto()};
+A.payFilter=()=>{const q=norm(val('pf_q'));[...$('#pf_s').options].forEach(o=>o.hidden=q&&!norm(o.text).includes(q))};
+A.payAuto=()=>{const sid=$('#pf_s').value,s=stu(sid),c=cls(s.class_id),k=levelKey(c),r=val('pf_r');let a='';
+ if(k){if(/^Frais mensuel/.test(r))a=rate('NIVEAU_'+k);else if(/^Frais de l/.test(r))a=rate('ETAT_'+k)}
+ if(a!=='')$('#pf_a').value=s.social_case&&/^Frais mensuel/.test(r)?0:a;
+ const w=[];if(s.social_case)w.push('Cas social : mensualité gratuite.');
+ if(sid&&D.payments.some(p=>p.student_id===sid&&p.status==='confirme'&&p.reason===r&&/Frais mensuel|tranche/.test(r)))w.push('⚠ Ce motif a déjà été payé pour cet élève : risque de doublon.');
+ $('#pf_w').innerHTML=w.length?`<div class="note">${w.join('<br>')}</div>`:''};
+A.savePay=async()=>{const sid=$('#pf_s').value,amount=+val('pf_a');if(!sid)return toast('Choisissez un élève.',1);if(!(amount>0))return toast('Le montant doit être supérieur à 0.',1);
+ if(amount>3000000&&!window.__okbig){return A.warnConfirm(`Le montant ${fc(amount)} est très élevé. Est-ce correct ?`,()=>{window.__okbig=1;A.savePay()},'Oui, confirmer')}
+ window.__okbig=0;
+ try{const p=await ins('payments',{student_id:sid,reason:val('pf_r'),amount,method:val('pf_m'),paid_on:val('pf_d')||today()});
+  const q=await upd('payments',p.id,{status:'confirme'});await audit('Paiement confirmé',q.receipt_no,sname(sid)+' · '+fc(amount));
+  A.close();toast('Paiement enregistré ✓');renderNav();render();A.receipt(q.id)}catch(e){toast("Erreur : "+e.message,1)}};
+A.cancelPay=async id=>{const m=prompt("Motif de l'annulation (obligatoire) :");if(!m||m.trim().length<5)return toast('Motif trop court : annulation non effectuée.',1);
+ try{await upd('payments',id,{status:'annule',cancel_reason:m.trim()});await audit('Paiement annulé',byId('payments',id).receipt_no,m);toast('Paiement annulé');render()}catch(e){toast(e.message,1)}};
+
+const DEFTPL={paper_mm:80,show_logo:true,show_qr:true,header:'COLLÈGE MERCI-DIEU',subheader:'Distinction · Docilité · Charité',fields:['date','student','class','reason','amount','amount_words','method','cashier'],footer:'Merci de votre confiance.',show_stamp_box:true};
+function receiptHTML(p,tpl){const t={...DEFTPL,...(tpl||getSetting('receipt_template')||{})},s=stu(p.student_id),c=cls(s.class_id),who=(byId('profiles',p.confirmed_by)||{}).full_name||S.name||'';
+ const rows={date:['Date',fmtDate(p.paid_on)],student:['Élève',s.full_name],class:['Classe',clsLabel(c)],reason:['Motif',p.reason],method:['Mode',p.method],cashier:['Caissier',who]};
+ const f=t.fields||[];
+ return `<div class="rcpt">${t.show_logo?'<img class="lg" src="logo.png" alt="">':''}<div class="rh">${esc(t.header)}</div><div class="rs">${esc(t.subheader)}</div><hr><div class="rn">REÇU N° ${esc(p.receipt_no||'—')}</div><hr>
+ ${['date','student','class','reason'].filter(k=>f.includes(k)).map(k=>`<div class="row"><span>${rows[k][0]}</span><span>${esc(rows[k][1])}</span></div>`).join('')}
+ ${f.includes('amount')?`<hr><div class="big">${fc(p.amount)}</div>`:''}
+ ${f.includes('amount_words')?`<div class="c" style="font-size:10.5px">${esc(cap(nf(+p.amount)))} francs congolais</div>`:''}
+ ${['method','cashier'].filter(k=>f.includes(k)).map(k=>`<div class="row"><span>${rows[k][0]}</span><span>${esc(rows[k][1])}</span></div>`).join('')}
+ ${t.show_qr&&p.qr_token?`<div class="rq" data-url="${esc(qrURL('p',p))}" data-size="96"></div><div class="c" style="font-size:9.5px">Scannez pour vérifier ce paiement</div>`:''}
+ ${t.show_stamp_box?'<div class="stamp">Cachet et signature</div>':''}<div class="ft">${esc(t.footer)}</div></div>`}
+A.receipt=id=>{const p=byId('payments',id);if(!p)return;
+ modal(`<h3>Reçu ${esc(p.receipt_no)}</h3><p class="sub">Format papier thermique 80 mm · imprimé ${p.print_count||0} fois</p><div class="rwrap">${receiptHTML(p)}</div>
+ <div class="foot">${can('comptable')?`<button class="btn pri" onclick="A.printReceipt('${id}')">🖨 Imprimer le reçu</button>`:`<span style="color:var(--mut);align-self:center;margin-right:auto">Seul le comptable-secrétaire imprime les reçus.</span>`}<button class="btn" onclick="A.close()">Fermer</button></div>`,false);drawQRs($('#modal'))};
+A.printReceipt=async id=>{try{const p=byId('payments',id);
+ if(LIVE){const {data,error}=await db.rpc('print_receipt',{p_id:id});if(error)throw error;Object.assign(p,data)}else{p.print_count=(p.print_count||0)+1;await audit(p.print_count>1?'Réimpression du reçu':'Impression du reçu',p.receipt_no,'n°'+p.print_count)}
+ printHTML(receiptHTML(p),'80mm auto')}catch(e){toast(e.message,1)}};
+function printHTML(html,size){const z=$('#printzone');z.innerHTML=`<style>@page{size:${size};margin:${size.startsWith('80')?'0':'8mm'}}</style>${html}`;drawQRs(z);document.body.classList.add('printing');setTimeout(()=>{window.print();setTimeout(()=>{document.body.classList.remove('printing');z.innerHTML=''},400)},250)}
+
+P.recus=()=>{const l=paidOK().sort((a,b)=>String(b.receipt_no).localeCompare(String(a.receipt_no)));
+ return head('Reçus','Tous les reçus émis. Seul le comptable-secrétaire peut les imprimer.')+`<div class="tw"><table><thead><tr><th>N° reçu</th><th>Date</th><th>Élève</th><th>Motif</th><th class="r">Montant</th><th>Impressions</th><th></th></tr></thead><tbody>${l.slice(0,300).map(p=>`<tr><td><b>${esc(p.receipt_no)}</b></td><td>${fmtDate(p.paid_on)}</td><td>${esc(sname(p.student_id))}</td><td>${esc(p.reason)}</td><td class="r">${fc(p.amount)}</td><td>${p.print_count||0}</td><td class="r"><button class="btn sm" onclick="A.receipt('${p.id}')">Voir</button></td></tr>`).join('')||`<tr><td colspan="7">${none('Aucun reçu.')}</td></tr>`}</tbody></table></div>`};
+
+/* ---------- soldes ---------- */
+Q.so={c:'',only:true};
+P.soldes=()=>{const n=monthsElapsed();return head('Soldes et arriérés',`Calcul : mensualité de la classe × ${n} mois écoulés depuis septembre, moins les mensualités payées. Les cas sociaux ne doivent rien.`,`<button class="btn line" onclick="A.exportSoldes()">⇩ Exporter</button>`)+
+ `<div class="tools"><select onchange="Q.so.c=this.value;A.soList()"><option value="">Toutes les classes</option>${D.classes.map(c=>`<option value="${c.id}">${esc(clsLabel(c))}</option>`).join('')}</select><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${Q.so.only?'checked':''} onchange="Q.so.only=this.checked;A.soList()"> Seulement les élèves en retard</label></div>
+ <div class="grid g3" id="sok" style="margin-bottom:16px"></div><div class="tw"><table><thead><tr><th>Élève</th><th>Classe</th><th class="r">Mensualité</th><th class="r">Attendu</th><th class="r">Payé</th><th class="r">Reste dû</th><th></th></tr></thead><tbody id="sob"></tbody></table></div>`};
+AFTER.soldes=()=>A.soList();
+const fSo=()=>soldes().filter(x=>(!Q.so.c||x.s.class_id===Q.so.c)&&(!Q.so.only||x.due>0)).sort((a,b)=>b.due-a.due);
+A.soList=()=>{const l=fSo(),t=l.reduce((a,x)=>a+Math.max(0,x.due),0);
+ $('#sok').innerHTML=kpi('Reste à percevoir',fc(t),'sur la sélection','red')+kpi('Élèves concernés',l.filter(x=>x.due>0).length,'en retard')+kpi('Taux de recouvrement',Math.round(100*l.reduce((a,x)=>a+Math.min(x.paid,x.expected),0)/Math.max(1,l.reduce((a,x)=>a+x.expected,0)))+' %','mensualités payées / attendues','gold');
+ $('#sob').innerHTML=l.slice(0,300).map(x=>`<tr class="cl" onclick="A.fiche('${x.s.id}')"><td><b>${esc(x.s.full_name)}</b></td><td>${esc(clsLabel(x.c))}</td><td class="r">${fc(x.monthly)}</td><td class="r">${fc(x.expected)}</td><td class="r">${fc(x.paid)}</td><td class="r">${x.due>0?chip(fc(x.due),'bad'):chip('À jour','ok')}</td><td></td></tr>`).join('')||`<tr><td colspan="7">${none('Aucun élève.')}</td></tr>`};
+A.exportSoldes=()=>csvDown('arrieres.csv',[['Élève','Classe','Mensualité','Attendu','Payé','Reste dû'],...fSo().map(x=>[x.s.full_name,clsLabel(x.c),x.monthly,x.expected,x.paid,x.due])]);
+
+/* ---------- caisse ---------- */
+P.caisse=()=>{const t=today(),l=paidOK().filter(p=>p.paid_on===t),tot=l.reduce((a,p)=>a+ +p.amount,0),done=D.cash_closings.find(c=>c.day===t);
+ return head('Clôture de caisse',"Comparez l'argent compté avec les reçus du jour.")+`<div class="grid g2"><div class="card"><h3>Aujourd'hui · ${fmtDate(t)}</h3><dl class="kv"><dt>Paiements confirmés</dt><dd>${l.length}</dd><dt>Total attendu en caisse</dt><dd style="font-size:20px">${fc(tot)}</dd></dl>
+ ${done?`<div class="note info" style="margin-top:16px">Caisse déjà clôturée : compté ${fc(done.counted_total)} · écart <b>${fc(done.counted_total-done.expected_total)}</b></div>`:
+ can('comptable')?`<div class="f" style="margin-top:16px"><div><label>Montant compté (FC)</label><input id="cc_a" type="number" oninput="A.ccDiff(${tot})"></div><div><label>Écart</label><input id="cc_d" disabled></div><div class="full"><label>Remarque</label><textarea id="cc_n" rows="2"></textarea></div></div><div style="margin-top:14px"><button class="btn pri" onclick="A.closeCash(${tot})">Clôturer la journée</button></div>`:'<p style="color:var(--mut)">Seul le comptable-secrétaire clôture la caisse.</p>'}</div>
+ <div class="card"><h3>Historique</h3><div class="tw"><table><thead><tr><th>Jour</th><th class="r">Attendu</th><th class="r">Compté</th><th class="r">Écart</th></tr></thead><tbody>${D.cash_closings.slice().sort((a,b)=>b.day.localeCompare(a.day)).slice(0,15).map(c=>{const e=c.counted_total-c.expected_total;return `<tr><td>${fmtDate(c.day)}</td><td class="r">${fc(c.expected_total)}</td><td class="r">${fc(c.counted_total)}</td><td class="r">${e===0?chip('0','ok'):chip(fc(e),'bad')}</td></tr>`}).join('')||`<tr><td colspan="4">${none('Aucune clôture.')}</td></tr>`}</tbody></table></div></div></div>`};
+A.ccDiff=t=>{const v=+val('cc_a');$('#cc_d').value=isNaN(v)?'':fc(v-t)};
+A.closeCash=async t=>{const v=val('cc_a');if(v==='')return toast('Entrez le montant compté.',1);
+ try{await ins('cash_closings',{day:today(),expected_total:t,counted_total:+v,note:val('cc_n'),closed_by:S.uid});await audit('Caisse clôturée',today(),'écart '+fc(+v-t));toast('Caisse clôturée ✓');render()}catch(e){toast(e.message,1)}};
+
+/* =====================================================================
+   PERSONNEL, AVANCES, SALAIRES
+   ===================================================================== */
+P.personnel=()=>head('Personnel','Enseignants et administration.',can('promoteur','direction')?`<button class="btn pri" onclick="A.staffForm()">＋ Ajouter</button>`:'')+
+ `<div class="tw"><table><thead><tr><th>Nom</th><th>Fonction</th><th>Section</th><th>Téléphone</th><th>Compte</th><th></th></tr></thead><tbody>${D.staff.map(s=>`<tr><td><b>${esc(s.full_name)}</b></td><td>${esc(s.function)}</td><td>${esc(s.section||'')}</td><td>${esc(s.phone||'')}</td><td>${s.profile_id?chip('Compte lié','ok'):chip('Sans compte')}</td><td class="r">${can('promoteur','direction')?`<button class="btn sm" onclick="A.staffForm('${s.id}')">Modifier</button>`:''}</td></tr>`).join('')||`<tr><td colspan="6">${none('Aucun membre du personnel.')}</td></tr>`}</tbody></table></div>`;
+A.staffForm=id=>{const s=id?byId('staff',id):{};
+ modal(`<h3>${id?'Modifier':'Nouveau membre du personnel'}</h3><div class="f" style="margin-top:14px"><div class="full"><label>Nom complet</label><input id="sf_n" value="${esc(s.full_name||'')}"></div><div><label>Fonction</label><input id="sf_f" value="${esc(s.function||'')}" list="fl"><datalist id="fl"><option>Directeur</option><option>Préfet des études</option><option>Enseignant Primaire</option><option>Enseignant Secondaire</option><option>Comptable-secrétaire</option></datalist></div><div><label>Section</label><input id="sf_s" value="${esc(s.section||'')}"></div><div><label>Téléphone</label><input id="sf_p" value="${esc(s.phone||'')}"></div><div><label>Compte utilisateur lié</label><select id="sf_u"><option value="">— aucun —</option>${D.profiles.map(p=>`<option value="${p.id}" ${s.profile_id===p.id?'selected':''}>${esc(p.full_name||p.id)} (${ROLES[p.role]})</option>`).join('')}</select></div></div>
+ <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStaff('${id||''}')">Enregistrer</button></div>`)};
+A.saveStaff=async id=>{const r={full_name:val('sf_n'),function:val('sf_f'),section:val('sf_s')||null,phone:val('sf_p')||null,profile_id:val('sf_u')||null};if(!r.full_name||!r.function)return toast('Nom et fonction obligatoires.',1);
+ try{id?await upd('staff',id,r):await ins('staff',r);await audit(id?'Personnel modifié':'Personnel ajouté',r.full_name);A.close();toast('Enregistré ✓');render()}catch(e){toast(e.message,1)}};
+
+const ADV={demandee:['Demandée — à signer','warn'],signee:['Signée — à verser','info'],versee:['Versée','ok'],refusee:['Refusée','bad']};
+P.avances=()=>{const me=D.staff.find(s=>s.profile_id===S.uid);
+ const l=D.salary_advances.slice().sort((a,b)=>String(b.requested_at).localeCompare(String(a.requested_at)));
+ let h=head('Avances sur salaire','Circuit : le professeur demande → la direction signe → le comptable-secrétaire verse.',can('professeur','direction','comptable','promoteur')&&(me||can('promoteur','direction'))?`<button class="btn pri" onclick="A.advForm()">＋ ${can('professeur')?'Demander une avance':'Nouvelle avance'}</button>`:'');
+ h+=`<div class="tw"><table><thead><tr><th>Date</th><th>Personnel</th><th class="r">Montant</th><th>Motif</th><th>Retenue sur</th><th>État</th><th></th></tr></thead><tbody>${l.map(a=>{const st=byId('staff',a.staff_id)||{};
+  const act=(a.status==='demandee'&&can('direction'))?`<button class="btn pri sm" onclick="A.advSet('${a.id}','signee')">✍ Signer</button> <button class="btn red sm" onclick="A.advSet('${a.id}','refusee')">Refuser</button>`:(a.status==='signee'&&can('comptable'))?`<button class="btn gold sm" onclick="A.advSet('${a.id}','versee')">Verser</button>`:'';
+  return `<tr><td>${fmtDate(a.requested_at)}</td><td><b>${esc(st.full_name||'—')}</b></td><td class="r">${fc(a.amount)}</td><td>${esc(a.reason||'')}</td><td>${esc(a.deduct_month||'')}</td><td>${chip(...ADV[a.status])}</td><td class="r">${act}</td></tr>`}).join('')||`<tr><td colspan="7">${none('Aucune avance.')}</td></tr>`}</tbody></table></div>`;
+ if(can('direction','promoteur')){h+=`<div class="card mt"><h3>Suivi par personne</h3><div class="tw"><table><thead><tr><th>Personnel</th><th>Avances versées</th><th class="r">Total</th><th></th></tr></thead><tbody>${D.staff.map(s=>{const v=D.salary_advances.filter(a=>a.staff_id===s.id&&a.status==='versee');return `<tr><td>${esc(s.full_name)}</td><td>${v.length}</td><td class="r">${fc(v.reduce((a,x)=>a+ +x.amount,0))}</td><td>${v.length?chip('A pris une avance','warn'):chip("N'a pas pris d'avance",'ok')}</td></tr>`}).join('')}</tbody></table></div></div>`}
+ return h};
+A.advForm=()=>{const me=D.staff.find(s=>s.profile_id===S.uid);
+ modal(`<h3>Demande d'avance sur salaire</h3><div class="f" style="margin-top:14px">${me&&can('professeur')?'':`<div class="full"><label>Bénéficiaire</label><select id="av_s">${D.staff.map(s=>`<option value="${s.id}">${esc(s.full_name)}</option>`).join('')}</select></div>`}<div><label>Montant (FC)</label><input id="av_a" type="number" min="1"></div><div><label>À retenir sur le mois de</label><select id="av_m">${MONTHS.map(m=>`<option>${m}</option>`).join('')}</select></div><div class="full"><label>Motif</label><input id="av_r"></div></div><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveAdv()">Envoyer la demande</button></div>`)};
+A.saveAdv=async()=>{const me=D.staff.find(s=>s.profile_id===S.uid),sid=(me&&can('professeur'))?me.id:val('av_s'),a=+val('av_a');if(!sid||!(a>0))return toast('Montant requis.',1);
+ try{await ins('salary_advances',{staff_id:sid,amount:a,reason:val('av_r'),deduct_month:val('av_m'),requested_at:new Date().toISOString()});await audit('Avance demandée',(byId('staff',sid)||{}).full_name,fc(a));A.close();toast('Demande envoyée ✓');renderNav();render()}catch(e){toast(e.message,1)}};
+A.advSet=async(id,st)=>{try{const patch={status:st};if(st==='signee'){patch.signed_by=S.uid;patch.signed_at=new Date().toISOString()}if(st==='versee'){patch.paid_by=S.uid;patch.paid_at=new Date().toISOString()}
+ await upd('salary_advances',id,patch);await audit('Avance '+ADV[st][0].split(' ')[0].toLowerCase(),'',fc(byId('salary_advances',id).amount));toast('Mis à jour ✓');renderNav();render()}catch(e){toast(e.message,1)}};
+
+Q.pm=MONTHS[Math.min(monthsElapsed(),10)-1];
+P.paie=()=>{const rows=D.staff.map(s=>{const b=(D.staff_pay.find(x=>x.staff_id===s.id)||{}).base_salary||0,ded=D.salary_advances.filter(a=>a.staff_id===s.id&&a.status==='versee'&&a.deduct_month===Q.pm).reduce((x,a)=>x+ +a.amount,0);return {s,b:+b,ded,net:+b-ded}});
+ return head('Salaires',"Salaire de base moins les avances versées à retenir sur le mois.",`<button class="btn line" onclick="A.exportPaie()">⇩ Exporter</button>`)+`<div class="tools"><select onchange="Q.pm=this.value;render()">${MONTHS.map(m=>`<option ${m===Q.pm?'selected':''}>${m}</option>`).join('')}</select></div>
+ <div class="tw"><table><thead><tr><th>Personnel</th><th>Fonction</th><th class="r">Salaire de base</th><th class="r">Avances à retenir</th><th class="r">Net à payer</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.s.full_name)}</b></td><td>${esc(r.s.function)}</td><td class="r">${fc(r.b)}</td><td class="r">${r.ded?chip('− '+fc(r.ded),'warn'):'—'}</td><td class="r"><b>${fc(r.net)}</b></td><td class="r"><button class="btn sm" onclick="A.baseForm('${r.s.id}')">Modifier la base</button></td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4" class="r"><b>Total à payer</b></td><td class="r"><b>${fc(rows.reduce((a,r)=>a+r.net,0))}</b></td><td></td></tr></tfoot></table></div>`};
+A.baseForm=id=>{const v=(D.staff_pay.find(x=>x.staff_id===id)||{}).base_salary||0;const n=prompt('Salaire de base de '+byId('staff',id).full_name+' (FC) :',v);if(n===null)return;const x=+n;if(isNaN(x)||x<0)return toast('Montant invalide.',1);
+ ups('staff_pay',{staff_id:id,base_salary:x},['staff_id']).then(()=>{audit('Salaire de base modifié',byId('staff',id).full_name);render()}).catch(e=>toast(e.message,1))};
+A.exportPaie=()=>csvDown('salaires-'+Q.pm+'.csv',[['Personnel','Fonction','Base','Avances','Net'],...D.staff.map(s=>{const b=+((D.staff_pay.find(x=>x.staff_id===s.id)||{}).base_salary||0),d=D.salary_advances.filter(a=>a.staff_id===s.id&&a.status==='versee'&&a.deduct_month===Q.pm).reduce((x,a)=>x+ +a.amount,0);return [s.full_name,s.function,b,d,b-d]})]);
+
+/* =====================================================================
+   CLASSES, PRÉSENCES, NOTES, HORAIRES
+   ===================================================================== */
+P.classes=()=>{const w=can('promoteur','direction'),m=can('promoteur','comptable');
+ return head('Classes et promotions','Effectifs, titulaires et passage à la classe suivante.',w?`<button class="btn pri" onclick="A.classForm()">＋ Nouvelle classe</button>`:'')+
+ `<div class="tw"><table><thead><tr><th>Classe</th><th>Section</th><th class="r">Effectif</th><th>Enseignants affectés</th><th></th></tr></thead><tbody>${D.classes.map(c=>{const t=D.teacher_classes.filter(x=>x.class_id===c.id).map(x=>(byId('profiles',x.teacher_id)||{}).full_name).filter(Boolean);return `<tr><td><b>${esc(clsLabel(c))}</b></td><td>${esc(c.section)}</td><td class="r">${D.students.filter(s=>s.class_id===c.id).length}</td><td>${t.map(n=>chip(n)).join(' ')||'—'}</td><td class="r">${w?`<button class="btn sm" onclick="A.assign('${c.id}')">Affecter</button>`:''}</td></tr>`}).join('')}</tbody></table></div>
+ ${m?`<div class="card mt"><h3>Passage à la classe suivante (rentrée)</h3><p style="color:var(--mut);margin-top:-6px">Choisissez la classe de départ et la classe d'arrivée : tous les élèves validés de la classe sont déplacés. Faites une sauvegarde avant.</p><div class="tools"><select id="pr_a">${D.classes.map(c=>`<option value="${c.id}">${esc(clsLabel(c))}</option>`).join('')}</select><select id="pr_b">${D.classes.map(c=>`<option value="${c.id}">${esc(clsLabel(c))}</option>`).join('')}</select><button class="btn gold" onclick="A.promote()">Faire passer</button></div></div>`:''}`};
+A.classForm=()=>modal(`<h3>Nouvelle classe</h3><div class="f" style="margin-top:14px"><div><label>Nom</label><input id="cf_n" placeholder="ex. 3ème Secondaire"></div><div><label>Section</label><select id="cf_s"><option>Maternelle</option><option>Primaire</option><option>Éducation de Base</option><option selected>Secondaire</option></select></div><div><label>Option</label><input id="cf_o" placeholder="ex. Électricité"></div><div><label>Année</label><input id="cf_y" value="2026-2027"></div></div><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveClass()">Créer</button></div>`);
+A.saveClass=async()=>{if(!val('cf_n'))return toast('Nom requis.',1);try{await ins('classes',{name:val('cf_n'),section:val('cf_s'),option:val('cf_o')||val('cf_s'),year:val('cf_y')});await audit('Classe créée',val('cf_n'));A.close();render()}catch(e){toast(e.message,1)}};
+A.assign=cid=>{const ts=D.profiles.filter(p=>p.role==='professeur'),cur=D.teacher_classes.filter(x=>x.class_id===cid).map(x=>x.teacher_id);
+ modal(`<h3>Affecter des enseignants</h3><p class="sub">${esc(clsLabel(cls(cid)))}</p>${ts.length?ts.map(p=>`<label style="display:flex;gap:10px;padding:8px 0"><input type="checkbox" class="as" value="${p.id}" ${cur.includes(p.id)?'checked':''}> ${esc(p.full_name||p.id)}</label>`).join(''):none('Aucun compte professeur. Créez-en dans Paramètres.')}<div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveAssign('${cid}')">Enregistrer</button></div>`)};
+A.saveAssign=async cid=>{const now=[...document.querySelectorAll('.as:checked')].map(x=>x.value),cur=D.teacher_classes.filter(x=>x.class_id===cid).map(x=>x.teacher_id);
+ try{for(const t of cur.filter(x=>!now.includes(x)))await delRow('teacher_classes',{teacher_id:t,class_id:cid});for(const t of now.filter(x=>!cur.includes(x))){if(LIVE){const {error}=await db.from('teacher_classes').insert({teacher_id:t,class_id:cid});if(error)throw error}D.teacher_classes.push({teacher_id:t,class_id:cid})}
+ await audit('Affectations modifiées',clsLabel(cls(cid)));A.close();toast('Enregistré ✓');render()}catch(e){toast(e.message,1)}};
+A.promote=async()=>{const a=val('pr_a'),b=val('pr_b');if(a===b)return toast('Choisissez deux classes différentes.',1);const l=D.students.filter(s=>s.class_id===a&&s.status==='valide');
+ A.warnConfirm(`Déplacer <b>${l.length}</b> élève(s) de <b>${esc(clsLabel(cls(a)))}</b> vers <b>${esc(clsLabel(cls(b)))}</b> ?`,async()=>{try{for(const s of l)await upd('students',s.id,{class_id:b});await audit('Passage de classe',clsLabel(cls(a))+' → '+clsLabel(cls(b)),l.length+' élèves');toast(l.length+' élèves déplacés ✓');render()}catch(e){toast(e.message,1)}},'Confirmer le passage')};
+
+const myClasses=()=>D.classes;
+Q.pr={c:'',d:today(),st:{}};
+P.presences=()=>{const cs=myClasses();if(!Q.pr.c||!cs.some(c=>c.id===Q.pr.c))Q.pr.c=(cs[0]||{}).id||'';
+ return head('Présences',can('professeur')?'Prenez les présences de vos classes.':'Consultation des présences.')+`<div class="tools"><select onchange="Q.pr.c=this.value;Q.pr.st={};render()">${cs.map(c=>`<option value="${c.id}" ${Q.pr.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select><input type="date" value="${Q.pr.d}" style="flex:none" onchange="Q.pr.d=this.value;Q.pr.st={};render()"></div><div id="prl"></div>`};
+AFTER.presences=()=>{const l=D.students.filter(s=>s.class_id===Q.pr.c&&s.status==='valide').sort((a,b)=>a.full_name.localeCompare(b.full_name,'fr')),w=can('professeur');
+ l.forEach(s=>{if(!Q.pr.st[s.id]){const a=D.attendance.find(x=>x.student_id===s.id&&x.day===Q.pr.d);Q.pr.st[s.id]=a?a.state:'present'}});
+ const c={present:0,absent:0,retard:0,excuse:0};l.forEach(s=>c[Q.pr.st[s.id]]++);
+ $('#prl').innerHTML=`<div class="pill-row" style="margin-bottom:12px">${chip(c.present+' présents','ok')}${chip(c.absent+' absents','bad')}${chip(c.retard+' en retard','warn')}${chip(c.excuse+' excusés','info')}</div><div class="tw"><table><tbody>${l.map(s=>`<tr><td><b>${esc(s.full_name)}</b></td><td class="r"><div class="seg">${[['present','p','Présent'],['absent','a','Absent'],['retard','t','Retard'],['excuse','e','Excusé']].map(([k,cl,t])=>`<button class="${Q.pr.st[s.id]===k?'on '+cl:''}" ${w?`onclick="Q.pr.st['${s.id}']='${k}';AFTER.presences()"`:'disabled'}>${t}</button>`).join('')}</div></td></tr>`).join('')||`<tr><td>${none('Aucun élève validé dans cette classe.')}</td></tr>`}</tbody></table></div>${w&&l.length?`<div style="margin-top:16px"><button class="btn pri" onclick="A.savePr()">Enregistrer les présences</button></div>`:''}`};
+A.savePr=async()=>{try{for(const s of D.students.filter(s=>s.class_id===Q.pr.c&&Q.pr.st[s.id]))await ups('attendance',{student_id:s.id,class_id:Q.pr.c,day:Q.pr.d,state:Q.pr.st[s.id],taken_by:S.uid},['student_id','day']);await audit('Présences enregistrées',clsLabel(cls(Q.pr.c)),Q.pr.d);toast('Présences enregistrées ✓')}catch(e){toast(e.message,1)}};
+
+Q.nt={c:'',p:'1er trimestre',s:'Mathématiques',m:20,tab:'saisie'};
+const PERIODS=['1er trimestre','2e trimestre','3e trimestre'];
+const pct=g=>100*g.score/g.max;
+P.notes=()=>{const cs=myClasses();if(!Q.nt.c||!cs.some(c=>c.id===Q.nt.c))Q.nt.c=(cs[0]||{}).id||'';
+ return head('Notes et résultats',can('professeur')?'Saisissez les notes de vos classes.':'Consultation des notes et des résultats.')+`<div class="tabs"><a class="${Q.nt.tab==='saisie'?'on':''}" onclick="Q.nt.tab='saisie';render()">${can('professeur')?'Saisie':'Notes'}</a><a class="${Q.nt.tab==='res'?'on':''}" onclick="Q.nt.tab='res';render()">Résultats et conseil de classe</a></div>
+ <div class="tools"><select onchange="Q.nt.c=this.value;render()">${cs.map(c=>`<option value="${c.id}" ${Q.nt.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select><select onchange="Q.nt.p=this.value;render()">${PERIODS.map(p=>`<option ${Q.nt.p===p?'selected':''}>${p}</option>`).join('')}</select>${Q.nt.tab==='saisie'?`<input list="subj" value="${esc(Q.nt.s)}" placeholder="Matière" style="flex:none;min-width:170px" onchange="Q.nt.s=this.value;render()"><datalist id="subj">${['Mathématiques','Français','Anglais','Sciences','Histoire','Géographie','Informatique','Religion','Éducation civique','Électricité'].map(s=>`<option>${s}</option>`).join('')}</datalist><input type="number" value="${Q.nt.m}" style="flex:none;max-width:110px" title="Note maximale" onchange="Q.nt.m=+this.value||20;render()">`:''}</div><div id="ntl"></div>`};
+AFTER.notes=()=>{const l=D.students.filter(s=>s.class_id===Q.nt.c&&s.status==='valide').sort((a,b)=>a.full_name.localeCompare(b.full_name,'fr'));
+ if(Q.nt.tab==='saisie'){const w=can('professeur');
+  $('#ntl').innerHTML=`<div class="tw"><table><thead><tr><th>Élève</th><th class="r">Note / ${Q.nt.m}</th></tr></thead><tbody>${l.map(s=>{const g=D.grades.find(x=>x.student_id===s.id&&x.period===Q.nt.p&&x.subject===Q.nt.s);return `<tr><td><b>${esc(s.full_name)}</b></td><td class="r"><input class="gi" data-s="${s.id}" type="number" step="0.5" min="0" max="${Q.nt.m}" value="${g?g.score:''}" ${w?'':'disabled'} style="width:100px;text-align:right;border:1.5px solid var(--line);border-radius:9px;padding:7px 9px"></td></tr>`}).join('')||`<tr><td colspan="2">${none('Aucun élève validé.')}</td></tr>`}</tbody></table></div>${w&&l.length?`<div style="margin-top:16px"><button class="btn pri" onclick="A.saveNotes()">Enregistrer les notes</button></div>`:''}`}
+ else{const r=l.map(s=>{const g=D.grades.filter(x=>x.student_id===s.id&&x.period===Q.nt.p);const avg=g.length?g.reduce((a,x)=>a+pct(x),0)/g.length:null;return {s,avg,n:g.length}}).sort((a,b)=>(b.avg??-1)-(a.avg??-1));
+  $('#ntl').innerHTML=`<div class="tw"><table><thead><tr><th>Rang</th><th>Élève</th><th class="r">Matières</th><th class="r">Moyenne</th><th>Décision</th><th></th></tr></thead><tbody>${r.map((x,i)=>`<tr><td>${x.avg===null?'—':i+1}</td><td><b>${esc(x.s.full_name)}</b></td><td class="r">${x.n}</td><td class="r">${x.avg===null?'—':x.avg.toFixed(1)+' %'}</td><td>${x.avg===null?'':x.avg>=50?chip('Admis','ok'):chip('En difficulté','bad')}</td><td class="r"><button class="btn sm" onclick="A.bulletin('${x.s.id}')">Bulletin</button></td></tr>`).join('')||`<tr><td colspan="6">${none('Aucun élève.')}</td></tr>`}</tbody></table></div><p style="color:var(--mut);margin-top:10px">Seuil indicatif de réussite : 50 %. La décision finale revient au conseil de classe.</p>`}};
+A.saveNotes=async()=>{try{let n=0;for(const i of document.querySelectorAll('.gi')){if(i.value==='')continue;const sc=+i.value;if(sc<0||sc>Q.nt.m){toast('Note invalide : '+sc+' (max '+Q.nt.m+')',1);return}
+ const ex=D.grades.find(x=>x.student_id===i.dataset.s&&x.period===Q.nt.p&&x.subject===Q.nt.s),row={student_id:i.dataset.s,class_id:Q.nt.c,period:Q.nt.p,subject:Q.nt.s,score:sc,max_score:Q.nt.m};
+ if(ex){if(+ex.score!==sc||+ex.max_score!==Q.nt.m)await upd('grades',ex.id,{score:sc,max_score:Q.nt.m})}else await ins('grades',{...row,entered_by:S.uid,entered_at:new Date().toISOString()});n++}
+ await audit('Notes enregistrées',clsLabel(cls(Q.nt.c)),Q.nt.s+' · '+Q.nt.p);toast(n+' note(s) enregistrée(s) ✓')}catch(e){toast(e.message,1)}};
+A.bulletin=id=>{const s=stu(id),g=D.grades.filter(x=>x.student_id===id),subs=[...new Set(g.map(x=>x.subject))];
+ const cell=(sub,p)=>{const x=g.find(y=>y.subject===sub&&y.period===p);return x?`${x.score}/${x.max_score}`:'—'};
+ const avg=p=>{const l=g.filter(x=>x.period===p);return l.length?(l.reduce((a,x)=>a+pct(x),0)/l.length).toFixed(1)+' %':'—'};
+ const html=`<div class="a4"><div style="display:flex;gap:16px;align-items:center;border-bottom:3px solid #1f7a2e;padding-bottom:10px"><img src="logo.png" style="width:80px;height:80px"><div><h2 style="margin:0">COLLÈGE MERCI-DIEU</h2><div>Distinction · Docilité · Charité</div></div><div style="margin-left:auto;font-weight:bold;font-size:18px">BULLETIN SCOLAIRE</div></div>
+ <p><b>Élève :</b> ${esc(s.full_name)}<br><b>Classe :</b> ${esc(clsLabel(cls(s.class_id)))} &nbsp; <b>Année :</b> ${esc(cls(s.class_id).year||'')}</p>
+ <table style="width:100%;border-collapse:collapse"><thead><tr><th>Matière</th>${PERIODS.map(p=>`<th>${p}</th>`).join('')}</tr></thead><tbody>${subs.map(m=>`<tr><td>${esc(m)}</td>${PERIODS.map(p=>`<td style="text-align:center">${cell(m,p)}</td>`).join('')}</tr>`).join('')||'<tr><td colspan="4">Aucune note</td></tr>'}<tr><td><b>Moyenne</b></td>${PERIODS.map(p=>`<td style="text-align:center"><b>${avg(p)}</b></td>`).join('')}</tr></tbody></table>
+ <p style="margin-top:40px;display:flex;justify-content:space-between"><span>Le titulaire</span><span>Le Directeur</span></p><p style="color:#888;font-size:11px">Modèle provisoire — le format officiel du ministère pourra être intégré.</p></div>`;
+ modal(`<div style="overflow:auto;background:#e9eeea;padding:12px;border-radius:12px"><div style="transform-origin:top left">${html}</div></div><div class="foot"><button class="btn pri" onclick="A.printBull('${id}')">🖨 Imprimer</button><button class="btn" onclick="A.close()">Fermer</button></div>`,true);window.__bul=html};
+A.printBull=()=>printHTML(window.__bul,'A4');
+
+Q.tt={c:''};
+P.horaires=()=>{const cs=myClasses();if(!Q.tt.c||!cs.some(c=>c.id===Q.tt.c))Q.tt.c=(cs[0]||{}).id||'';const DAYS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],w=can('promoteur','direction');
+ const l=D.timetable.filter(x=>x.class_id===Q.tt.c);
+ return head('Emplois du temps','',w?`<button class="btn pri" onclick="A.ttForm()">＋ Ajouter un cours</button>`:'')+`<div class="tools"><select onchange="Q.tt.c=this.value;render()">${cs.map(c=>`<option value="${c.id}" ${Q.tt.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select></div>
+ <div class="grid g3">${DAYS.map(d=>`<div class="card"><h3>${d}</h3>${l.filter(x=>x.day===d).sort((a,b)=>a.start_time.localeCompare(b.start_time)).map(x=>`<div style="padding:9px 0;border-bottom:1px solid #eff3f0"><b>${String(x.start_time).slice(0,5)} – ${String(x.end_time).slice(0,5)}</b> · ${esc(x.subject)}<br><small style="color:var(--mut)">${esc((byId('profiles',x.teacher_id)||{}).full_name||'')}</small>${w?` <a style="float:right;color:var(--red);cursor:pointer" onclick="A.ttDel('${x.id}')">✕</a>`:''}</div>`).join('')||'<div style="color:var(--mut)">Aucun cours</div>'}</div>`).join('')}</div>`};
+A.ttForm=()=>modal(`<h3>Ajouter un cours</h3><div class="f" style="margin-top:14px"><div><label>Jour</label><select id="tt_d">${['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'].map(d=>`<option>${d}</option>`).join('')}</select></div><div><label>Matière</label><input id="tt_s"></div><div><label>Début</label><input id="tt_a" type="time" value="07:30"></div><div><label>Fin</label><input id="tt_b" type="time" value="08:20"></div><div class="full"><label>Enseignant</label><select id="tt_t"><option value="">—</option>${D.profiles.filter(p=>p.role==='professeur').map(p=>`<option value="${p.id}">${esc(p.full_name)}</option>`).join('')}</select></div></div><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveTT()">Ajouter</button></div>`);
+A.saveTT=async()=>{if(!val('tt_s'))return toast('Matière requise.',1);if(val('tt_b')<=val('tt_a'))return toast("L'heure de fin doit suivre le début.",1);
+ const clash=D.timetable.find(x=>x.day===val('tt_d')&&(x.class_id===Q.tt.c||(val('tt_t')&&x.teacher_id===val('tt_t')))&&x.start_time<val('tt_b')&&x.end_time>val('tt_a'));
+ const go=async()=>{try{await ins('timetable',{class_id:Q.tt.c,teacher_id:val('tt_t')||null,day:val('tt_d'),start_time:val('tt_a'),end_time:val('tt_b'),subject:val('tt_s')});A.close();render()}catch(e){toast(e.message,1)}};
+ clash?A.warnConfirm('Ce cours chevauche un cours existant (même classe ou même enseignant). Ajouter quand même ?',go):go()};
+A.ttDel=async id=>{try{await delRow('timetable',{id});render()}catch(e){toast(e.message,1)}};
+
+/* =====================================================================
+   IMPORT
+   ===================================================================== */
+const IMP_FIELDS=[['full_name','Nom complet'],['sex','Sexe'],['birth_date','Date de naissance'],['birth_place','Lieu de naissance'],['class','Classe'],['father_name','Père'],['mother_name','Mère'],['parent_phone','Téléphone'],['address','Adresse'],['prev_school','École précédente']];
+const HINT={full_name:['nom','eleve','name'],sex:['sexe','genre'],birth_date:['naissance','date'],birth_place:['lieu'],class:['classe','niveau'],father_name:['pere'],mother_name:['mere'],parent_phone:['tel','phone','contact'],address:['adresse'],prev_school:['ecole','provenance']};
+let IMP=null;
+P.import=()=>head('Importer des données',"Reprenez les élèves de votre ancien site ou classeur sans tout recopier.")+
+ `<div class="card"><h3>1. Choisissez le fichier</h3><p style="color:var(--mut);margin-top:-6px">Dans Google Sheets : <b>Fichier → Télécharger → Excel (.xlsx)</b> ou CSV. Chaque colonne sera reconnue automatiquement, vous pourrez la corriger avant l'import.</p><input type="file" id="impf" accept=".xlsx,.xls,.csv" onchange="A.impRead(this.files[0])"></div><div id="impb"></div>`;
+A.impRead=f=>{if(!f)return;if(typeof XLSX==='undefined')return toast("Le lecteur de fichiers n'est pas chargé (connexion internet requise).",1);
+ const r=new FileReader();r.onload=e=>{try{const wb=XLSX.read(e.target.result,{type:'array',cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''}).filter(r=>r.some(c=>String(c).trim()));
+  if(rows.length<2)return toast('Le fichier est vide.',1);IMP={head:rows[0].map(String),rows:rows.slice(1),map:{}};
+  IMP.head.forEach((h,i)=>{const n=norm(h).replace(/ /g,'');for(const [k,hs] of Object.entries(HINT))if(!IMP.map[k]&&hs.some(x=>n.includes(x)))IMP.map[k]=i});A.impShow()}catch(err){toast('Fichier illisible : '+err.message,1)}};r.readAsArrayBuffer(f)};
+function impRows(){const g=k=>r=>IMP.map[k]!==undefined?String(r[IMP.map[k]]||'').trim():'';const ex=new Set(D.students.map(s=>norm(s.full_name))),seen=new Set(),out=[];
+ for(const r of IMP.rows){const o={};IMP_FIELDS.forEach(([k])=>o[k]=g(k)(r));if(!o.full_name)continue;const n=norm(o.full_name);o._dup=ex.has(n)?'déjà dans l\'application':seen.has(n)?'doublon dans le fichier':'';seen.add(n);
+  const c=D.classes.find(c=>norm(clsLabel(c))===norm(o.class)||norm(c.name)===norm(o.class));o._cls=c?c.id:'';
+  const d=o.birth_date;if(d){const m=d.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);o.birth_date=m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:(/^\d{4}-\d{2}-\d{2}/.test(d)?d.slice(0,10):'')}
+  out.push(o)}return out}
+A.impShow=()=>{const rows=impRows(),dup=rows.filter(r=>r._dup).length,nocls=rows.filter(r=>!r._cls).length;
+ $('#impb').innerHTML=`<div class="card mt"><h3>2. Vérifiez la correspondance des colonnes</h3><div class="f">${IMP_FIELDS.map(([k,l])=>`<div><label>${l}</label><select onchange="IMP.map['${k}']=this.value===''?undefined:+this.value;A.impShow()"><option value="">— ignorer —</option>${IMP.head.map((h,i)=>`<option value="${i}" ${IMP.map[k]===i?'selected':''}>${esc(h)}</option>`).join('')}</select></div>`).join('')}</div></div>
+ <div class="card mt"><h3>3. Aperçu</h3><div class="pill-row" style="margin-bottom:12px">${chip(rows.length+' élèves lus','ok')}${dup?chip(dup+' doublon(s) ignoré(s)','warn'):''}${nocls?chip(nocls+' sans classe reconnue','info'):''}</div>
+ <div class="tw" style="max-height:340px"><table><thead><tr><th>Nom</th><th>Sexe</th><th>Naissance</th><th>Classe</th><th>Téléphone</th><th></th></tr></thead><tbody>${rows.slice(0,40).map(r=>`<tr><td>${esc(r.full_name)}</td><td>${esc(r.sex)}</td><td>${esc(r.birth_date)}</td><td>${r._cls?esc(clsLabel(cls(r._cls))):chip(r.class||'—','warn')}</td><td>${esc(r.parent_phone)}</td><td>${r._dup?chip(r._dup,'warn'):''}</td></tr>`).join('')}</tbody></table></div>
+ <div style="margin-top:16px"><button class="btn pri" onclick="A.impGo()">Importer ${rows.filter(r=>!r._dup).length} élèves</button></div></div>`};
+A.impGo=async()=>{const rows=impRows().filter(r=>!r._dup);if(!rows.length)return toast('Rien à importer.',1);
+ try{const recs=rows.map(r=>({full_name:r.full_name,sex:/^f/i.test(r.sex)?'Féminin':/^m/i.test(r.sex)?'Masculin':null,birth_date:r.birth_date||null,birth_place:r.birth_place||null,class_id:r._cls||null,father_name:r.father_name||null,mother_name:r.mother_name||null,parent_phone:r.parent_phone||null,address:r.address||null,prev_school:r.prev_school||null,status:'a_verifier',created_by:S.uid}));
+  if(LIVE){for(let i=0;i<recs.length;i+=200){const {data,error}=await db.from('students').insert(recs.slice(i,i+200)).select();if(error)throw error;D.students.push(...data)}}else recs.forEach(r=>{const o={id:uid(),qr_token:Math.random().toString(36).slice(2,18),...r};D.students.push(o)});
+  dirty();await audit('Import',"fichier d'élèves",recs.length+' élèves');toast(recs.length+' élèves importés ✓ — ils sont « à vérifier »');IMP=null;renderNav();go('eleves')}catch(e){toast('Erreur : '+e.message,1)}};
+
+/* =====================================================================
+   PARAMÈTRES
+   ===================================================================== */
+Q.pa={tab:'recu'};
+P.params=()=>{const T=[['recu','Forme du reçu'],['tarifs','Tarifs'],...(can('promoteur')?[['users','Utilisateurs'],['save','Sauvegarde']]:[])];if(!T.some(t=>t[0]===Q.pa.tab))Q.pa.tab='recu';
+ return head('Paramètres')+`<div class="tabs">${T.map(t=>`<a class="${Q.pa.tab===t[0]?'on':''}" onclick="Q.pa.tab='${t[0]}';render()">${t[1]}</a>`).join('')}</div><div id="pab"></div>`};
+AFTER.params=()=>{const b=$('#pab'),t=Q.pa.tab;
+ if(t==='recu'){const tp={...DEFTPL,...(getSetting('receipt_template')||{})};window.__tp=tp;
+  const sample=paidOK()[0]||{receipt_no:'MD-REC-000001',student_id:(D.students[0]||{}).id,reason:'Frais mensuel — Octobre',amount:25000,method:'Espèces',paid_on:today(),qr_token:'apercu'};
+  b.innerHTML=`<div class="grid g2"><div class="card"><h3>Modifier le reçu</h3><div class="f"><div class="full"><label>En-tête</label><input id="rt_h" value="${esc(tp.header)}" oninput="A.rtPrev()"></div><div class="full"><label>Sous-titre</label><input id="rt_s" value="${esc(tp.subheader)}" oninput="A.rtPrev()"></div><div class="full"><label>Pied de page</label><input id="rt_f" value="${esc(tp.footer)}" oninput="A.rtPrev()"></div></div>
+  <p style="margin:18px 0 8px;font-weight:700">Informations à afficher</p><div class="pill-row">${[['date','Date'],['student','Élève'],['class','Classe'],['reason','Motif'],['amount','Montant'],['amount_words','Montant en lettres'],['method','Mode de paiement'],['cashier','Caissier']].map(([k,l])=>`<label class="chip" style="cursor:pointer;padding:7px 12px"><input type="checkbox" class="rtf" value="${k}" ${tp.fields.includes(k)?'checked':''} onchange="A.rtPrev()"> ${l}</label>`).join('')}</div>
+  <div class="pill-row" style="margin-top:14px">${[['rt_l','Logo',tp.show_logo],['rt_q','Code QR',tp.show_qr],['rt_c','Case cachet',tp.show_stamp_box]].map(([i,l,v])=>`<label class="chip" style="cursor:pointer;padding:7px 12px"><input type="checkbox" id="${i}" ${v?'checked':''} onchange="A.rtPrev()"> ${l}</label>`).join('')}</div>
+  <div style="margin-top:20px"><button class="btn pri" onclick="A.rtSave()">Enregistrer</button></div></div>
+  <div class="card"><h3>Aperçu avant impression (80 mm)</h3><div class="rwrap" id="rtp"></div></div></div>`;window.__sample=sample;A.rtPrev()}
+ else if(t==='tarifs'){b.innerHTML=`<div class="card"><h3>Tarifs en vigueur</h3><div class="note" style="margin-bottom:14px">Ces montants viennent de votre classeur : vérifiez-les.</div><div class="tw"><table><tbody>${D.fee_rates.map(r=>`<tr><td>${esc(r.label)}</td><td class="r"><b>${fc(r.amount)}</b></td><td class="r">${can('promoteur')?`<button class="btn sm" onclick="A.rateEdit('${r.key}')">Modifier</button>`:''}</td></tr>`).join('')}</tbody></table></div></div>`}
+ else if(t==='users'){b.innerHTML=`<div class="note info" style="margin-bottom:16px">Pour créer un compte : dans Supabase → <b>Authentication → Users → Add user</b> (adresse = identifiant<b>@merci-dieu.app</b> + mot de passe). Il apparaît ici « inactif » : choisissez son rôle puis activez-le.</div><div class="tw"><table><thead><tr><th>Nom</th><th>Rôle</th><th>Actif</th><th></th></tr></thead><tbody>${D.profiles.map(p=>`<tr><td><input id="u_n_${p.id}" value="${esc(p.full_name||'')}" style="border:1.5px solid var(--line);border-radius:9px;padding:7px 9px"></td><td><select id="u_r_${p.id}" style="border:1.5px solid var(--line);border-radius:9px;padding:7px 9px">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${p.role===k?'selected':''}>${v}</option>`).join('')}</select></td><td><input type="checkbox" id="u_a_${p.id}" ${p.active?'checked':''}></td><td class="r"><button class="btn sm pri" onclick="A.saveUser('${p.id}')">Enregistrer</button></td></tr>`).join('')}</tbody></table></div>`}
+ else{b.innerHTML=`<div class="card"><h3>Sauvegarde</h3><p style="color:var(--mut)">Téléchargez une copie complète des données de l'école. Conservez-la hors de l'ordinateur de l'école.</p><button class="btn pri" onclick="A.backup()">⇩ Télécharger la sauvegarde</button></div>`}};
+A.rtTpl=()=>({paper_mm:80,header:val('rt_h'),subheader:val('rt_s'),footer:val('rt_f'),fields:[...document.querySelectorAll('.rtf:checked')].map(x=>x.value),show_logo:$('#rt_l').checked,show_qr:$('#rt_q').checked,show_stamp_box:$('#rt_c').checked});
+A.rtPrev=()=>{$('#rtp').innerHTML=receiptHTML(window.__sample,A.rtTpl());drawQRs($('#rtp'))};
+A.rtSave=async()=>{try{await ups('settings',{key:'receipt_template',value:A.rtTpl()},['key']);await audit('Forme du reçu modifiée');toast('Forme du reçu enregistrée ✓')}catch(e){toast(e.message,1)}};
+A.rateEdit=k=>{const r=D.fee_rates.find(x=>x.key===k),n=prompt(r.label+' (FC) :',r.amount);if(n===null)return;const v=+n;if(isNaN(v)||v<0)return toast('Montant invalide.',1);
+ (async()=>{try{if(LIVE){const {error}=await db.from('fee_rates').update({amount:v}).eq('key',k);if(error)throw error}r.amount=v;dirty();await audit('Tarif modifié',r.label,fc(v));render()}catch(e){toast(e.message,1)}})()};
+A.saveUser=async id=>{try{await upd('profiles',id,{full_name:val('u_n_'+id),role:val('u_r_'+id),active:$('#u_a_'+id).checked});await audit('Compte modifié',val('u_n_'+id));toast('Compte mis à jour ✓')}catch(e){toast(e.message,1)}};
+A.backup=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({date:new Date().toISOString(),data:D},null,1)],{type:'application/json'}));a.download='sauvegarde-merci-dieu-'+today()+'.json';a.click();audit('Sauvegarde téléchargée')};
+
+P.journal=()=>head('Journal des opérations','Qui a fait quoi, et quand.')+`<div class="tw"><table><thead><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Référence</th><th>Détail</th></tr></thead><tbody>${D.audit_log.slice().sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,300).map(l=>`<tr><td style="white-space:nowrap">${new Date(l.at).toLocaleString('fr-FR')}</td><td>${esc((byId('profiles',l.user_id)||{}).full_name||'—')}</td><td><b>${esc(l.action)}</b></td><td>${esc(l.ref||'')}</td><td>${esc(l.detail||'')}</td></tr>`).join('')||`<tr><td colspan="5">${none('Journal vide.')}</td></tr>`}</tbody></table></div>`;
+
+/* =====================================================================
+   ASSISTANT (local : ne voit que les données autorisées au rôle)
+   ===================================================================== */
+const SUG={promoteur:['Y a-t-il des doublons ?','Qui a des arriérés ?','Contrôler les données'],direction:['Y a-t-il des doublons ?','Avances à signer','Contrôler les données'],comptable:['Qui a des arriérés ?','Y a-t-il des doublons ?','Contrôler les données'],professeur:['Mes classes','Qui est absent aujourd\'hui ?']};
+function findStudents(q){const qt=norm(q).split(' ').filter(w=>w.length>1);if(!qt.length)return[];
+ return D.students.map(s=>{const st=norm(s.full_name).split(' ');let sc=0;for(const t of qt){let b=0;for(const w of st){if(w===t)b=Math.max(b,2);else if(w.startsWith(t)&&t.length>=3)b=Math.max(b,1.5);else if(t.length>=4&&lev(w,t)<=1)b=Math.max(b,1.2);else if(t.length>=6&&lev(w,t)<=2)b=Math.max(b,.8)}sc+=b}return {s,sc:sc/qt.length}}).filter(x=>x.sc>=.8).sort((a,b)=>b.sc-a.sc).slice(0,6).map(x=>x.s)}
+function say(t,me){const c=$('#chat');const d=document.createElement('div');d.className='msg '+(me?'me':'bot');d.innerHTML=t;c.appendChild(d);c.scrollTop=c.scrollHeight}
+function brain(q){const n=norm(q),raw=q.toLowerCase();const stl=l=>l.length?'<ul>'+l.map(s=>`<li><a onclick="A.fiche('${s.id}')">${esc(s.full_name)}</a> — ${esc(clsLabel(cls(s.class_id)))}</li>`).join('')+'</ul>':'';
+ if(/doublon/.test(raw)){const d=dupes();return d.length?`J'ai trouvé <b>${d.length}</b> doublon(s) possible(s) :<ul>${d.slice(0,8).map(p=>`<li><a onclick="A.fiche('${p.a.id}')">${esc(p.a.full_name)}</a> ↔ <a onclick="A.fiche('${p.b.id}')">${esc(p.b.full_name)}</a></li>`).join('')}</ul>Ouvrez chaque fiche pour vérifier avant de corriger.`:"Aucun doublon détecté dans les élèves que je peux voir."}
+ if(/contr[oô]l|erreur|faute|v[ée]rifi|anomal/.test(raw)){const q2=quality();if(!q2.length)return "Tout semble cohérent ✓";const g={};q2.forEach(x=>(g[x.k]=g[x.k]||[]).push(x));return `<b>${q2.length}</b> point(s) à vérifier :<ul>${Object.entries(g).map(([k,v])=>`<li>${k} : <b>${v.length}</b> — ${v.slice(0,3).map(x=>`<a onclick="A.fiche('${x.id}')">${esc(x.t)}</a>`).join(', ')}${v.length>3?'…':''}</li>`).join('')}</ul>`}
+ if(/arri[ée]r|impay|doit|retard de paiement|dette/.test(raw)){if(!can('promoteur','comptable'))return "Les informations de paiement ne sont pas accessibles avec votre rôle.";const l=soldes().filter(x=>x.due>0).sort((a,b)=>b.due-a.due);return l.length?`<b>${l.length}</b> élève(s) en retard, total <b>${fc(l.reduce((a,x)=>a+x.due,0))}</b>. Les plus élevés :<ul>${l.slice(0,6).map(x=>`<li><a onclick="A.fiche('${x.s.id}')">${esc(x.s.full_name)}</a> — ${fc(x.due)}</li>`).join('')}</ul>`:"Personne n'est en retard sur les mensualités ✓"}
+ if(/avance/.test(raw)){const a=D.salary_advances.filter(x=>x.status==='demandee'),b=D.salary_advances.filter(x=>x.status==='signee');return `${a.length} avance(s) à signer par la direction, ${b.length} signée(s) à verser par le comptable-secrétaire.`}
+ if(/absent/.test(raw)){const a=D.attendance.filter(x=>x.day===today()&&x.state==='absent');return a.length?`Absents aujourd'hui :<ul>${a.map(x=>`<li>${esc(sname(x.student_id))}</li>`).join('')}</ul>`:"Aucun absent enregistré aujourd'hui."}
+ if(/combien|effectif|nombre/.test(raw)){const m={};D.students.forEach(s=>{const l=clsLabel(cls(s.class_id));m[l]=(m[l]||0)+1});return `<b>${D.students.length}</b> élèves.<ul>${Object.entries(m).map(([k,v])=>`<li>${esc(k)} : ${v}</li>`).join('')}</ul>`}
+ if(/classe/.test(raw)&&can('professeur'))return 'Vos classes : '+D.classes.map(c=>esc(clsLabel(c))).join(', ');
+ const f=findStudents(q.replace(/cherche|trouve|qui est|o[uù] est|fiche de|élève/gi,''));if(f.length)return `J'ai trouvé :${stl(f)}`;
+ return "Je peux : <ul><li>retrouver un élève (même mal orthographié)</li><li>repérer les doublons et les erreurs de saisie</li><li>lister les arriérés, avances, absents, effectifs</li></ul>"}
+A.assistant=()=>{const d=$('#drawer');d.classList.toggle('open');if(d.classList.contains('open')){$('#asRole').textContent=ROLES[S.role];if(!$('#chat').children.length)say(`Bonjour ${esc((S.name||'').split(' ')[0])}. Je suis votre assistant : je vous aide à éviter les erreurs et les doublons, et à retrouver un nom rapidement. Je ne vois que ce que votre rôle permet.`);$('#sugs').innerHTML=(SUG[S.role]||[]).map(s=>`<button onclick="A.ask(null,'${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');setTimeout(()=>$('#askIn').focus(),250)}};
+A.ask=(e,t)=>{if(e)e.preventDefault();const q=t||val('askIn');if(!q)return;$('#askIn').value='';say(esc(q),1);setTimeout(()=>say(brain(q)),250)};
+
+/* =====================================================================
+   DÉMARRAGE
+   ===================================================================== */
+A.logout=async()=>{if(LIVE){await db.auth.signOut();location.href='connexion.html'}else location.href='app.html?demo=1&r='+Date.now()};
+function start(){$('#boot').hidden=true;$('#app').hidden=false;$('#fab').hidden=false;$('#demobar').hidden=LIVE;
+ $('#av').textContent=(S.name||'?').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();$('#meName').textContent=S.name||'';$('#meRole').textContent=ROLES[S.role];
+ const h=location.hash.slice(1);go(allowed(h)?h:'dash')}
+function bootDemo(){
+ $('#boot').innerHTML=`<div class="boot"><div class="box"><img src="logo.png" alt=""><h1>Merci-Dieu Smart School</h1><p>Démonstration avec des données fictives. Choisissez un rôle pour voir ce qu'il voit.</p><div class="roles">
+ ${[['promoteur','👑','Promoteur','Voit tout, sans exception'],['direction','🏫','Direction','Élèves, personnel, avances — sans la caisse'],['comptable','🧾','Comptable-secrétaire','Inscriptions, paiements, reçus'],['professeur','📚','Professeur','Ses classes : présences et notes']].map(([k,i,t,d])=>`<button onclick="A.demo('${k}')"><i>${i}</i><b>${t}</b><small>${d}</small></button>`).join('')}</div></div></div>`}
+A.demo=async role=>{const who={promoteur:['p-promo','Promoteur Démo'],direction:['p-dir','Directeur Démo'],comptable:['p-comp','Caissière Démo'],professeur:['p-prof','Professeur Démo']}[role];S={role,uid:who[0],name:who[1]};seedDemo();demoRestrict();await loadAll();start()};
+(async()=>{
+ if('serviceWorker' in navigator&&LIVE)navigator.serviceWorker.register('sw.js').catch(()=>{});
+ if(LIVE){const {data}=await db.auth.getSession();if(!data.session){location.href='connexion.html';return}
+  const {data:prof}=await db.from('profiles').select('*').eq('id',data.session.user.id).single();
+  if(!prof||!prof.active){await db.auth.signOut();location.href='connexion.html';return}
+  S={role:prof.role,uid:prof.id,name:prof.full_name};await loadAll();start()}
+ else bootDemo()})();
+
+/* =====================================================================
+   DONNÉES DE DÉMONSTRATION (fictives)
+   ===================================================================== */
+function seedDemo(){let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646},R=a=>a[Math.floor(rnd()*a.length)];
+ D={_rn:0};TABLES.forEach(t=>D[t]=[]);
+ D.classes=[['Maternelle 3','Maternelle','Maternelle'],['4ème Primaire','Primaire','Primaire'],['6ème Primaire','Primaire','Primaire'],['7ème EB','Éducation de Base','Éducation de Base'],['8ème EB','Éducation de Base','Éducation de Base'],['1ère Secondaire','Secondaire','Électricité'],['3ème Secondaire','Secondaire','Pédagogie Générale'],['4ème Secondaire','Secondaire','Électricité']].map((c,i)=>({id:'c'+i,name:c[0],section:c[1],option:c[2],year:'2026-2027'}));
+ D.fee_rates=[['NIVEAU_MATERNELLE','Maternelle',25000],['NIVEAU_PRIMAIRE','Primaire',15000],['NIVEAU_7_8','7ème / 8ème Éducation de Base',25000],['NIVEAU_SEC_1_3','Secondaire 1ère à 3ème',25000],['NIVEAU_SEC_4','Secondaire 4ème',34000],['ETAT_MATERNELLE',"Frais de l'État - Maternelle (par tranche)",10000],['ETAT_PRIMAIRE',"Frais de l'État - Primaire (par tranche)",10000],['ETAT_7_8',"Frais de l'État - 7ème/8ème (par tranche)",17500],['ETAT_SEC_1_3',"Frais de l'État - Secondaire 1ère à 3ème (par tranche)",22500],['ETAT_SEC_4',"Frais de l'État - Secondaire 4ème (par tranche)",25000]].map(r=>({key:r[0],label:r[1],amount:r[2]}));
+ const F=['Grâce','Patience','David','Esther','Joël','Divine','Samuel','Merveille','Prince','Rachel','Jonathan','Déborah','Emmanuel','Sarah','Glody','Ruth','Christian','Nadège','Fabrice','Chancelle'],L=['Kabamba','Mwamba','Ilunga','Kalenga','Mutombo','Banza','Tshibangu','Kasongo','Mukendi','Numbi','Kapend','Lubaba','Ngoy','Kyungu','Mpoyo'],Po=['Mbuyi','Tshala','Kazadi','Nkulu','Mulumba'];
+ const now=new Date(),y0=now.getMonth()>=8?now.getFullYear():now.getFullYear()-1,n=monthsElapsed();let k=0;
+ D.classes.forEach((c,ci)=>{for(let j=0;j<6;j++){const full=`${R(L)} ${R(Po)} ${R(F)}`,age={Maternelle:5,Primaire:ci==1?9:11,'Éducation de Base':ci==3?12:13,Secondaire:ci==5?14:ci==6?16:18}[c.section];
+  D.students.push({id:'s'+(++k),full_name:full,sex:rnd()>.5?'Féminin':'Masculin',birth_date:`${now.getFullYear()-age-(rnd()>.5?0:1)}-0${1+Math.floor(rnd()*9)}-1${Math.floor(rnd()*9)}`,birth_place:'Kasumbalesa',father_name:`${R(L)} ${R(Po)}`,mother_name:`${R(F)} ${R(L)}`,parent_phone:'09'+String(Math.floor(10000000+rnd()*89999999)),class_id:c.id,social_case:k===9,status:k%17===0?'a_verifier':'valide',qr_token:'tk'+k,created_at:new Date().toISOString(),address:'Kasumbalesa',prev_school:''})}});
+ const d0=D.students[0];D.students.push({...d0,id:'s'+(++k),full_name:d0.full_name.replace(/a/,'aa'),status:'a_verifier',parent_phone:'0000000',qr_token:'tkdup'});
+ let rc=0;const pays=[];
+ D.students.filter(s=>s.status==='valide').forEach(s=>{const kk=levelKey(cls(s.class_id));const paidN=Math.floor(rnd()*(n+1));for(let i=0;i<Math.min(paidN,n);i++){if(s.social_case)continue;const m=8+i,dt=new Date(m>=12?y0+1:y0,m%12,1+Math.floor(rnd()*20));if(dt>now)continue;pays.push({id:'p'+(++rc),student_id:s.id,reason:'Frais mensuel — '+MONTHS[i],amount:rate2(kk),method:R(['Espèces','Espèces','Mobile money']),paid_on:ymd(dt),status:'confirme',receipt_no:'MD-REC-'+String(++D._rn).padStart(6,'0'),print_count:rnd()>.4?1:0,qr_token:'pq'+rc,confirmed_by:'p-comp',created_at:dt.toISOString()})}});
+ function rate2(k){return {MATERNELLE:25000,PRIMAIRE:15000,'7_8':25000,SEC_1_3:25000,SEC_4:34000}[k]||15000}
+ D.students.filter(s=>s.status==='valide').slice(0,4).forEach(s=>{pays.push({id:'p'+(++rc),student_id:s.id,reason:'Frais mensuel — '+MONTHS[Math.min(n,10)-1],amount:rate2(levelKey(cls(s.class_id))),method:'Espèces',paid_on:today(),status:'confirme',receipt_no:'MD-REC-'+String(++D._rn).padStart(6,'0'),print_count:0,qr_token:'pt'+rc,confirmed_by:'p-comp',created_at:new Date().toISOString()})});
+ D.payments=pays;
+ D.profiles=[['p-promo','Promoteur Démo','promoteur'],['p-dir','Directeur Démo','direction'],['p-comp','Caissière Démo','comptable'],['p-prof','Professeur Démo','professeur'],['p-prof2','Autre Professeur','professeur']].map(p=>({id:p[0],full_name:p[1],role:p[2],active:true}));
+ D.staff=[['Directeur Démo','Directeur','Direction','p-dir'],['Caissière Démo','Comptable-secrétaire','Administration','p-comp'],['Professeur Démo','Enseignant Secondaire','Secondaire','p-prof'],['Autre Professeur','Enseignant Primaire','Primaire','p-prof2'],['Mukendi Grâce','Enseignant Primaire','Primaire',null],['Ilunga Joël','Enseignant Secondaire','Secondaire',null]].map((s,i)=>({id:'st'+i,full_name:s[0],function:s[1],section:s[2],profile_id:s[3],phone:'0997'+String(100000+i*7919)}));
+ D.staff_pay=D.staff.map(s=>({id:'sp'+s.id,staff_id:s.id,base_salary:150000+Math.floor(rnd()*250000/5000)*5000}));
+ D.salary_advances=[{id:'a1',staff_id:'st2',amount:50000,reason:'Frais médicaux',deduct_month:MONTHS[Math.min(n,10)-1],status:'demandee',requested_at:new Date().toISOString()},{id:'a2',staff_id:'st4',amount:80000,reason:'Rentrée scolaire',deduct_month:MONTHS[Math.min(n,10)-1],status:'signee',requested_at:new Date(Date.now()-86400000*2).toISOString()},{id:'a3',staff_id:'st5',amount:40000,reason:'Transport',deduct_month:MONTHS[Math.min(n,10)-1],status:'versee',requested_at:new Date(Date.now()-86400000*9).toISOString()}];
+ D.teacher_classes=[{teacher_id:'p-prof',class_id:'c5'},{teacher_id:'p-prof',class_id:'c6'},{teacher_id:'p-prof2',class_id:'c1'}];
+ const yd=ymd(new Date(Date.now()-86400000));D.students.filter(s=>s.status==='valide').forEach((s,i)=>{D.attendance.push({id:'at'+i,student_id:s.id,class_id:s.class_id,day:yd,state:i%11===0?'absent':'present'})});
+ D.students.filter(s=>s.status==='valide').forEach((s,i)=>['Mathématiques','Français','Sciences'].forEach((m,j)=>D.grades.push({id:'g'+i+j,student_id:s.id,class_id:s.class_id,period:'1er trimestre',subject:m,score:Math.round((6+rnd()*13)*2)/2,max_score:20})));
+ D.timetable=[['c5','Lundi','07:30','08:20','Électricité'],['c5','Lundi','08:20','09:10','Mathématiques'],['c5','Mardi','07:30','08:20','Français'],['c6','Mercredi','07:30','08:20','Pédagogie']].map((t,i)=>({id:'t'+i,class_id:t[0],teacher_id:'p-prof',day:t[1],start_time:t[2],end_time:t[3],subject:t[4]}));
+ D.online_registrations=[['Kalenga Mwamba Esther','F','4ème Primaire'],['Banza Nkulu David','M','1ère Secondaire'],['Mutombo Tshala Ruth','F','Maternelle 3']].map((r,i)=>({id:'o'+i,received_at:new Date(Date.now()-86400000*i).toISOString(),processed:false,payload:{full_name:r[0],sex:r[1]==='F'?'Féminin':'Masculin',class_label:r[2],parent_phone:'0998'+(100000+i*4321),father_name:'Parent '+(i+1)}}));
+ D.cash_closings=[{id:'cc1',day:yd,expected_total:230000,counted_total:230000,closed_by:'p-comp'}];
+ D.settings=[{key:'receipt_template',value:{...DEFTPL}}];
+ D.audit_log=[{id:'l1',at:new Date().toISOString(),user_id:'p-comp',action:'Paiement confirmé',ref:'MD-REC-000001',detail:'démonstration'}]}
+function demoRestrict(){const r=S.role;
+ if(r==='direction'){['payments','cash_closings','fee_rates','online_registrations','audit_log'].forEach(t=>D[t]=[])}
+ if(r==='comptable'){['attendance','grades','timetable','staff_pay','audit_log'].forEach(t=>D[t]=[])}
+ if(r==='professeur'){const mine=D.teacher_classes.filter(x=>x.teacher_id===S.uid).map(x=>x.class_id);
+  D.classes=D.classes.filter(c=>mine.includes(c.id));D.students=D.students.filter(s=>mine.includes(s.class_id));
+  ['payments','cash_closings','fee_rates','online_registrations','audit_log','staff_pay'].forEach(t=>D[t]=[]);
+  D.attendance=D.attendance.filter(a=>mine.includes(a.class_id));D.grades=D.grades.filter(g=>mine.includes(g.class_id));D.timetable=D.timetable.filter(t=>mine.includes(t.class_id)||t.teacher_id===S.uid);
+  const me=D.staff.filter(s=>s.profile_id===S.uid).map(s=>s.id);D.staff=D.staff.filter(s=>me.includes(s.id));D.salary_advances=D.salary_advances.filter(a=>me.includes(a.staff_id));D.profiles=D.profiles.filter(p=>p.id===S.uid);D.teacher_classes=D.teacher_classes.filter(x=>x.teacher_id===S.uid)}}
+</script>
+</body>
+</html>
