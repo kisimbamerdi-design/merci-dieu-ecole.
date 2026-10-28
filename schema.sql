@@ -100,9 +100,11 @@ create table if not exists students (
   social_case   boolean not null default false,  -- cas social (5ème enfant gratuit)
   status        text not null default 'a_verifier'
                 check (status in ('a_verifier','a_completer','valide','refuse')),
+  enrolled_on   date,                            -- date d'inscription (inscription tardive : mois passés à 50 %)
   created_at    timestamptz not null default now(),
   created_by    uuid references profiles(id)
 );
+alter table students add column if not exists enrolled_on date;
 
 -- Inscriptions faites par les parents sur le site public (remplace Google Sheets + Telegram)
 create table if not exists online_registrations (
@@ -123,18 +125,18 @@ create table if not exists fee_rates (
 insert into fee_rates (key,label,amount) values
  ('NIVEAU_MATERNELLE','Maternelle',31000),
  ('NIVEAU_PRIMAIRE','Primaire',20000),
- ('NIVEAU_7_8','7ème / 8ème Éducation de Base',41000),
- ('NIVEAU_SEC_1_3','Secondaire 1ère à 3ème',25000),
- ('NIVEAU_SEC_4','Secondaire 4ème',34000),
+ ('NIVEAU_7_8','7ème / 8ème Éducation de Base',34000),
+ ('NIVEAU_SEC_1_3','Humanités 1ère à 3ème',35000),
+ ('NIVEAU_SEC_4','Humanités 4ème (montant à confirmer)',34000),
  ('ETAT_MATERNELLE','Frais de l''État - Maternelle (par tranche)',10000),
  ('ETAT_PRIMAIRE','Frais de l''État - Primaire (par tranche)',10000),
  ('ETAT_7_8','Frais de l''État - 7ème/8ème (par tranche)',17500),
  ('ETAT_SEC_1_3','Frais de l''État - Secondaire 1ère à 3ème (par tranche)',22500),
  ('ETAT_SEC_4','Frais de l''État - Secondaire 4ème (par tranche)',25000)
 on conflict (key) do nothing;
--- Tarifs de l'année 2026-2027 communiqués par la propriétaire : maternelle 31 000, primaire 20 000, 7e/8e 41 000.
--- À confirmer : secondaire 1ère à 3ème (25 000 dans le classeur) et 4ème (34 000) face aux « 34 000 » et « humanités 35 000 » annoncés.
--- Ces valeurs sont déjà modifiées dans la base ; le insert ci-dessus ne s'applique qu'à une base neuve.
+-- Tarifs 2026-2027 communiqués par la propriétaire : maternelle 31 000, primaire 20 000, 7e/8e 34 000, humanités 1ère à 3ème 35 000.
+-- À confirmer auprès du directeur : humanités 4ème (34 000 hérité du classeur) et frais de l'État. Déjà modifiés dans la base en direct.
+-- Règle : un élève inscrit en retard paie les mois passés à settings.late_enrolment_pct % (50 par défaut), modifiable par le promoteur.
 
 create sequence if not exists receipt_seq;
 
