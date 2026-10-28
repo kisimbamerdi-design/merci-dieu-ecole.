@@ -121,9 +121,9 @@ create table if not exists fee_rates (
 );
 
 insert into fee_rates (key,label,amount) values
- ('NIVEAU_MATERNELLE','Maternelle',25000),
- ('NIVEAU_PRIMAIRE','Primaire',15000),
- ('NIVEAU_7_8','7ème / 8ème Éducation de Base',25000),
+ ('NIVEAU_MATERNELLE','Maternelle',31000),
+ ('NIVEAU_PRIMAIRE','Primaire',20000),
+ ('NIVEAU_7_8','7ème / 8ème Éducation de Base',41000),
  ('NIVEAU_SEC_1_3','Secondaire 1ère à 3ème',25000),
  ('NIVEAU_SEC_4','Secondaire 4ème',34000),
  ('ETAT_MATERNELLE','Frais de l''État - Maternelle (par tranche)',10000),
@@ -132,7 +132,9 @@ insert into fee_rates (key,label,amount) values
  ('ETAT_SEC_1_3','Frais de l''État - Secondaire 1ère à 3ème (par tranche)',22500),
  ('ETAT_SEC_4','Frais de l''État - Secondaire 4ème (par tranche)',25000)
 on conflict (key) do nothing;
--- ⚠ Ces tarifs viennent de votre classeur : à confirmer avant usage.
+-- Tarifs de l'année 2026-2027 communiqués par la propriétaire : maternelle 31 000, primaire 20 000, 7e/8e 41 000.
+-- À confirmer : secondaire 1ère à 3ème (25 000 dans le classeur) et 4ème (34 000) face aux « 34 000 » et « humanités 35 000 » annoncés.
+-- Ces valeurs sont déjà modifiées dans la base ; le insert ci-dessus ne s'applique qu'à une base neuve.
 
 create sequence if not exists receipt_seq;
 
