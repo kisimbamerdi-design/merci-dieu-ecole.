@@ -526,3 +526,31 @@ grant execute on function verify_qr(text) to anon, authenticated;
 --  update profiles set role = 'promoteur', active = true
 --   where id = (select id from auth.users where email = 'VOTRE-ADRESSE');
 -- ============================================================
+
+-- ============================================================
+--  NOMS EN MAJUSCULES (règle de l'école : tout nom s'enregistre en majuscules)
+--  Garanti par la base, quel que soit le chemin (formulaire, import, assistant).
+-- ============================================================
+create or replace function students_upper() returns trigger language plpgsql set search_path = public as $$
+begin
+  new.full_name   := upper(btrim(new.full_name));
+  new.father_name := upper(btrim(new.father_name));
+  new.mother_name := upper(btrim(new.mother_name));
+  new.birth_place := upper(btrim(new.birth_place));
+  new.prev_school := upper(btrim(new.prev_school));
+  new.province    := upper(btrim(new.province));
+  new.sector      := upper(btrim(new.sector));
+  new.address     := upper(btrim(new.address));
+  return new;
+end $$;
+create trigger students_upper_trg before insert or update on students for each row execute function students_upper();
+
+create or replace function staff_upper() returns trigger language plpgsql set search_path = public as $$
+begin
+  new.full_name := upper(btrim(new.full_name));
+  return new;
+end $$;
+create trigger staff_upper_trg before insert or update on staff for each row execute function staff_upper();
+
+revoke execute on function students_upper() from public, anon, authenticated;
+revoke execute on function staff_upper() from public, anon, authenticated;

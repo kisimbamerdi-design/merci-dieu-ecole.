@@ -176,6 +176,7 @@ td.r,th.r{text-align:right}
   .bar{grid-template-columns:100px 1fr 40px}
 }
 @media(max-width:560px){.g4{grid-template-columns:1fr}.roles{grid-template-columns:1fr}}
+#f_full_name,#f_father_name,#f_mother_name,#f_birth_place,#f_prev_school,#f_province,#f_sector,#f_address,#sf_n{text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -213,7 +214,10 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.28.3';
+const APP_VERSION='2026.10.29.1';
+/* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
+const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
+document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
 const {SUPABASE_URL,SUPABASE_ANON}=window.MDSS;
 const LIVE=!SUPABASE_URL.includes('VOTRE-PROJET');
 const db=LIVE?supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:true,autoRefreshToken:true}}):null;
@@ -452,7 +456,7 @@ A.studentForm=(id,pre)=>{const s=id?stu(id):(pre||{}),o=(k)=>esc(s[k]||'');
  <div class="full"><label style="display:flex;gap:8px;align-items:center;font-size:13.5px"><input type="checkbox" id="f_social_case" style="width:auto" ${s.social_case?'checked':''}> Cas social (gratuité)</label></div></div>
  <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStudent('${id||''}',${pre&&pre._reg?`'${pre._reg}'`:'null'})">Enregistrer</button></div>`)};
 A.saveStudent=async(id,reg,force)=>{
- const r={};['full_name','matricule','sex','birth_date','birth_place','class_id','prev_school','perm_number','father_name','mother_name','parent_phone','address','province','sector','enrolled_on'].forEach(k=>{r[k]=val('f_'+k)||null});r.social_case=$('#f_social_case').checked;
+ const r={};['full_name','matricule','sex','birth_date','birth_place','class_id','prev_school','perm_number','father_name','mother_name','parent_phone','address','province','sector','enrolled_on'].forEach(k=>{r[k]=val('f_'+k)||null});['full_name','father_name','mother_name','birth_place','prev_school','province','sector','address'].forEach(k=>{if(r[k])r[k]=r[k].toLocaleUpperCase('fr')});r.social_case=$('#f_social_case').checked;
  if(!r.full_name)return toast('Le nom est obligatoire.',1);
  const ph=String(r.parent_phone||'').replace(/\D/g,'');if(r.parent_phone&&(ph.length<9||/^(\d)\1+$/.test(ph))&&!force)return A.warnConfirm("Le numéro de téléphone semble invalide. Enregistrer quand même ?",()=>A.saveStudent(id,reg,true));
  const n=norm(r.full_name),dup=D.students.filter(s=>s.id!==id&&(norm(s.full_name)===n||(n.length>=8&&lev(norm(s.full_name),n)<=2)));
@@ -589,7 +593,7 @@ P.personnel=()=>head('Personnel','Enseignants et administration.',can('promoteur
 A.staffForm=id=>{const s=id?byId('staff',id):{};
  modal(`<h3>${id?'Modifier':'Nouveau membre du personnel'}</h3><div class="f" style="margin-top:14px"><div class="full"><label>Nom complet</label><input id="sf_n" value="${esc(s.full_name||'')}"></div><div><label>Fonction</label><input id="sf_f" value="${esc(s.function||'')}" list="fl"><datalist id="fl"><option>Directeur</option><option>Préfet des études</option><option>Enseignant Primaire</option><option>Enseignant Secondaire</option><option>Comptable-secrétaire</option></datalist></div><div><label>Section</label><input id="sf_s" value="${esc(s.section||'')}"></div><div><label>Téléphone</label><input id="sf_p" value="${esc(s.phone||'')}"></div><div><label>Compte utilisateur lié</label><select id="sf_u"><option value="">— aucun —</option>${D.profiles.map(p=>`<option value="${p.id}" ${s.profile_id===p.id?'selected':''}>${esc(p.full_name||p.id)} (${roleLabel(p)})</option>`).join('')}</select></div></div>
  <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStaff('${id||''}')">Enregistrer</button></div>`)};
-A.saveStaff=async id=>{const r={full_name:val('sf_n'),function:val('sf_f'),section:val('sf_s')||null,phone:val('sf_p')||null,profile_id:val('sf_u')||null};if(!r.full_name||!r.function)return toast('Nom et fonction obligatoires.',1);
+A.saveStaff=async id=>{const r={full_name:val('sf_n').toLocaleUpperCase('fr'),function:val('sf_f'),section:val('sf_s')||null,phone:val('sf_p')||null,profile_id:val('sf_u')||null};if(!r.full_name||!r.function)return toast('Nom et fonction obligatoires.',1);
  try{id?await upd('staff',id,r):await ins('staff',r);await audit(id?'Personnel modifié':'Personnel ajouté',r.full_name);A.close();toast('Enregistré ✓');render()}catch(e){toast(e.message,1)}};
 
 const ADV={demandee:['Demandée — à signer','warn'],signee:['Signée — à verser','info'],versee:['Versée','ok'],refusee:['Refusée','bad']};
