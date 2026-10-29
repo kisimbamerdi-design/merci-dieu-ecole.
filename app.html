@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.29.3';
+const APP_VERSION='2026.10.30.1';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -345,6 +345,7 @@ const MENU=[
  ['Scolarité'],
  {id:'eleves',i:'☺',l:'Élèves',r:ALL},
  {id:'online',i:'✉',l:'Inscriptions en ligne',r:['promoteur','comptable'],badge:()=>D.online_registrations.filter(x=>!x.processed).length},
+ {id:'messages',i:'✉',l:'Messages aux parents',r:['promoteur','direction','comptable']},
  {id:'classes',i:'▦',l:'Classes et promotions',r:['promoteur','direction','directeur_etudes','comptable']},
  {id:'presences',i:'✔',l:'Présences',r:['promoteur','direction','prefet_discipline','professeur']},
  {id:'notes',i:'✎',l:'Notes et résultats',r:['promoteur','direction','directeur_etudes','professeur']},
@@ -572,7 +573,30 @@ AFTER.soldes=()=>A.soList();
 const fSo=()=>soldes().filter(x=>(!Q.so.c||x.s.class_id===Q.so.c)&&(!Q.so.only||x.due>0)).sort((a,b)=>b.due-a.due);
 A.soList=()=>{const l=fSo(),t=l.reduce((a,x)=>a+Math.max(0,x.due),0);
  $('#sok').innerHTML=kpi('Reste à percevoir',fc(t),'sur la sélection','red')+kpi('Élèves concernés',l.filter(x=>x.due>0).length,'en retard')+kpi('Taux de recouvrement',Math.round(100*l.reduce((a,x)=>a+Math.min(x.paid,x.expected),0)/Math.max(1,l.reduce((a,x)=>a+x.expected,0)))+' %','mensualités payées / attendues','gold');
- $('#sob').innerHTML=l.slice(0,300).map(x=>`<tr class="cl" onclick="A.fiche('${x.s.id}')"><td><b>${esc(x.s.full_name)}</b></td><td>${esc(clsLabel(x.c))}</td><td class="r">${fc(x.monthly)}</td><td class="r">${fc(x.expected)}</td><td class="r">${fc(x.paid)}</td><td class="r">${x.due>0?chip(fc(x.due),'bad'):chip('À jour','ok')}</td><td></td></tr>`).join('')||`<tr><td colspan="7">${none('Aucun élève.')}</td></tr>`};
+ $('#sob').innerHTML=l.slice(0,300).map(x=>`<tr class="cl" onclick="A.fiche('${x.s.id}')"><td><b>${esc(x.s.full_name)}</b></td><td>${esc(clsLabel(x.c))}</td><td class="r">${fc(x.monthly)}</td><td class="r">${fc(x.expected)}</td><td class="r">${fc(x.paid)}</td><td class="r">${x.due>0?chip(fc(x.due),'bad'):chip('À jour','ok')}</td><td class="r">${x.due>0&&x.s.parent_phone?`<button class="btn sm line" onclick="event.stopPropagation();A.dun('${x.s.id}')">✉ Relancer</button>`:''}</td></tr>`).join('')||`<tr><td colspan="7">${none('Aucun élève.')}</td></tr>`};
+/* ---------- relances de paiement et messages aux parents (envoi en un geste, WhatsApp ou SMS) ---------- */
+A.dun=id=>{const s=stu(id),so=soldeOf(id);if(!s||!so)return;const n=phoneIntl(s.parent_phone);
+ if(!s.parent_phone||n.length<11)return modal(`<h3>Relancer le parent</h3><p class="sub">Aucun numéro de parent valable pour ${esc(s.full_name)}. Ajoutez-le dans la fiche (Modifier).</p><div class="foot"><button class="btn" onclick="A.close()">Fermer</button></div>`);
+ if(so.due<=0)return toast('Cet élève est à jour.');
+ const msg=`Bonjour. Le Collège Merci-Dieu vous rappelle qu'il reste ${fc(so.due)} à payer pour ${s.full_name} (${clsLabel(so.c)}). Merci de passer au secrétariat. Si vous avez déjà payé, ignorez ce message.`;
+ window.__inv={n,id,label:'Relance de paiement'};
+ modal(`<h3>Relancer le parent</h3><p class="sub">${esc(s.full_name)} · reste dû <b>${fc(so.due)}</b> · +${esc(n)}</p><label style="font-weight:700">Message</label><textarea id="inv_m" rows="5" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px;margin-top:6px">${esc(msg)}</textarea><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn line" onclick="A.sendInvite('sms')">✉ SMS</button><button class="btn pri" onclick="A.sendInvite('wa')">WhatsApp</button></div>`)};
+Q.ms={c:'',sent:{}};
+P.messages=()=>head('Messages aux parents','Écrivez un communiqué, choisissez la classe, puis envoyez-le à chaque parent en un geste, par WhatsApp ou par SMS. Utilisez {eleve} et {classe} pour personnaliser.')+
+ `<div class="card"><div class="tools"><select onchange="Q.ms.c=this.value;A.msgList()"><option value="">Toutes les classes</option>${D.classes.map(c=>`<option value="${c.id}" ${Q.ms.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select><button class="btn line" onclick="A.msgCopy()">📋 Copier les numéros</button></div>
+ <label style="font-weight:700">Message</label><textarea id="ms_t" rows="4" oninput="A.msgList()" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px;margin:6px 0 4px" placeholder="Ex. : Chers parents, la réunion de classe de {classe} aura lieu samedi à 9 h.">${esc(Q.ms.t||'')}</textarea><p style="color:var(--mut);font-size:13px;margin:0 0 12px" id="ms_n"></p>
+ <div class="tw"><table><thead><tr><th>Parent</th><th>Élève(s)</th><th>Téléphone</th><th></th></tr></thead><tbody id="msb"></tbody></table></div></div>`;
+const msgRows=()=>{const g={};D.students.filter(s=>s.status==='valide'&&(!Q.ms.c||s.class_id===Q.ms.c)).forEach(s=>{const n=phoneIntl(s.parent_phone);if(n.length<11||n.length>13)return;(g[n]=g[n]||{n,s:[],par:s.father_name||s.mother_name||'Parent'}).s.push(s)});return Object.values(g)};
+const msgText=(r)=>val('ms_t').replace(/\{eleve\}/gi,r.s.map(x=>x.full_name).join(' et ')).replace(/\{classe\}/gi,[...new Set(r.s.map(x=>clsLabel(cls(x.class_id))))].join(', '));
+A.msgList=()=>{Q.ms.t=val('ms_t');const l=msgRows();const all=D.students.filter(s=>s.status==='valide'&&(!Q.ms.c||s.class_id===Q.ms.c)).length;
+ $('#ms_n').textContent=`${l.length} parent(s) joignable(s)`+(all>l.reduce((a,r)=>a+r.s.length,0)?` · ${all-l.reduce((a,r)=>a+r.s.length,0)} élève(s) sans numéro valable`:'');
+ $('#msb').innerHTML=l.slice(0,400).map(r=>`<tr><td>${esc(r.par)}</td><td>${esc(r.s.map(x=>x.full_name).join(', '))}</td><td>+${esc(r.n)}</td><td class="r">${Q.ms.sent[r.n]?chip('Envoyé','ok'):''} <button class="btn sm line" onclick="A.msgSend('sms','${r.n}')">SMS</button> <button class="btn sm pri" onclick="A.msgSend('wa','${r.n}')">WhatsApp</button></td></tr>`).join('')||`<tr><td colspan="4">${none('Aucun parent avec un numéro valable.')}</td></tr>`};
+AFTER.messages=()=>A.msgList();
+A.msgSend=async(k,n)=>{const r=msgRows().find(x=>x.n===n);if(!r)return;const t=msgText(r).trim();if(!t)return toast('Écrivez d\'abord le message.',1);
+ try{await audit('Message aux parents ('+(k==='wa'?'WhatsApp':'SMS')+')',r.s.map(x=>x.full_name).join(', '))}catch(e){}
+ Q.ms.sent[n]=1;window.open(k==='wa'?`https://wa.me/${n}?text=${encodeURIComponent(t)}`:`sms:+${n}?&body=${encodeURIComponent(t)}`,'_blank');A.msgList()};
+A.msgCopy=async()=>{const t=msgRows().map(r=>'+'+r.n).join('\n');try{await navigator.clipboard.writeText(t);toast(msgRows().length+' numéros copiés ✓')}catch(e){toast('Copie impossible sur ce navigateur.',1)}};
+
 A.exportSoldes=()=>csvDown('arrieres.csv',[['Élève','Classe','Mensualité','Attendu','Payé','Reste dû'],...fSo().map(x=>[x.s.full_name,clsLabel(x.c),x.monthly,x.expected,x.paid,x.due])]);
 
 /* ---------- caisse ---------- */
@@ -740,7 +764,7 @@ A.inviteParent=id=>{const s=stu(id);if(!s)return;const c=cls(s.class_id),link=((
  window.__inv={n,msg,id};
  modal(`<h3>Inviter le parent au groupe</h3><p class="sub">Numéro : <b>+${esc(n)}</b> · ${esc(clsLabel(c))}</p>${link?'':'<div class="note" style="margin-bottom:12px">Aucun lien de groupe n\'est enregistré pour cette classe (Paramètres → Groupes WhatsApp). Le message part sans lien.</div>'}<label style="font-weight:700">Message</label><textarea id="inv_m" rows="5" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px;margin-top:6px">${esc(msg)}</textarea><div class="foot"><button class="btn" onclick="A.close()">Plus tard</button><button class="btn line" onclick="A.sendInvite('sms')">✉ SMS</button><button class="btn pri" onclick="A.sendInvite('wa')">WhatsApp</button></div>`)};
 A.sendInvite=async k=>{const {n,id}=window.__inv,m=encodeURIComponent(val('inv_m'));const s=stu(id);
- try{await audit('Invitation au groupe envoyée ('+(k==='wa'?'WhatsApp':'SMS')+')',s.full_name)}catch(e){}
+ try{await audit((window.__inv.label||'Invitation au groupe envoyée')+' ('+(k==='wa'?'WhatsApp':'SMS')+')',s.full_name)}catch(e){}
  window.open(k==='wa'?`https://wa.me/${n}?text=${m}`:`sms:+${n}?&body=${m}`,'_blank');A.close()};
 A.rtTpl=()=>({paper_mm:80,header:val('rt_h'),subheader:val('rt_s'),footer:val('rt_f'),fields:[...document.querySelectorAll('.rtf:checked')].map(x=>x.value),show_logo:$('#rt_l').checked,show_qr:$('#rt_q').checked,show_stamp_box:$('#rt_c').checked});
 A.rtPrev=()=>{$('#rtp').innerHTML=receiptHTML(window.__sample,A.rtTpl());drawQRs($('#rtp'))};
