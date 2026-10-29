@@ -198,7 +198,7 @@ td.r,th.r{text-align:right}
   <header><div style="font-size:24px">✦</div><div><h4>Assistant Merci-Dieu</h4><small id="asRole"></small></div><button onclick="A.assistant()">✕</button></header>
   <div class="chat" id="chat"></div>
   <div class="sugs" id="sugs"></div>
-  <form class="ask" onsubmit="A.ask(event)"><input id="askIn" placeholder="Écrivez ou parlez…" autocomplete="off"><button type="button" class="btn line" id="micBtn" title="Parler à l'assistant" onclick="A.mic()" style="padding:0 14px;font-size:18px">🎤</button><button class="btn pri">Envoyer</button></form>
+  <form class="ask" onsubmit="A.ask(event)"><input id="askIn" placeholder="Écrivez ou parlez…" autocomplete="off"><button type="button" class="btn line" id="spkBtn" title="Lecture à voix haute désactivée" onclick="A.spk()" style="padding:0 12px;font-size:18px">🔇</button><button type="button" class="btn line" id="micBtn" title="Parler à l'assistant" onclick="A.mic()" style="padding:0 14px;font-size:18px">🎤</button><button class="btn pri">Envoyer</button></form>
 </aside>
 <div id="modal"></div>
 <div id="printzone"></div>
@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.29.2';
+const APP_VERSION='2026.10.29.3';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -767,7 +767,13 @@ P.journal=()=>head('Journal des opérations','Qui a fait quoi, et quand.')+`<div
 const SUG={promoteur:['Y a-t-il des doublons ?','Qui a des arriérés ?','Contrôler les données'],direction:['Y a-t-il des doublons ?','Avances à signer','Contrôler les données'],directeur_etudes:['Y a-t-il des doublons ?','Contrôler les données'],prefet_discipline:['Qui est absent aujourd\'hui ?','Contrôler les données'],comptable:['Qui a des arriérés ?','Y a-t-il des doublons ?','Contrôler les données'],professeur:['Mes classes','Qui est absent aujourd\'hui ?']};
 function findStudents(q){const qt=norm(q).split(' ').filter(w=>w.length>1);if(!qt.length)return[];
  return D.students.map(s=>{const st=norm(s.full_name).split(' ');let sc=0;for(const t of qt){let b=0;for(const w of st){if(w===t)b=Math.max(b,2);else if(w.startsWith(t)&&t.length>=3)b=Math.max(b,1.5);else if(t.length>=4&&lev(w,t)<=1)b=Math.max(b,1.2);else if(t.length>=6&&lev(w,t)<=2)b=Math.max(b,.8)}sc+=b}return {s,sc:sc/qt.length}}).filter(x=>x.sc>=.8).sort((a,b)=>b.sc-a.sc).slice(0,6).map(x=>x.s)}
-function say(t,me){const c=$('#chat');const d=document.createElement('div');d.className='msg '+(me?'me':'bot');d.innerHTML=t;c.appendChild(d);c.scrollTop=c.scrollHeight}
+function speak(html){try{const ss=window.speechSynthesis;if(!ss)return;ss.cancel();const d=document.createElement('div');d.innerHTML=html;d.querySelectorAll('.foot,button').forEach(x=>x.remove());d.querySelectorAll('li').forEach(x=>x.append('. '));
+ let t=(d.textContent||'').replace(/→/g,' devient ').replace(/\s+/g,' ').trim();if(!t)return;if(t.length>420)t=t.slice(0,420).replace(/\s+\S*$/,'')+'… Le reste est affiché à l\'écran.';
+ const u=new SpeechSynthesisUtterance(t);u.lang='fr-FR';u.rate=.95;const v=ss.getVoices().find(x=>/^fr/i.test(x.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
+function say(t,me){const c=$('#chat');const d=document.createElement('div');d.className='msg '+(me?'me':'bot');d.innerHTML=t;c.appendChild(d);c.scrollTop=c.scrollHeight;
+ if(!me&&(window.__viaVoice||window.__spk)){window.__viaVoice=false;speak(t)}}
+A.spk=()=>{window.__spk=!window.__spk;try{localStorage.setItem('md_spk',window.__spk?'1':'0')}catch(e){}if(!window.__spk&&window.speechSynthesis)speechSynthesis.cancel();const b=$('#spkBtn');if(b){b.textContent=window.__spk?'🔊':'🔇';b.title=window.__spk?'Lecture à voix haute activée':'Lecture à voix haute désactivée'}
+ if(window.__spk)say("Je lirai mes réponses à voix haute.")};
 /* ---------- assistant : corrections par la parole (promoteur / comptable) ---------- */
 const RATE_WORDS=[[/maternelle/,'MATERNELLE'],[/primaire/,'PRIMAIRE'],[/(7\s*(e|è|ème|eme)?\s*(et|\/|-|,)?\s*8)|7\s*(e|è|ème|eme)|8\s*(e|è|ème|eme)|[ée]ducation de base/,'7_8'],[/(humanit[ée]s?|secondaire).*4|4\s*(e|è|ème|eme).*(humanit|secondaire)|^.*\b4\s*(e|è|ème|eme)\b/,'SEC_4'],[/humanit|secondaire/,'SEC_1_3']];
 function parseAmount(t){const m=String(t).toLowerCase().replace(/fc|cdf|francs?( congolais)?/g,'').match(/(\d[\d\s.,']*)\s*(k|mille)?/);if(!m)return null;let v=+m[1].replace(/[\s.,']/g,'');if(isNaN(v))return null;if(m[2])v*=1000;return v}
@@ -808,11 +814,12 @@ function editCmd(q){
 A.mic=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition,b=$('#micBtn');
  if(!SR)return say("La commande vocale n'est pas disponible sur ce navigateur. Utilisez Chrome sur Android ou sur ordinateur, ou le micro du clavier de votre téléphone.");
  if(window.__rec){try{window.__rec.stop()}catch(e){}return}
+ if(window.speechSynthesis)speechSynthesis.cancel();
  const r=new SR();r.lang='fr-FR';r.interimResults=true;r.maxAlternatives=1;window.__rec=r;let fin='';
  r.onstart=()=>{b.textContent='⏹';b.style.background='#fde8e4';$('#askIn').placeholder='Je vous écoute…'};
  r.onresult=e=>{let t='';for(const x of e.results){t+=x[0].transcript;if(x.isFinal)fin=t}$('#askIn').value=t};
  r.onerror=e=>{say(e.error==='not-allowed'||e.error==='service-not-allowed'?"Le micro est refusé. Autorisez-le dans les réglages du site, puis réessayez.":e.error==='no-speech'?"Je n'ai rien entendu. Réessayez.":"La commande vocale a échoué ("+esc(e.error)+"). Vérifiez la connexion internet.")};
- r.onend=()=>{window.__rec=null;b.textContent='🎤';b.style.background='';$('#askIn').placeholder='Écrivez ou parlez…';const t=$('#askIn').value.trim();if(t)A.ask(null,t)};
+ r.onend=()=>{window.__rec=null;if(window.speechSynthesis)speechSynthesis.cancel();b.textContent='🎤';b.style.background='';$('#askIn').placeholder='Écrivez ou parlez…';const t=$('#askIn').value.trim();if(t){window.__viaVoice=true;A.ask(null,t)}};
  try{r.start()}catch(e){window.__rec=null}};
 A.noEdit=()=>{window.__pend=null;say('D\'accord, rien n\'a été modifié.')};
 A.doEdit=async()=>{const p=window.__pend;if(!p||p.exp<Date.now()){window.__pend=null;return say("Cette demande a expiré. Écrivez-la de nouveau.")}window.__pend=null;
@@ -830,7 +837,7 @@ function brain(q){const n=norm(q),raw=q.toLowerCase();const ec=editCmd(q);if(ec)
  if(/classe/.test(raw)&&can('professeur'))return 'Vos classes : '+D.classes.map(c=>esc(clsLabel(c))).join(', ');
  const f=findStudents(q.replace(/cherche|trouve|qui est|o[uù] est|fiche de|élève/gi,''));if(f.length)return `J'ai trouvé :${stl(f)}`;
  return "Je peux : <ul><li>retrouver un élève (même mal orthographié)</li><li>repérer les doublons et les erreurs de saisie</li><li>lister les arriérés, avances, absents, effectifs</li></ul>"}
-A.assistant=()=>{const d=$('#drawer');d.classList.toggle('open');if(d.classList.contains('open')){$('#asRole').textContent=ROLES[S.role];if(!$('#chat').children.length)say(`Bonjour ${esc((S.name||'').split(' ')[0])}. Je suis votre assistant : je vous aide à éviter les erreurs et les doublons, et à retrouver un nom rapidement. Je ne vois que ce que votre rôle permet.`);$('#sugs').innerHTML=(SUG[S.role]||[]).map(s=>`<button onclick="A.ask(null,'${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');setTimeout(()=>$('#askIn').focus(),250)}};
+A.assistant=()=>{try{if(localStorage.getItem('md_spk')==='1'&&!window.__spk){window.__spk=true;const b=$('#spkBtn');if(b){b.textContent='🔊';b.title='Lecture à voix haute activée'}}}catch(e){}const d=$('#drawer');d.classList.toggle('open');if(d.classList.contains('open')){$('#asRole').textContent=ROLES[S.role];if(!$('#chat').children.length)say(`Bonjour ${esc((S.name||'').split(' ')[0])}. Je suis votre assistant : je vous aide à éviter les erreurs et les doublons, et à retrouver un nom rapidement. Je ne vois que ce que votre rôle permet.`);$('#sugs').innerHTML=(SUG[S.role]||[]).map(s=>`<button onclick="A.ask(null,'${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');setTimeout(()=>$('#askIn').focus(),250)}};
 A.ask=(e,t)=>{if(e)e.preventDefault();const q=t||val('askIn');if(!q)return;$('#askIn').value='';say(esc(q),1);setTimeout(()=>say(brain(q)),250)};
 
 /* =====================================================================
