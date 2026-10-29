@@ -213,7 +213,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.28.2';
+const APP_VERSION='2026.10.28.3';
 const {SUPABASE_URL,SUPABASE_ANON}=window.MDSS;
 const LIVE=!SUPABASE_URL.includes('VOTRE-PROJET');
 const db=LIVE?supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{auth:{persistSession:true,autoRefreshToken:true}}):null;
@@ -764,7 +764,49 @@ const SUG={promoteur:['Y a-t-il des doublons ?','Qui a des arriérés ?','Contr�
 function findStudents(q){const qt=norm(q).split(' ').filter(w=>w.length>1);if(!qt.length)return[];
  return D.students.map(s=>{const st=norm(s.full_name).split(' ');let sc=0;for(const t of qt){let b=0;for(const w of st){if(w===t)b=Math.max(b,2);else if(w.startsWith(t)&&t.length>=3)b=Math.max(b,1.5);else if(t.length>=4&&lev(w,t)<=1)b=Math.max(b,1.2);else if(t.length>=6&&lev(w,t)<=2)b=Math.max(b,.8)}sc+=b}return {s,sc:sc/qt.length}}).filter(x=>x.sc>=.8).sort((a,b)=>b.sc-a.sc).slice(0,6).map(x=>x.s)}
 function say(t,me){const c=$('#chat');const d=document.createElement('div');d.className='msg '+(me?'me':'bot');d.innerHTML=t;c.appendChild(d);c.scrollTop=c.scrollHeight}
-function brain(q){const n=norm(q),raw=q.toLowerCase();const stl=l=>l.length?'<ul>'+l.map(s=>`<li><a onclick="A.fiche('${s.id}')">${esc(s.full_name)}</a> — ${esc(clsLabel(cls(s.class_id)))}</li>`).join('')+'</ul>':'';
+/* ---------- assistant : corrections par la parole (promoteur / comptable) ---------- */
+const RATE_WORDS=[[/maternelle/,'MATERNELLE'],[/primaire/,'PRIMAIRE'],[/(7\s*(e|è|ème|eme)?\s*(et|\/|-|,)?\s*8)|7\s*(e|è|ème|eme)|8\s*(e|è|ème|eme)|[ée]ducation de base/,'7_8'],[/(humanit[ée]s?|secondaire).*4|4\s*(e|è|ème|eme).*(humanit|secondaire)|^.*\b4\s*(e|è|ème|eme)\b/,'SEC_4'],[/humanit|secondaire/,'SEC_1_3']];
+function parseAmount(t){const m=String(t).toLowerCase().replace(/fc|cdf|francs?( congolais)?/g,'').match(/(\d[\d\s.,']*)\s*(k|mille)?/);if(!m)return null;let v=+m[1].replace(/[\s.,']/g,'');if(isNaN(v))return null;if(m[2])v*=1000;return v}
+function findStudentsExact(name){const n=norm(name);if(!n)return[];let h=D.students.filter(s=>norm(s.full_name)===n);if(h.length)return h;const toks=n.split(' ').filter(w=>w.length>=2);h=D.students.filter(s=>{const sn=norm(s.full_name);return toks.length&&toks.every(t=>sn.includes(t))});if(h.length)return h.slice(0,6);return D.students.filter(s=>lev(norm(s.full_name),n)<=2).slice(0,6)}
+window.__pend=null;
+function editCmd(q){
+ const raw=q.trim().replace(/[.!]+$/,'');const low=raw.toLowerCase();
+ if(!/(modifi|corrig|chang|remplac|trompé|trompe|erreur|mets|met )/.test(low))return null;
+ /* tarifs */
+ if(/tarif|mensualit|frais|montant|c['’]est\s+\d|\d\s*(fc|cdf|francs|000)/.test(low)&&RATE_WORDS.some(([re])=>re.test(low))&&!/\bnom\b|t[ée]l[ée]phone|num[ée]ro/.test(low)){
+  if(!can('promoteur'))return "Seul le promoteur peut modifier les tarifs.";
+  const am=parseAmount(low.replace(/.*(?:c['’]est|à|en|=|:)\s*(?=\d)/,''))??parseAmount(low);const hit=RATE_WORDS.find(([re])=>re.test(low));
+  if(am===null||!hit)return "Je n'ai pas compris le tarif. Exemple : « Modifie le tarif de la maternelle à 31 000 ».";
+  const r=D.fee_rates.find(x=>x.key==='NIVEAU_'+hit[1]);if(!r)return "Tarif introuvable.";
+  window.__pend={t:'rate',key:r.key,v:am,exp:Date.now()+300000};
+  return `Je vais changer <b>${esc(r.label)}</b> : <s>${fc(r.amount)}</s> → <b>${fc(am)}</b> par mois.<div class="foot" style="margin-top:8px"><button class="btn sm pri" onclick="A.doEdit()">Confirmer</button> <button class="btn sm" onclick="A.noEdit()">Annuler</button></div>`}
+ /* élèves : nom ou téléphone */
+ const ph=/t[ée]l[ée]phone|num[ée]ro|whatsapp/.test(low);
+ let old=null,nv=null,m;
+ const R1=/(?:nom|t[ée]l[ée]phone|num[ée]ro)\s+(?:de|d['’]|du)\s*(.+?)\s*[,;:]?\s*(?:ce n['’]est pas|n['’]est pas|c['’]est pas)\s+.+?[,;:]?\s*c['’]est\s+(.+)$/i,
+  R2=/(?:nom|t[ée]l[ée]phone|num[ée]ro)\s+(?:de|d['’]|du)\s*(.+?)\s+(?:en|par|:|->|→|=)\s*(.+)$/i,
+  R3=/(?:nom|t[ée]l[ée]phone|num[ée]ro)\s+(?:de|d['’]|du)\s*(.+?)\s*,\s*c['’]est\s+(.+)$/i;
+ for(const R of [R1,R2,R3]){m=raw.match(R);if(m){old=m[1];nv=m[2];break}}
+ if(!old||!nv)return null;
+ if(!can('promoteur','comptable'))return "Seuls le promoteur et le comptable-secrétaire peuvent modifier les fiches des élèves.";
+ old=old.replace(/^["«“]|["»”]$/g,'').trim();nv=nv.replace(/^["«“]|["»”]$/g,'').trim();
+ const hits=findStudentsExact(old);
+ if(!hits.length)return `Je ne trouve aucun élève nommé « ${esc(old)} ». Vérifiez l'orthographe.`;
+ if(hits.length>1)return `Plusieurs élèves correspondent à « ${esc(old)} » :<ul>${hits.map(s=>`<li><a onclick="A.fiche('${s.id}')">${esc(s.full_name)}</a> — ${esc(clsLabel(cls(s.class_id)))}</li>`).join('')}</ul>Écrivez le nom complet exact pour que je sache lequel modifier.`;
+ const s=hits[0];
+ if(ph){const n=phoneIntl(nv);if(n.length<11||n.length>13)return "Ce numéro ne semble pas valable. Exemple : 0976 009 343.";
+  window.__pend={t:'stu',id:s.id,f:'parent_phone',v:nv.replace(/\s+/g,''),exp:Date.now()+300000};
+  return `Je vais changer le téléphone du parent de <b>${esc(s.full_name)}</b> : <s>${esc(s.parent_phone||'—')}</s> → <b>${esc(nv.replace(/\s+/g,''))}</b>.<div class="foot" style="margin-top:8px"><button class="btn sm pri" onclick="A.doEdit()">Confirmer</button> <button class="btn sm" onclick="A.noEdit()">Annuler</button></div>`}
+ const up=nv.toLocaleUpperCase('fr');
+ window.__pend={t:'stu',id:s.id,f:'full_name',v:up,exp:Date.now()+300000};
+ return `Je vais corriger le nom de l'élève : <s>${esc(s.full_name)}</s> → <b>${esc(up)}</b> (${esc(clsLabel(cls(s.class_id)))}).<div class="foot" style="margin-top:8px"><button class="btn sm pri" onclick="A.doEdit()">Confirmer</button> <button class="btn sm" onclick="A.noEdit()">Annuler</button></div>`}
+A.noEdit=()=>{window.__pend=null;say('D\'accord, rien n\'a été modifié.')};
+A.doEdit=async()=>{const p=window.__pend;if(!p||p.exp<Date.now()){window.__pend=null;return say("Cette demande a expiré. Écrivez-la de nouveau.")}window.__pend=null;
+ try{if(p.t==='rate'){if(!can('promoteur'))throw new Error('Réservé au promoteur.');const r=D.fee_rates.find(x=>x.key===p.key),old=r.amount;if(LIVE){const {error}=await db.from('fee_rates').update({amount:p.v}).eq('key',p.key);if(error)throw error}r.amount=p.v;SC=null;dirty();await audit('Tarif modifié (assistant)',r.label,fc(old)+' → '+fc(p.v));say(`C'est fait : <b>${esc(r.label)}</b> = <b>${fc(p.v)}</b> par mois.`)}
+  else{if(!can('promoteur','comptable'))throw new Error('Non autorisé.');const s=stu(p.id),old=s[p.f];await upd('students',p.id,{[p.f]:p.v});await audit('Fiche modifiée (assistant)',s.full_name,p.f+' : '+(old||'—')+' → '+p.v);SC=null;say(`C'est fait. <a onclick="A.fiche('${p.id}')">Ouvrir la fiche</a>`);renderNav();render()}
+ }catch(e){say("Je n'ai pas pu modifier : "+esc(e.message))}};
+
+function brain(q){const n=norm(q),raw=q.toLowerCase();const ec=editCmd(q);if(ec)return ec;const stl=l=>l.length?'<ul>'+l.map(s=>`<li><a onclick="A.fiche('${s.id}')">${esc(s.full_name)}</a> — ${esc(clsLabel(cls(s.class_id)))}</li>`).join('')+'</ul>':'';
  if(/doublon/.test(raw)){const d=dupes();return d.length?`J'ai trouvé <b>${d.length}</b> doublon(s) possible(s) :<ul>${d.slice(0,8).map(p=>`<li><a onclick="A.fiche('${p.a.id}')">${esc(p.a.full_name)}</a> ↔ <a onclick="A.fiche('${p.b.id}')">${esc(p.b.full_name)}</a></li>`).join('')}</ul>Ouvrez chaque fiche pour vérifier avant de corriger.`:"Aucun doublon détecté dans les élèves que je peux voir."}
  if(/contr[oô]l|erreur|faute|v[ée]rifi|anomal/.test(raw)){const q2=quality();if(!q2.length)return "Tout semble cohérent ✓";const g={};q2.forEach(x=>(g[x.k]=g[x.k]||[]).push(x));return `<b>${q2.length}</b> point(s) à vérifier :<ul>${Object.entries(g).map(([k,v])=>`<li>${k} : <b>${v.length}</b> — ${v.slice(0,3).map(x=>`<a onclick="A.fiche('${x.id}')">${esc(x.t)}</a>`).join(', ')}${v.length>3?'…':''}</li>`).join('')}</ul>`}
  if(/arri[ée]r|impay|doit|retard de paiement|dette/.test(raw)){if(!can('promoteur','comptable'))return "Les informations de paiement ne sont pas accessibles avec votre rôle.";const l=soldes().filter(x=>x.due>0).sort((a,b)=>b.due-a.due);return l.length?`<b>${l.length}</b> élève(s) en retard, total <b>${fc(l.reduce((a,x)=>a+x.due,0))}</b>. Les plus élevés :<ul>${l.slice(0,6).map(x=>`<li><a onclick="A.fiche('${x.s.id}')">${esc(x.s.full_name)}</a> — ${fc(x.due)}</li>`).join('')}</ul>`:"Personne n'est en retard sur les mensualités ✓"}
