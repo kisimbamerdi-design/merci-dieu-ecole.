@@ -600,3 +600,24 @@ revoke all on staff_messages from anon;
 revoke execute on function staff_messages_fill() from public, anon, authenticated;
 revoke execute on function mark_message_read(uuid) from public, anon;
 grant execute on function mark_message_read(uuid) to authenticated;
+
+-- Messages adressés par zone (primaire / secondaire) : un titulaire ou son second voit les messages de sa zone.
+alter table staff_messages add column if not exists to_zone text check (to_zone is null or to_zone in ('Primaire','Secondaire'));
+create or replace function my_zone() returns text language sql stable security definer set search_path = public as $$
+  select case when section in ('Maternelle','Primaire') then 'Primaire'
+              when section in ('Éducation de Base','Secondaire') then 'Secondaire' end
+  from profiles where id = auth.uid() and active
+$$;
+revoke execute on function my_zone() from public, anon;
+grant execute on function my_zone() to authenticated;
+alter policy msg_read on staff_messages
+  using (my_role() is not null and (sender_id = auth.uid() or to_all
+        or (to_role = my_role() and (to_zone is null or my_zone() is null or my_zone() = to_zone))));
+create or replace function mark_message_read(p_id uuid) returns void language plpgsql security definer set search_path = public as $$
+begin
+  if my_role() is null then return; end if;
+  update staff_messages set read_by = array_append(read_by, auth.uid())
+   where id = p_id and not (auth.uid() = any(read_by))
+     and (sender_id = auth.uid() or to_all
+          or (to_role = my_role() and (to_zone is null or my_zone() is null or my_zone() = to_zone)));
+end $$;

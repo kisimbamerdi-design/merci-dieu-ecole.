@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.30.2';
+const APP_VERSION='2026.10.30.3';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -601,8 +601,8 @@ P.rappels=()=>head('Rappels du mois','Chaque début de mois, envoyez aux parents
 AFTER.rappels=()=>A.remList();
 
 /* ---------- messagerie interne du personnel ---------- */
-const MSG_TARGETS=[['promoteur','Promoteur'],['direction','Directeur Général'],['directeur_etudes','Directeurs des Études / Préfet'],['prefet_discipline','Directeurs de Discipline'],['comptable','Comptable-secrétaire'],['professeur','Professeurs']];
-const mlabel=m=>m.to_all?'Tout le personnel':(MSG_TARGETS.find(t=>t[0]===m.to_role)||[0,m.to_role])[1];
+const MSG_TARGETS=[['promoteur','Promoteur'],['direction','Directeur Général'],['directeur_etudes|Primaire','Directeur (Primaire)'],['directeur_etudes|Secondaire','Préfet (Secondaire)'],['prefet_discipline|Primaire','Directeur de Discipline (Primaire)'],['prefet_discipline|Secondaire','Directeur de Discipline (Secondaire)'],['comptable','Comptable-secrétaire'],['professeur','Professeurs']];
+const mlabel=m=>m.to_all?'Tout le personnel':(MSG_TARGETS.find(t=>t[0]===m.to_role+(m.to_zone?'|'+m.to_zone:''))||[0,m.to_role])[1];
 P.interne=()=>{const l=D.staff_messages.slice().sort((a,b)=>String(b.created_at).localeCompare(a.created_at));
  return head('Communication interne','Messages entre le promoteur, la direction, la comptabilité, les directeurs et les professeurs.',`<button class="btn pri" onclick="A.msgNew()">＋ Nouveau message</button>`)+
  `<div class="card">${l.map(m=>{const unread=!(m.read_by||[]).includes(S.uid);return `<div style="padding:12px 4px;border-bottom:1px solid var(--line)"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${esc(m.sender_name||'—')}</b><span style="color:var(--mut);font-size:13px">→ ${esc(mlabel(m))} · ${esc(new Date(m.created_at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'}))}</span>${unread?chip('Nouveau','warn'):''}</div>${m.subject?`<div style="font-weight:700;margin-top:4px">${esc(m.subject)}</div>`:''}<div style="margin-top:4px;white-space:pre-wrap">${esc(m.body)}</div></div>`}).join('')||none('Aucun message.')}</div>`};
@@ -610,7 +610,7 @@ AFTER.interne=async()=>{const un=D.staff_messages.filter(m=>!(m.read_by||[]).inc
  for(const m of un){try{if(LIVE){await db.rpc('mark_message_read',{p_id:m.id})}m.read_by=[...(m.read_by||[]),S.uid]}catch(e){}}renderNav()};
 A.msgNew=()=>modal(`<h3>Nouveau message</h3><div class="f"><div class="full"><label>Destinataire</label><select id="mi_t"><option value="all">Tout le personnel</option>${MSG_TARGETS.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select></div><div class="full"><label>Objet (facultatif)</label><input id="mi_s" maxlength="120"></div><div class="full"><label>Message</label><textarea id="mi_b" rows="5" maxlength="2000" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px"></textarea></div></div><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.msgPost()">Envoyer</button></div>`);
 A.msgPost=async()=>{const t=val('mi_t'),b=val('mi_b');if(!b)return toast('Écrivez un message.',1);
- try{const row={subject:val('mi_s')||null,body:b,to_all:t==='all',to_role:t==='all'?null:t};
+ try{const [tr,tz]=t.split('|');const row={subject:val('mi_s')||null,body:b,to_all:t==='all',to_role:t==='all'?null:tr,to_zone:tz||null};
   if(LIVE){const {data,error}=await db.from('staff_messages').insert(row).select().single();if(error)throw error;D.staff_messages.push(data)}
   else D.staff_messages.push({id:uid(),created_at:new Date().toISOString(),sender_id:S.uid,sender_name:S.name,sender_role:S.role,read_by:[S.uid],...row});
   A.close();toast('Message envoyé ✓');renderNav();render()}catch(e){toast(e.message,1)}};
