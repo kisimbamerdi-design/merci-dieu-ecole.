@@ -554,3 +554,49 @@ create trigger staff_upper_trg before insert or update on staff for each row exe
 
 revoke execute on function students_upper() from public, anon, authenticated;
 revoke execute on function staff_upper() from public, anon, authenticated;
+
+-- ============================================================
+--  COMMUNICATION INTERNE (messages entre membres du personnel)
+--  Lecture : l'expéditeur, ou le rôle destinataire, ou tout le personnel.
+-- ============================================================
+create table if not exists staff_messages (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  sender_id   uuid not null references profiles(id),
+  sender_name text,
+  sender_role app_role,
+  to_role     app_role,
+  to_all      boolean not null default false,
+  subject     text check (subject is null or char_length(subject) <= 120),
+  body        text not null check (char_length(body) between 1 and 2000),
+  read_by     uuid[] not null default '{}',
+  check ((to_role is not null)::int + to_all::int = 1)
+);
+alter table staff_messages enable row level security;
+
+create or replace function staff_messages_fill() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  new.sender_id   := auth.uid();
+  new.sender_name := (select full_name from profiles where id = auth.uid());
+  new.sender_role := my_role();
+  new.read_by     := array[auth.uid()];
+  return new;
+end $$;
+create trigger staff_messages_fill_trg before insert on staff_messages for each row execute function staff_messages_fill();
+
+create policy msg_insert on staff_messages for insert with check (my_role() is not null);
+create policy msg_read on staff_messages for select
+  using (my_role() is not null and (sender_id = auth.uid() or to_all or to_role = my_role()));
+
+create or replace function mark_message_read(p_id uuid) returns void language plpgsql security definer set search_path = public as $$
+begin
+  if my_role() is null then return; end if;
+  update staff_messages set read_by = array_append(read_by, auth.uid())
+   where id = p_id and not (auth.uid() = any(read_by))
+     and (sender_id = auth.uid() or to_all or to_role = my_role());
+end $$;
+
+revoke all on staff_messages from anon;
+revoke execute on function staff_messages_fill() from public, anon, authenticated;
+revoke execute on function mark_message_read(uuid) from public, anon;
+grant execute on function mark_message_read(uuid) to authenticated;

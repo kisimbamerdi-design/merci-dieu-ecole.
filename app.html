@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.30.1';
+const APP_VERSION='2026.10.30.2';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -231,7 +231,7 @@ const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
 const ROLES={promoteur:'Promoteur',direction:'Directeur Général',directeur_etudes:'Directeur des Études',prefet_discipline:'Directeur de Discipline',comptable:'Comptable-secrétaire',professeur:'Professeur'};
 const SEC_ZONE=s=>['Maternelle','Primaire'].includes(s)?'Primaire':(['Éducation de Base','Secondaire'].includes(s)?'Secondaire':null);
 function roleLabel(p){if(!p)return'';const z=SEC_ZONE(p.section);if(p.role==='directeur_etudes')return z==='Primaire'?'Directeur (Primaire)':z==='Secondaire'?'Préfet (Secondaire)':'Directeur des Études';if(p.role==='prefet_discipline')return z?`Directeur de Discipline (${z})`:'Directeur de Discipline';return ROLES[p.role]||p.role}
-const TABLES=['profiles','classes','teacher_classes','students','online_registrations','fee_rates','payments','cash_closings','staff','staff_pay','salary_advances','attendance','grades','timetable','settings','audit_log'];
+const TABLES=['profiles','classes','teacher_classes','students','online_registrations','fee_rates','payments','cash_closings','staff','staff_pay','salary_advances','attendance','grades','timetable','settings','audit_log','staff_messages'];
 const MONTHS=['Septembre','Octobre','Novembre','Décembre','Janvier','Février','Mars','Avril','Mai','Juin'];
 const REASONS=[...MONTHS.map(m=>'Frais mensuel — '+m),"Frais de l'État — 1ère tranche","Frais de l'État — 2e tranche","Frais de l'État — 3e tranche",'Frais technique','Minervale','Autre'];
 const A={},P={},AFTER={};
@@ -346,6 +346,8 @@ const MENU=[
  {id:'eleves',i:'☺',l:'Élèves',r:ALL},
  {id:'online',i:'✉',l:'Inscriptions en ligne',r:['promoteur','comptable'],badge:()=>D.online_registrations.filter(x=>!x.processed).length},
  {id:'messages',i:'✉',l:'Messages aux parents',r:['promoteur','direction','comptable']},
+ {id:'rappels',i:'⏰',l:'Rappels du mois',r:['promoteur','comptable']},
+ {id:'interne',i:'💬',l:'Communication interne',r:ALL,badge:()=>D.staff_messages.filter(m=>!(m.read_by||[]).includes(S.uid)).length},
  {id:'classes',i:'▦',l:'Classes et promotions',r:['promoteur','direction','directeur_etudes','comptable']},
  {id:'presences',i:'✔',l:'Présences',r:['promoteur','direction','prefet_discipline','professeur']},
  {id:'notes',i:'✎',l:'Notes et résultats',r:['promoteur','direction','directeur_etudes','professeur']},
@@ -397,6 +399,7 @@ P.dash=()=>{
  const todo=[];
  if(can('promoteur','comptable')){const o=D.online_registrations.filter(x=>!x.processed).length;if(o)todo.push(['✉',`${o} inscription(s) en ligne à traiter`,'online']);
   const ar=soldes().filter(x=>x.due>0).length;if(ar)todo.push(['⚖',`${ar} élève(s) avec arriérés`,'soldes']);
+  if(new Date().getDate()<=10){const rs=remSent(),k=remRows().filter(r=>!rs[r.n]).length;if(k)todo.push(['⏰',`${k} rappel(s) de début de mois à envoyer aux parents`,'rappels'])}
   if(!D.cash_closings.some(c=>c.day===today()))todo.push(['▣',"La caisse du jour n'est pas encore clôturée",'caisse']);
   const sg=D.salary_advances.filter(x=>x.status==='signee').length;if(sg)todo.push(['↺',`${sg} avance(s) signée(s) à verser`,'avances'])}
  if(can('direction','promoteur')){const a=D.salary_advances.filter(x=>x.status==='demandee').length;if(a)todo.push(['✍',`${a} avance(s) à signer`,'avances'])}
@@ -581,6 +584,37 @@ A.dun=id=>{const s=stu(id),so=soldeOf(id);if(!s||!so)return;const n=phoneIntl(s.
  const msg=`Bonjour. Le Collège Merci-Dieu vous rappelle qu'il reste ${fc(so.due)} à payer pour ${s.full_name} (${clsLabel(so.c)}). Merci de passer au secrétariat. Si vous avez déjà payé, ignorez ce message.`;
  window.__inv={n,id,label:'Relance de paiement'};
  modal(`<h3>Relancer le parent</h3><p class="sub">${esc(s.full_name)} · reste dû <b>${fc(so.due)}</b> · +${esc(n)}</p><label style="font-weight:700">Message</label><textarea id="inv_m" rows="5" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px;margin-top:6px">${esc(msg)}</textarea><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn line" onclick="A.sendInvite('sms')">✉ SMS</button><button class="btn pri" onclick="A.sendInvite('wa')">WhatsApp</button></div>`)};
+/* ---------- rappel mensuel (à partir du 1er du mois) ---------- */
+const monthKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+const remSent=()=>{try{return JSON.parse(localStorage.getItem('md_rem_'+monthKey())||'{}')}catch(e){return{}}};
+const remMark=n=>{try{const o=remSent();o[n]=1;localStorage.setItem('md_rem_'+monthKey(),JSON.stringify(o))}catch(e){}};
+function remRows(){const g={};soldes().filter(x=>x.due>0&&!x.s.social_case).forEach(x=>{const n=phoneIntl(x.s.parent_phone);if(n.length<11||n.length>13)return;(g[n]=g[n]||{n,s:[],due:0}).s.push(x);g[n].due+=x.due});return Object.values(g)}
+A.remList=()=>{const l=remRows(),sent=remSent(),todo=l.filter(r=>!sent[r.n]).length;
+ $('#rm_n').textContent=`${l.length} famille(s) avec un reste à payer · ${todo} rappel(s) pas encore envoyé(s) ce mois-ci`;
+ $('#rmb').innerHTML=l.map(r=>`<tr><td>${esc(r.s.map(x=>x.s.full_name).join(', '))}</td><td class="r">${fc(r.due)}</td><td>+${esc(r.n)}</td><td class="r">${sent[r.n]?chip('Envoyé','ok'):''} <button class="btn sm line" onclick="A.remSend('sms','${r.n}')">SMS</button> <button class="btn sm pri" onclick="A.remSend('wa','${r.n}')">WhatsApp</button></td></tr>`).join('')||`<tr><td colspan="4">${none('Aucun rappel à envoyer.')}</td></tr>`};
+A.remSend=async(k,n)=>{const r=remRows().find(x=>x.n===n);if(!r)return;
+ const t=`Bonjour. Le Collège Merci-Dieu vous rappelle le paiement de la mensualité : il reste ${fc(r.due)} à payer pour ${r.s.map(x=>x.s.full_name).join(' et ')}. Merci de passer au secrétariat. Si vous avez déjà payé, ignorez ce message.`;
+ try{await audit('Rappel mensuel ('+(k==='wa'?'WhatsApp':'SMS')+')',r.s.map(x=>x.s.full_name).join(', '))}catch(e){}
+ remMark(n);window.open(k==='wa'?`https://wa.me/${n}?text=${encodeURIComponent(t)}`:`sms:+${n}?&body=${encodeURIComponent(t)}`,'_blank');A.remList()};
+P.rappels=()=>head('Rappels du mois','Chaque début de mois, envoyez aux parents le rappel du montant qu\'il leur reste à payer. Un seul message par famille ; les cas sociaux sont exclus.')+
+ `<div class="card"><p style="color:var(--mut);margin:0 0 12px" id="rm_n"></p><div class="tw"><table><thead><tr><th>Élève(s)</th><th class="r">Reste dû</th><th>Téléphone</th><th></th></tr></thead><tbody id="rmb"></tbody></table></div></div>`;
+AFTER.rappels=()=>A.remList();
+
+/* ---------- messagerie interne du personnel ---------- */
+const MSG_TARGETS=[['promoteur','Promoteur'],['direction','Directeur Général'],['directeur_etudes','Directeurs des Études / Préfet'],['prefet_discipline','Directeurs de Discipline'],['comptable','Comptable-secrétaire'],['professeur','Professeurs']];
+const mlabel=m=>m.to_all?'Tout le personnel':(MSG_TARGETS.find(t=>t[0]===m.to_role)||[0,m.to_role])[1];
+P.interne=()=>{const l=D.staff_messages.slice().sort((a,b)=>String(b.created_at).localeCompare(a.created_at));
+ return head('Communication interne','Messages entre le promoteur, la direction, la comptabilité, les directeurs et les professeurs.',`<button class="btn pri" onclick="A.msgNew()">＋ Nouveau message</button>`)+
+ `<div class="card">${l.map(m=>{const unread=!(m.read_by||[]).includes(S.uid);return `<div style="padding:12px 4px;border-bottom:1px solid var(--line)"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${esc(m.sender_name||'—')}</b><span style="color:var(--mut);font-size:13px">→ ${esc(mlabel(m))} · ${esc(new Date(m.created_at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'}))}</span>${unread?chip('Nouveau','warn'):''}</div>${m.subject?`<div style="font-weight:700;margin-top:4px">${esc(m.subject)}</div>`:''}<div style="margin-top:4px;white-space:pre-wrap">${esc(m.body)}</div></div>`}).join('')||none('Aucun message.')}</div>`};
+AFTER.interne=async()=>{const un=D.staff_messages.filter(m=>!(m.read_by||[]).includes(S.uid));if(!un.length)return;
+ for(const m of un){try{if(LIVE){await db.rpc('mark_message_read',{p_id:m.id})}m.read_by=[...(m.read_by||[]),S.uid]}catch(e){}}renderNav()};
+A.msgNew=()=>modal(`<h3>Nouveau message</h3><div class="f"><div class="full"><label>Destinataire</label><select id="mi_t"><option value="all">Tout le personnel</option>${MSG_TARGETS.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select></div><div class="full"><label>Objet (facultatif)</label><input id="mi_s" maxlength="120"></div><div class="full"><label>Message</label><textarea id="mi_b" rows="5" maxlength="2000" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px"></textarea></div></div><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.msgPost()">Envoyer</button></div>`);
+A.msgPost=async()=>{const t=val('mi_t'),b=val('mi_b');if(!b)return toast('Écrivez un message.',1);
+ try{const row={subject:val('mi_s')||null,body:b,to_all:t==='all',to_role:t==='all'?null:t};
+  if(LIVE){const {data,error}=await db.from('staff_messages').insert(row).select().single();if(error)throw error;D.staff_messages.push(data)}
+  else D.staff_messages.push({id:uid(),created_at:new Date().toISOString(),sender_id:S.uid,sender_name:S.name,sender_role:S.role,read_by:[S.uid],...row});
+  A.close();toast('Message envoyé ✓');renderNav();render()}catch(e){toast(e.message,1)}};
+
 Q.ms={c:'',sent:{}};
 P.messages=()=>head('Messages aux parents','Écrivez un communiqué, choisissez la classe, puis envoyez-le à chaque parent en un geste, par WhatsApp ou par SMS. Utilisez {eleve} et {classe} pour personnaliser.')+
  `<div class="card"><div class="tools"><select onchange="Q.ms.c=this.value;A.msgList()"><option value="">Toutes les classes</option>${D.classes.map(c=>`<option value="${c.id}" ${Q.ms.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select><button class="btn line" onclick="A.msgCopy()">📋 Copier les numéros</button></div>
