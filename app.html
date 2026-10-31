@@ -255,7 +255,7 @@ const head=(t,s,a='')=>`<div class="ph"><div><h2>${t}</h2>${s?`<p>${s}</p>`:''}<
 const none=t=>`<div class="empty">${t}</div>`;
 const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z ]/g,' ').split(/\s+/).filter(Boolean).sort().join(' ');
 function lev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){let c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
-function csvDown(name,rows){const safe=c=>{let v=String(c??'');if(/^[\\s]*[=+@\\-]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};const t=rows.map(r=>r.map(safe).join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download=name;a.click()}
+function csvDown(name,rows){const safe=c=>{let v=String(c??'');if(/^\s*[=+@-]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};const t=rows.map(r=>r.map(safe).join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download=name;a.click()}
 const val=id=>{const e=document.getElementById(id);return e?e.value.trim():''};
 
 /* nombre en lettres (français) */
