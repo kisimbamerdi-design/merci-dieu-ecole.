@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.31.4';
+const APP_VERSION='2026.10.31.5';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -402,8 +402,8 @@ P.fonctions=()=>head('Fonctionnalités','Toutes les fonctions de l\'application,
  FONCTIONS.map(([t,items])=>{const vis=items.filter(([,,p])=>p?allowed(p):can('promoteur'));if(!vis.length)return '';
   return `<h3 style="margin:22px 0 10px">${esc(t)}</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px">${vis.map(([i,l,p])=>`<button class="card" ${p?`onclick="${l==='Mises à jour'?"Q.pa.tab='maj';":''}go('${p}')"`:'disabled'} style="text-align:center;padding:16px 8px;cursor:${p?'pointer':'default'};opacity:${p?1:.55};border:1px solid var(--line)"><div style="font-size:28px;margin-bottom:6px">${i}</div><div style="font-weight:600;font-size:13px;line-height:1.25">${esc(l)}</div>${p?'':'<div style="font-size:11px;color:var(--mut);margin-top:4px">Bientôt</div>'}</button>`).join('')}</div>`}).join('');
 /* ---------- profil ---------- */
-P.profil=()=>head('Mon profil','Vos informations et votre mot de passe.')+`<div class="card" style="max-width:460px"><dl class="kv"><dt>Nom</dt><dd>${esc(S.name||'')}</dd><dt>Fonction</dt><dd>${esc(roleLabel({role:S.role,section:S.section}))}</dd></dl>${LIVE?`<h4 style="margin:18px 0 8px">Changer mon mot de passe</h4><div class="f"><div class="full"><label>Nouveau mot de passe (8 caractères minimum)</label><input id="pw1" type="password" autocomplete="new-password"></div><div class="full"><label>Répétez-le</label><input id="pw2" type="password" autocomplete="new-password"></div></div><div style="margin-top:14px"><button class="btn pri" onclick="A.pwChange()">Changer</button></div>`:''}</div>`;
-A.pwChange=async()=>{const a=$('#pw1').value,b=$('#pw2').value;if(a.length<8)return toast('8 caractères minimum.',1);if(a!==b)return toast('Les deux mots de passe sont différents.',1);
+P.profil=()=>head('Mon profil','Vos informations et votre mot de passe.')+`<div class="card" style="max-width:460px"><dl class="kv"><dt>Nom</dt><dd>${esc(S.name||'')}</dd><dt>Fonction</dt><dd>${esc(roleLabel({role:S.role,section:S.section}))}</dd></dl>${LIVE?`<h4 style="margin:18px 0 8px">Changer mon mot de passe</h4><div class="f"><div class="full"><label>Nouveau mot de passe (12 caractères minimum)</label><input id="pw1" type="password" autocomplete="new-password"></div><div class="full"><label>Répétez-le</label><input id="pw2" type="password" autocomplete="new-password"></div></div><div style="margin-top:14px"><button class="btn pri" onclick="A.pwChange()">Changer</button></div>`:''}</div>`;
+A.pwChange=async()=>{const a=$('#pw1').value,b=$('#pw2').value;if(a.length<12)return toast('12 caractères minimum.',1);if(a!==b)return toast('Les deux mots de passe sont différents.',1);
  try{const {error}=await db.auth.updateUser({password:a});if(error)throw error;$('#pw1').value=$('#pw2').value='';toast('Mot de passe changé ✓')}catch(e){toast(e.message,1)}};
 
 P.dash=()=>{
