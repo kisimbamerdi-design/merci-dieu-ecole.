@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.31.4';
+const APP_VERSION='2026.10.31.5';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -346,6 +346,7 @@ const MENU=[
  {id:'journal',i:'☰',l:"Journal des opérations",r:['promoteur']},
  ['Scolarité'],
  {id:'eleves',i:'☺',l:'Élèves',r:ALL},
+ {id:'rapports',i:'📊',l:'Rapports élèves',r:ALL},
  {id:'online',i:'✉',l:'Inscriptions en ligne',r:['promoteur','comptable'],badge:()=>D.online_registrations.filter(x=>!x.processed).length},
  {id:'messages',i:'✉',l:'Messages aux parents',r:['promoteur','direction','comptable']},
  {id:'rappels',i:'⏰',l:'Rappels du mois',r:['promoteur','comptable']},
@@ -384,7 +385,7 @@ A.toggleNav=()=>$('#side').classList.toggle('open');
    ===================================================================== */
 /* ---------- Fonctionnalités : accueil en tuiles, par domaine (comme les applications scolaires de référence) ---------- */
 const FONCTIONS=[
- ['Gestion des élèves',[['🎓','Élèves','eleves'],['✔','Présences','presences'],['▦','Classes','classes'],['✉','Inscriptions en ligne','online'],['📊','Rapports élèves',null]]],
+ ['Gestion des élèves',[['🎓','Élèves','eleves'],['✔','Présences','presences'],['▦','Classes','classes'],['✉','Inscriptions en ligne','online'],['📊','Rapports élèves','rapports']]],
  ['Cotation',[['✎','Notes et résultats','notes'],['📒','Bulletins','eleves'],['◷','Emplois du temps','horaires']]],
  ['Finances',[['₣','Paiements','paiements'],['⚖','Soldes et arriérés','soldes'],['🧾','Reçus','recus'],['▣','Clôture de caisse','caisse'],['💰','Trésorerie (entrées / sorties)',null]]],
  ['Communication',[['✉','Messages aux parents','messages'],['⏰','Rappels du mois','rappels'],['💬','Communication interne','interne'],['📜',"Règlement d'ordre intérieur",'reglement'],['📢','Circulaires officielles',null]]],
@@ -394,6 +395,26 @@ const FONCTIONS=[
 P.fonctions=()=>head('Fonctionnalités','Toutes les fonctions de l\'application, par domaine. Touchez une tuile pour l\'ouvrir.')+
  FONCTIONS.map(([t,items])=>{const vis=items.filter(([,,p])=>p?allowed(p):can('promoteur'));if(!vis.length)return '';
   return `<h3 style="margin:22px 0 10px">${esc(t)}</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px">${vis.map(([i,l,p])=>`<button class="card" ${p?`onclick="${l==='Mises à jour'?"Q.pa.tab='maj';":''}go('${p}')"`:'disabled'} style="text-align:center;padding:16px 8px;cursor:${p?'pointer':'default'};opacity:${p?1:.55};border:1px solid var(--line)"><div style="font-size:28px;margin-bottom:6px">${i}</div><div style="font-weight:600;font-size:13px;line-height:1.25">${esc(l)}</div>${p?'':'<div style="font-size:11px;color:var(--mut);margin-top:4px">Bientôt</div>'}</button>`).join('')}</div>`}).join('');
+/* Rapports scolaires : agrégats des seules données autorisées par la RLS. */
+P.rapports=()=>{
+ const eleves=D.students||[],classes=D.classes||[];
+ const valides=eleves.filter(s=>s.status==='valide');
+ const filles=eleves.filter(s=>s.sex==='Féminin').length;
+ const garcons=eleves.filter(s=>s.sex==='Masculin').length;
+ const incomplets=eleves.filter(s=>s.status==='a_verifier'||s.status==='a_completer').length;
+ const rows=classes.map(c=>{
+  const list=eleves.filter(s=>s.class_id===c.id);
+  return '<tr><td><b>'+esc(clsLabel(c))+'</b></td><td>'+esc(c.section||'—')+'</td><td class="r">'+list.length+'</td><td class="r">'+list.filter(s=>s.sex==='Masculin').length+'</td><td class="r">'+list.filter(s=>s.sex==='Féminin').length+'</td><td class="r">'+list.filter(s=>s.status==='valide').length+'</td></tr>';
+ }).join('');
+ return head('Rapports élèves','Synthèse des effectifs que votre rôle est autorisé à consulter.', '<button class="btn line" onclick="window.print()">🖨 Imprimer</button>')+
+ '<div class="grid g4">'+kpi('Élèves visibles',eleves.length,'Tous statuts')+
+ kpi('Dossiers validés',valides.length,'Inscriptions confirmées','gold')+
+ kpi('Garçons / Filles',garcons+' / '+filles,'Genre renseigné','blue')+
+ kpi('À vérifier',incomplets,'Dossiers incomplets','red')+'</div>'+
+ '<div class="card mt"><h3>Répartition par classe</h3><div class="tw"><table><thead><tr><th>Classe</th><th>Section</th><th class="r">Total</th><th class="r">Garçons</th><th class="r">Filles</th><th class="r">Validés</th></tr></thead><tbody>'+
+ (rows||'<tr><td colspan="6">'+none('Aucune classe visible pour le moment.')+'</td></tr>')+
+ '</tbody></table></div><p style="color:var(--mut);font-size:12px;margin-top:12px">Les nombres reflètent les données visibles dans cette session. Aucune donnée financière n’est affichée.</p></div>';
+};
 /* ---------- profil ---------- */
 P.profil=()=>head('Mon profil','Vos informations et votre mot de passe.')+`<div class="card" style="max-width:460px"><dl class="kv"><dt>Nom</dt><dd>${esc(S.name||'')}</dd><dt>Fonction</dt><dd>${esc(roleLabel({role:S.role,section:S.section}))}</dd></dl>${LIVE?`<h4 style="margin:18px 0 8px">Changer mon mot de passe</h4><div class="f"><div class="full"><label>Nouveau mot de passe (8 caractères minimum)</label><input id="pw1" type="password" autocomplete="new-password"></div><div class="full"><label>Répétez-le</label><input id="pw2" type="password" autocomplete="new-password"></div></div><div style="margin-top:14px"><button class="btn pri" onclick="A.pwChange()">Changer</button></div>`:''}</div>`;
 A.pwChange=async()=>{const a=$('#pw1').value,b=$('#pw2').value;if(a.length<8)return toast('8 caractères minimum.',1);if(a!==b)return toast('Les deux mots de passe sont différents.',1);
