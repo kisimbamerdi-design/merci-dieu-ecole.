@@ -46,7 +46,9 @@ Demande-le si tu ne l'as pas, et lis-le avant tout travail.
 
 - Aucune donnée réelle n'est encore dans la base : n'écris rien en production sans confirmation explicite.
 - Travaille sur une branche Supabase de développement, pas sur la production.
-- `inscription.html` n'est volontairement pas suivi : ne le publie pas avant la protection anti-abus (fonction
-  `submit_registration`, captcha, limitation de fréquence).
+- `inscription.html` n'est volontairement PAS sur `main` : il vit sur la branche `inscription-publique-en-attente`. Ne le fusionne pas avant la protection anti-abus (fonction
+  `submit_registration`, captcha, limitation de fréquence). `index.html` (page d'accueil) renvoie provisoirement vers l'ancien site.
+- Version 2026.10.31.4 : modules Trésorerie, Circulaires, Documents/Archives/Bibliothèque, Agenda et Rapports élèves ajoutés (tables `treasury_entries`, `circulars`, `school_documents`, `agenda_events`, RLS en place). Les tuiles de l'écran Fonctionnalités sont dans le tableau `FONCTIONS` ; une tuile à `null` s'affiche « Bientôt ».
+- Création de comptes : fonction serveur `manage-user` (supabase/functions/manage-user). Les identifiants de connexion sont de la forme `nom@merci-dieu.app`.
 - Ne pas ajouter de bibliothèque non officielle pour WhatsApp (risque de blocage du numéro de l'école).
 - Les secrets des fonctions serveur vivent uniquement dans les secrets Supabase.

@@ -624,3 +624,78 @@ end $$;
 
 -- Le règlement d'ordre intérieur (clés roi_*) est lisible par tout compte actif ; l'écriture reste au promoteur (set_write).
 create policy set_read_roi on settings for select using (my_role() is not null and key like 'roi\_%');
+
+-- ============================================================
+--  MODULES « FONCTIONNALITÉS » : trésorerie, circulaires, documents/archives/bibliothèque, agenda
+--  Toutes les tables : RLS activée, aucun accès anon.
+-- ============================================================
+create table if not exists treasury_entries (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  day         date not null default current_date,
+  kind        text not null check (kind in ('entree','sortie')),
+  category    text not null check (char_length(category) between 1 and 60),
+  label       text not null check (char_length(label) between 1 and 200),
+  amount      numeric(12,0) not null check (amount > 0),
+  created_by  uuid not null default auth.uid() references profiles(id)
+);
+alter table treasury_entries enable row level security;
+create policy tre_read   on treasury_entries for select using (my_role() in ('promoteur','comptable'));
+create policy tre_insert on treasury_entries for insert with check (my_role() in ('promoteur','comptable') and created_by = auth.uid());
+create policy tre_delete on treasury_entries for delete using (my_role() = 'promoteur');
+
+create table if not exists circulars (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  title       text not null check (char_length(title) between 1 and 160),
+  body        text not null check (char_length(body) between 1 and 5000),
+  status      text not null default 'brouillon' check (status in ('brouillon','publie')),
+  published_at timestamptz,
+  author_id   uuid not null default auth.uid() references profiles(id),
+  author_name text
+);
+alter table circulars enable row level security;
+create policy circ_read on circulars for select
+  using (my_role() is not null and (status = 'publie' or author_id = auth.uid() or my_role() = 'promoteur'));
+create policy circ_insert on circulars for insert
+  with check (my_role() in ('promoteur','direction','directeur_etudes') and author_id = auth.uid());
+create policy circ_update on circulars for update
+  using (my_role() = 'promoteur' or (author_id = auth.uid() and my_role() in ('direction','directeur_etudes')))
+  with check (my_role() = 'promoteur' or (author_id = auth.uid() and my_role() in ('direction','directeur_etudes')));
+create policy circ_delete on circulars for delete using (my_role() = 'promoteur');
+
+create table if not exists school_documents (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  title       text not null check (char_length(title) between 1 and 160),
+  category    text not null default 'Document' check (category in ('Document','Bibliothèque','Formulaire','Rapport')),
+  url         text check (url is null or url ~* '^https://'),
+  note        text check (note is null or char_length(note) <= 1000),
+  archived    boolean not null default false,
+  created_by  uuid not null default auth.uid() references profiles(id)
+);
+alter table school_documents enable row level security;
+create policy doc_read   on school_documents for select using (my_role() is not null);
+create policy doc_insert on school_documents for insert with check (my_role() in ('promoteur','direction','directeur_etudes') and created_by = auth.uid());
+create policy doc_update on school_documents for update using (my_role() in ('promoteur','direction','directeur_etudes')) with check (my_role() in ('promoteur','direction','directeur_etudes'));
+create policy doc_delete on school_documents for delete using (my_role() = 'promoteur');
+
+create table if not exists agenda_events (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  day         date not null,
+  end_day     date,
+  title       text not null check (char_length(title) between 1 and 160),
+  kind        text not null default 'Événement' check (kind in ('Événement','Réunion','Examen','Congé','Échéance')),
+  zone        text check (zone is null or zone in ('Primaire','Secondaire')),
+  note        text check (note is null or char_length(note) <= 1000),
+  created_by  uuid not null default auth.uid() references profiles(id),
+  check (end_day is null or end_day >= day)
+);
+alter table agenda_events enable row level security;
+create policy ag_read   on agenda_events for select using (my_role() is not null);
+create policy ag_insert on agenda_events for insert with check (my_role() in ('promoteur','direction','directeur_etudes') and created_by = auth.uid());
+create policy ag_update on agenda_events for update using (my_role() in ('promoteur','direction','directeur_etudes')) with check (my_role() in ('promoteur','direction','directeur_etudes'));
+create policy ag_delete on agenda_events for delete using (my_role() in ('promoteur','direction','directeur_etudes'));
+
+revoke all on treasury_entries, circulars, school_documents, agenda_events from anon;

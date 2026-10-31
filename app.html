@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.31.3';
+const APP_VERSION='2026.10.31.4';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -231,7 +231,7 @@ const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
 const ROLES={promoteur:'Promoteur',direction:'Directeur Général',directeur_etudes:'Directeur des Études',prefet_discipline:'Directeur de Discipline',comptable:'Comptable-secrétaire',professeur:'Professeur'};
 const SEC_ZONE=s=>['Maternelle','Primaire'].includes(s)?'Primaire':(['Éducation de Base','Secondaire'].includes(s)?'Secondaire':null);
 function roleLabel(p){if(!p)return'';const z=SEC_ZONE(p.section);if(p.role==='directeur_etudes')return z==='Primaire'?'Directeur (Primaire)':z==='Secondaire'?'Préfet (Secondaire)':'Directeur des Études';if(p.role==='prefet_discipline')return z?`Directeur de Discipline (${z})`:'Directeur de Discipline';return ROLES[p.role]||p.role}
-const TABLES=['profiles','classes','teacher_classes','students','online_registrations','fee_rates','payments','cash_closings','staff','staff_pay','salary_advances','attendance','grades','timetable','settings','audit_log','staff_messages'];
+const TABLES=['profiles','classes','teacher_classes','students','online_registrations','fee_rates','payments','cash_closings','staff','staff_pay','salary_advances','attendance','grades','timetable','settings','audit_log','staff_messages','treasury_entries','circulars','school_documents','agenda_events'];
 const MONTHS=['Septembre','Octobre','Novembre','Décembre','Janvier','Février','Mars','Avril','Mai','Juin'];
 const REASONS=[...MONTHS.map(m=>'Frais mensuel — '+m),"Frais de l'État — 1ère tranche","Frais de l'État — 2e tranche","Frais de l'État — 3e tranche",'Frais technique','Minervale','Autre'];
 const A={},P={},AFTER={};
@@ -349,21 +349,28 @@ const MENU=[
  {id:'online',i:'✉',l:'Inscriptions en ligne',r:['promoteur','comptable'],badge:()=>D.online_registrations.filter(x=>!x.processed).length},
  {id:'messages',i:'✉',l:'Messages aux parents',r:['promoteur','direction','comptable']},
  {id:'rappels',i:'⏰',l:'Rappels du mois',r:['promoteur','comptable']},
+ {id:'circulaires',i:'📢',l:'Circulaires officielles',r:ALL},
  {id:'interne',i:'💬',l:'Communication interne',r:ALL,badge:()=>D.staff_messages.filter(m=>!(m.read_by||[]).includes(S.uid)).length},
  {id:'classes',i:'▦',l:'Classes et promotions',r:['promoteur','direction','directeur_etudes','comptable']},
  {id:'presences',i:'✔',l:'Présences',r:['promoteur','direction','prefet_discipline','professeur']},
  {id:'notes',i:'✎',l:'Notes et résultats',r:['promoteur','direction','directeur_etudes','professeur']},
  {id:'horaires',i:'◷',l:'Emplois du temps',r:['promoteur','direction','directeur_etudes','professeur']},
+ {id:'rapports',i:'📊',l:'Rapports élèves',r:['promoteur','direction','directeur_etudes','prefet_discipline']},
+ {id:'agenda',i:'🗓',l:'Agenda scolaire',r:ALL},
  ['Finances'],
  {id:'paiements',i:'₣',l:'Paiements',r:['promoteur','comptable']},
  {id:'soldes',i:'⚖',l:'Soldes et arriérés',r:['promoteur','comptable']},
  {id:'recus',i:'🧾',l:'Reçus',r:['promoteur','comptable']},
  {id:'caisse',i:'▣',l:'Clôture de caisse',r:['promoteur','comptable']},
+ {id:'tresorerie',i:'💰',l:'Trésorerie',r:['promoteur','comptable']},
  ['Personnel'],
  {id:'personnel',i:'☷',l:'Personnel',r:['promoteur','direction','comptable']},
  {id:'avances',i:'↺',l:'Avances sur salaire',r:ALL,badge:()=>can('direction','promoteur')?D.salary_advances.filter(x=>x.status==='demandee').length:can('comptable')?D.salary_advances.filter(x=>x.status==='signee').length:0},
  {id:'paie',i:'▤',l:'Salaires',r:['promoteur','direction']},
  ['Outils'],
+ {id:'documents',i:'📁',l:'Documents',r:ALL},
+ {id:'bibliotheque',i:'📚',l:'Bibliothèque',r:ALL},
+ {id:'archives',i:'🗄',l:'Archives',r:ALL},
  {id:'import',i:'⇪',l:'Importer des données',r:['promoteur','comptable']},
  {id:'reglement',i:'📜',l:"Règlement d'ordre intérieur",r:ALL},
  {id:'params',i:'⚙',l:'Paramètres',r:['promoteur','comptable']}
@@ -384,12 +391,12 @@ A.toggleNav=()=>$('#side').classList.toggle('open');
    ===================================================================== */
 /* ---------- Fonctionnalités : accueil en tuiles, par domaine (comme les applications scolaires de référence) ---------- */
 const FONCTIONS=[
- ['Gestion des élèves',[['🎓','Élèves','eleves'],['✔','Présences','presences'],['▦','Classes','classes'],['✉','Inscriptions en ligne','online'],['📊','Rapports élèves',null]]],
+ ['Gestion des élèves',[['🎓','Élèves','eleves'],['✔','Présences','presences'],['▦','Classes','classes'],['✉','Inscriptions en ligne','online'],['📊','Rapports élèves','rapports']]],
  ['Cotation',[['✎','Notes et résultats','notes'],['📒','Bulletins','eleves'],['◷','Emplois du temps','horaires']]],
- ['Finances',[['₣','Paiements','paiements'],['⚖','Soldes et arriérés','soldes'],['🧾','Reçus','recus'],['▣','Clôture de caisse','caisse'],['💰','Trésorerie (entrées / sorties)',null]]],
- ['Communication',[['✉','Messages aux parents','messages'],['⏰','Rappels du mois','rappels'],['💬','Communication interne','interne'],['📜',"Règlement d'ordre intérieur",'reglement'],['📢','Circulaires officielles',null]]],
+ ['Finances',[['₣','Paiements','paiements'],['⚖','Soldes et arriérés','soldes'],['🧾','Reçus','recus'],['▣','Clôture de caisse','caisse'],['💰','Trésorerie (entrées / sorties)','tresorerie']]],
+ ['Communication',[['✉','Messages aux parents','messages'],['⏰','Rappels du mois','rappels'],['💬','Communication interne','interne'],['📜',"Règlement d'ordre intérieur",'reglement'],['📢','Circulaires officielles','circulaires']]],
  ['Personnel',[['☷','Personnel','personnel'],['↺','Avances sur salaire','avances'],['▤','Salaires','paie'],['👤','Gestion des rôles','params']]],
- ['Administration',[['⇪','Importer des données','import'],['☰','Journal des opérations','journal'],['📁','Documents',null],['🗄','Archives',null],['📚','Bibliothèque',null],['🗓','Agenda scolaire',null]]],
+ ['Administration',[['⇪','Importer des données','import'],['☰','Journal des opérations','journal'],['📁','Documents','documents'],['🗄','Archives','archives'],['📚','Bibliothèque','bibliotheque'],['🗓','Agenda scolaire','agenda']]],
  ['Autres',[['⚙','Paramètres','params'],['🙂','Mon profil','profil'],['⟳','Mises à jour','params']]]];
 P.fonctions=()=>head('Fonctionnalités','Toutes les fonctions de l\'application, par domaine. Touchez une tuile pour l\'ouvrir.')+
  FONCTIONS.map(([t,items])=>{const vis=items.filter(([,,p])=>p?allowed(p):can('promoteur'));if(!vis.length)return '';
@@ -650,6 +657,69 @@ A.msgSend=async(k,n)=>{const r=msgRows().find(x=>x.n===n);if(!r)return;const t=m
  try{await audit('Message aux parents ('+(k==='wa'?'WhatsApp':'SMS')+')',r.s.map(x=>x.full_name).join(', '))}catch(e){}
  Q.ms.sent[n]=1;window.open(k==='wa'?`https://wa.me/${n}?text=${encodeURIComponent(t)}`:`sms:+${n}?&body=${encodeURIComponent(t)}`,'_blank');A.msgList()};
 A.msgCopy=async()=>{const t=msgRows().map(r=>'+'+r.n).join('\n');try{await navigator.clipboard.writeText(t);toast(msgRows().length+' numéros copiés ✓')}catch(e){toast('Copie impossible sur ce navigateur.',1)}};
+
+
+/* =====================================================================
+   MODULES AJOUTÉS : trésorerie, circulaires, documents/archives/bibliothèque, agenda, rapports élèves
+   ===================================================================== */
+const TKIND={entree:'Entrée',sortie:'Sortie'};
+const TCATS=['Dépense diverse','Fournitures','Électricité / eau','Entretien','Transport','Subvention / don','Autre entrée'];
+Q.tr={m:today().slice(0,7)};
+P.tresorerie=()=>{const m=Q.tr.m,l=D.treasury_entries.filter(x=>String(x.day).startsWith(m)).sort((a,b)=>String(b.day).localeCompare(a.day));
+ const scol=paidOK().filter(p=>String(p.paid_on).startsWith(m)).reduce((a,p)=>a+ +p.amount,0),en=l.filter(x=>x.kind==='entree').reduce((a,x)=>a+ +x.amount,0),so=l.filter(x=>x.kind==='sortie').reduce((a,x)=>a+ +x.amount,0);
+ return head('Trésorerie','Entrées et sorties d\'argent hors scolarité (dépenses diverses, dons...). La scolarité encaissée est reprise automatiquement des paiements.',`<button class="btn pri" onclick="A.trNew()">＋ Nouvelle opération</button> <button class="btn line" onclick="A.trCsv()">⬇ Exporter</button>`)+
+ `<div class="tools"><label>Mois</label><input type="month" value="${esc(m)}" onchange="Q.tr.m=this.value||today().slice(0,7);render()"></div>
+ <div class="grid g4">${kpi('Scolarité encaissée',fc(scol),'reçus confirmés')}${kpi('Autres entrées',fc(en),'')}${kpi('Sorties',fc(so),'')}${kpi('Solde du mois',fc(scol+en-so),'',scol+en-so<0?'bad':'')}</div>
+ <div class="card" style="margin-top:14px"><div class="tw"><table><thead><tr><th>Date</th><th>Type</th><th>Catégorie</th><th>Libellé</th><th class="r">Montant</th><th></th></tr></thead><tbody>${l.map(x=>`<tr><td>${fmtDate(x.day)}</td><td>${chip(TKIND[x.kind],x.kind==='entree'?'ok':'warn')}</td><td>${esc(x.category)}</td><td>${esc(x.label)}</td><td class="r">${fc(x.amount)}</td><td class="r">${can('promoteur')?`<button class="btn sm line" onclick="A.trDel('${x.id}')">Supprimer</button>`:''}</td></tr>`).join('')||`<tr><td colspan="6">${none('Aucune opération ce mois.')}</td></tr>`}</tbody></table></div></div>`};
+A.trNew=()=>modal(`<h3>Nouvelle opération</h3><div class="f" style="margin-top:14px"><div><label>Type</label><select id="tr_k"><option value="sortie">Sortie (dépense)</option><option value="entree">Entrée</option></select></div><div><label>Date</label><input id="tr_d" type="date" value="${today()}"></div><div><label>Catégorie</label><select id="tr_c">${TCATS.map(c=>`<option>${c}</option>`).join('')}</select></div><div><label>Montant (FC)</label><input id="tr_a" type="number" min="1"></div><div class="full"><label>Libellé</label><input id="tr_l" maxlength="200" placeholder="Ex. : achat de craies"></div></div><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.trSave()">Enregistrer</button></div>`);
+A.trSave=async()=>{const a=+val('tr_a'),l=val('tr_l');if(!(a>0)||!l)return toast('Montant et libellé obligatoires.',1);
+ try{await ins('treasury_entries',{kind:val('tr_k'),day:val('tr_d')||today(),category:val('tr_c'),label:l,amount:a,created_by:S.uid});await audit('Trésorerie',(val('tr_k')==='entree'?'Entrée ':'Sortie ')+fc(a),l);A.close();toast('Enregistré ✓');render()}catch(e){toast(e.message,1)}};
+A.trDel=id=>A.warnConfirm('Supprimer cette opération ?',async()=>{try{const x=byId('treasury_entries',id);await delRow('treasury_entries',{id});await audit('Trésorerie supprimée',x?x.label:'');render()}catch(e){toast(e.message,1)}},'Supprimer');
+A.trCsv=()=>csvDown('tresorerie-'+Q.tr.m+'.csv',[['Date','Type','Catégorie','Libellé','Montant'],...D.treasury_entries.filter(x=>String(x.day).startsWith(Q.tr.m)).map(x=>[x.day,TKIND[x.kind],x.category,x.label,x.amount])]);
+
+P.circulaires=()=>{const w=can('promoteur','direction','directeur_etudes'),l=D.circulars.slice().sort((a,b)=>String(b.created_at).localeCompare(a.created_at));
+ return head('Circulaires officielles','Notes officielles de la direction, lisibles par tout le personnel une fois publiées.',w?`<button class="btn pri" onclick="A.ciForm()">＋ Nouvelle circulaire</button>`:'')+
+ `<div class="card">${l.map(c=>`<div style="padding:12px 4px;border-bottom:1px solid var(--line)"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${esc(c.title)}</b>${c.status==='brouillon'?chip('Brouillon','warn'):chip('Publiée','ok')}<span style="color:var(--mut);font-size:13px">${esc(c.author_name||'')} · ${fmtDate(c.published_at||c.created_at)}</span></div><div style="margin-top:6px;white-space:pre-wrap">${esc(c.body)}</div>${(can('promoteur')||c.author_id===S.uid)&&w?`<div style="margin-top:8px">${c.status==='brouillon'?`<button class="btn sm pri" onclick="A.ciPub('${c.id}')">Publier</button> `:''}<button class="btn sm line" onclick="A.ciForm('${c.id}')">Modifier</button> ${can('promoteur')?`<button class="btn sm line" onclick="A.ciDel('${c.id}')">Supprimer</button>`:''}</div>`:''}</div>`).join('')||none('Aucune circulaire.')}</div>`};
+A.ciForm=id=>{const c=id?byId('circulars',id):{};modal(`<h3>${id?'Modifier':'Nouvelle'} circulaire</h3><div class="f" style="margin-top:14px"><div class="full"><label>Titre</label><input id="ci_t" maxlength="160" value="${esc(c.title||'')}"></div><div class="full"><label>Texte</label><textarea id="ci_b" rows="8" maxlength="5000" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px">${esc(c.body||'')}</textarea></div></div><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn line" onclick="A.ciSave('${id||''}','brouillon')">Enregistrer en brouillon</button><button class="btn pri" onclick="A.ciSave('${id||''}','publie')">Publier</button></div>`,1)};
+A.ciSave=async(id,st)=>{const t=val('ci_t'),b=val('ci_b');if(!t||!b)return toast('Titre et texte obligatoires.',1);
+ try{const pub=st==='publie'?new Date().toISOString():null;if(id){const c=byId('circulars',id);await upd('circulars',id,{title:t,body:b,status:st,published_at:st==='publie'?(c.published_at||pub):null})}
+  else await ins('circulars',{title:t,body:b,status:st,published_at:pub,author_id:S.uid,author_name:S.name});
+  await audit(st==='publie'?'Circulaire publiée':'Circulaire enregistrée',t);A.close();toast('Enregistré ✓');render()}catch(e){toast(e.message,1)}};
+A.ciPub=async id=>{try{await upd('circulars',id,{status:'publie',published_at:new Date().toISOString()});await audit('Circulaire publiée',byId('circulars',id).title);render()}catch(e){toast(e.message,1)}};
+A.ciDel=id=>A.warnConfirm('Supprimer cette circulaire ?',async()=>{try{await delRow('circulars',{id});render()}catch(e){toast(e.message,1)}},'Supprimer');
+
+Q.dc={cat:'',arch:false};
+const DOCCATS=['Document','Bibliothèque','Formulaire','Rapport'];
+const docPage=(title,sub,arch,cat)=>()=>{const w=can('promoteur','direction','directeur_etudes'),l=D.school_documents.filter(d=>!!d.archived===arch&&(!cat||d.category===cat)).sort((a,b)=>String(b.created_at).localeCompare(a.created_at));
+ return head(title,sub,w&&!arch?`<button class="btn pri" onclick="A.docForm('${cat||''}')">＋ Ajouter</button>`:'')+
+ `<div class="card"><div class="tw"><table><thead><tr><th>Titre</th>${cat?'':'<th>Type</th>'}<th>Note</th><th></th></tr></thead><tbody>${l.map(d=>`<tr><td><b>${esc(d.title)}</b></td>${cat?'':`<td>${esc(d.category)}</td>`}<td>${esc(d.note||'')}</td><td class="r">${d.url?`<a class="btn sm pri" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Ouvrir</a> `:''}${w?`<button class="btn sm line" onclick="A.docArch('${d.id}',${!d.archived})">${d.archived?'Désarchiver':'Archiver'}</button> `:''}${can('promoteur')?`<button class="btn sm line" onclick="A.docDel('${d.id}')">Supprimer</button>`:''}</td></tr>`).join('')||`<tr><td colspan="4">${none('Rien ici pour le moment.')}</td></tr>`}</tbody></table></div></div>`};
+P.documents=docPage('Documents','Documents de l\'école : lien vers un fichier hébergé (Google Drive, par exemple) ou simple note.',false,'');
+P.archives=docPage('Archives','Documents archivés (retirés de la liste active, jamais perdus).',true,'');
+P.bibliotheque=docPage('Bibliothèque','Livres, cours et ressources numériques à partager avec le personnel.',false,'Bibliothèque');
+A.docForm=cat=>modal(`<h3>Ajouter</h3><div class="f" style="margin-top:14px"><div class="full"><label>Titre</label><input id="dc_t" maxlength="160"></div><div><label>Type</label><select id="dc_c">${DOCCATS.map(c=>`<option ${c===cat?'selected':''}>${c}</option>`).join('')}</select></div><div><label>Lien (https://...)</label><input id="dc_u" placeholder="https://drive.google.com/..."></div><div class="full"><label>Note (facultatif)</label><input id="dc_n" maxlength="1000"></div></div><p style="color:var(--mut);font-size:13px">Ne publiez ici aucun fichier contenant des données d'élèves : tout le personnel peut lire cette liste.</p><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.docSave()">Enregistrer</button></div>`);
+A.docSave=async()=>{const t=val('dc_t'),u=val('dc_u');if(!t)return toast('Titre obligatoire.',1);if(u&&!/^https:\/\//i.test(u))return toast('Le lien doit commencer par https://',1);
+ try{await ins('school_documents',{title:t,category:val('dc_c'),url:u||null,note:val('dc_n')||null,archived:false,created_by:S.uid});await audit('Document ajouté',t);A.close();toast('Enregistré ✓');render()}catch(e){toast(e.message,1)}};
+A.docArch=async(id,v)=>{try{await upd('school_documents',id,{archived:v});render()}catch(e){toast(e.message,1)}};
+A.docDel=id=>A.warnConfirm('Supprimer ce document ?',async()=>{try{await delRow('school_documents',{id});render()}catch(e){toast(e.message,1)}},'Supprimer');
+
+const AGKINDS=['Événement','Réunion','Examen','Congé','Échéance'];
+P.agenda=()=>{const w=can('promoteur','direction','directeur_etudes'),t=today(),l=D.agenda_events.slice().sort((a,b)=>String(a.day).localeCompare(b.day)),up=l.filter(e=>(e.end_day||e.day)>=t),past=l.filter(e=>(e.end_day||e.day)<t).reverse();
+ const row=e=>`<div style="padding:11px 4px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div style="min-width:104px;font-weight:700">${fmtDate(e.day)}${e.end_day&&e.end_day!==e.day?'<br><span style="font-weight:400;color:var(--mut)">au '+fmtDate(e.end_day)+'</span>':''}</div><div style="flex:1"><b>${esc(e.title)}</b> ${chip(e.kind,e.kind==='Examen'||e.kind==='Échéance'?'warn':'info')}${e.zone?' '+chip(e.zone):''}${e.note?`<div style="color:var(--mut);font-size:13px">${esc(e.note)}</div>`:''}</div>${w?`<button class="btn sm line" onclick="A.agDel('${e.id}')">Supprimer</button>`:''}</div>`;
+ return head('Agenda scolaire','Réunions, examens, congés et échéances. Visible par tout le personnel.',w?`<button class="btn pri" onclick="A.agForm()">＋ Nouvel événement</button>`:'')+
+ `<div class="card"><h3>À venir</h3>${up.map(row).join('')||none('Rien de prévu.')}</div>${past.length?`<div class="card" style="margin-top:14px"><h3>Passés</h3>${past.slice(0,20).map(row).join('')}</div>`:''}`};
+A.agForm=()=>modal(`<h3>Nouvel événement</h3><div class="f" style="margin-top:14px"><div class="full"><label>Titre</label><input id="ag_t" maxlength="160"></div><div><label>Du</label><input id="ag_d" type="date" value="${today()}"></div><div><label>Au (facultatif)</label><input id="ag_e" type="date"></div><div><label>Type</label><select id="ag_k">${AGKINDS.map(k=>`<option>${k}</option>`).join('')}</select></div><div><label>Concerne</label><select id="ag_z"><option value="">Toute l'école</option><option>Primaire</option><option>Secondaire</option></select></div><div class="full"><label>Note (facultatif)</label><input id="ag_n" maxlength="1000"></div></div><div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.agSave()">Enregistrer</button></div>`);
+A.agSave=async()=>{const t=val('ag_t'),d=val('ag_d'),e=val('ag_e');if(!t||!d)return toast('Titre et date obligatoires.',1);if(e&&e<d)return toast('La date de fin précède le début.',1);
+ try{await ins('agenda_events',{title:t,day:d,end_day:e||null,kind:val('ag_k'),zone:val('ag_z')||null,note:val('ag_n')||null,created_by:S.uid});await audit('Agenda',t,d);A.close();toast('Enregistré ✓');render()}catch(e){toast(e.message,1)}};
+A.agDel=id=>A.warnConfirm('Supprimer cet événement ?',async()=>{try{await delRow('agenda_events',{id});render()}catch(e){toast(e.message,1)}},'Supprimer');
+
+/* rapports élèves : synthèse par classe (présence, moyenne, arriérés) */
+function rapClasse(){const sd=soldes();return D.classes.map(c=>{const st=D.students.filter(s=>s.class_id===c.id&&s.status==='valide'),ids=new Set(st.map(s=>s.id)),at=D.attendance.filter(a=>ids.has(a.student_id)),pres=at.filter(a=>a.state==='present'||a.state==='retard').length,gr=D.grades.filter(g=>ids.has(g.student_id)&&g.score!==null&&g.score!==undefined),avg=gr.length?gr.reduce((a,g)=>a+ +g.score,0)/gr.length:null,due=sd.filter(x=>x.s.class_id===c.id&&x.due>0).reduce((a,x)=>a+x.due,0);
+  return {c,n:st.length,garcons:st.filter(s=>s.sex==='Masculin').length,filles:st.filter(s=>s.sex==='Féminin').length,pres:at.length?Math.round(pres*100/at.length):null,avg,due}}).filter(r=>r.n)}
+P.rapports=()=>{const l=rapClasse(),tot=l.reduce((a,r)=>a+r.n,0);
+ return head('Rapports élèves','Synthèse par classe : effectif, présence, moyenne des notes et arriérés.',`<button class="btn line" onclick="A.rapCsv()">⬇ Exporter</button>`)+
+ `<div class="grid g3">${kpi('Élèves validés',tot,l.length+' classes')}${kpi('Arriérés totaux',fc(l.reduce((a,r)=>a+r.due,0)),'')}${kpi('Présence moyenne',(l.filter(r=>r.pres!==null).length?Math.round(l.filter(r=>r.pres!==null).reduce((a,r)=>a+r.pres,0)/l.filter(r=>r.pres!==null).length)+' %':'—'),'')}</div>
+ <div class="card" style="margin-top:14px"><div class="tw"><table><thead><tr><th>Classe</th><th class="r">Effectif</th><th class="r">Garçons</th><th class="r">Filles</th><th class="r">Présence</th><th class="r">Moyenne notes</th><th class="r">Arriérés</th></tr></thead><tbody>${l.map(r=>`<tr><td><b>${esc(clsLabel(r.c))}</b></td><td class="r">${r.n}</td><td class="r">${r.garcons}</td><td class="r">${r.filles}</td><td class="r">${r.pres===null?'—':r.pres+' %'}</td><td class="r">${r.avg===null?'—':r.avg.toFixed(1)}</td><td class="r">${fc(r.due)}</td></tr>`).join('')||`<tr><td colspan="7">${none('Aucune donnée.')}</td></tr>`}</tbody></table></div></div>`};
+A.rapCsv=()=>csvDown('rapport-classes.csv',[['Classe','Effectif','Garçons','Filles','Présence %','Moyenne notes','Arriérés'],...rapClasse().map(r=>[clsLabel(r.c),r.n,r.garcons,r.filles,r.pres??'',r.avg===null?'':r.avg.toFixed(1),r.due])]);
 
 A.exportSoldes=()=>csvDown('arrieres.csv',[['Élève','Classe','Mensualité','Attendu','Payé','Reste dû'],...fSo().map(x=>[x.s.full_name,clsLabel(x.c),x.monthly,x.expected,x.paid,x.due])]);
 
