@@ -1,0 +1,26 @@
+name: Sécurité sans frais
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  securite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Récupérer la branche
+        uses: actions/checkout@v4
+      - name: Activer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Tester les preuves QR et la configuration
+        run: node --test scripts/test-security.mjs
+      - name: Construire les fichiers autorisés
+        run: sh scripts/build-public.sh
+      - name: Vérifier le site publié
+        run: sh scripts/test-public.sh
