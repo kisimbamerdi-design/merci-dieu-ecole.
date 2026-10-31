@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.10.31.5';
+const APP_VERSION='2026.10.31.7';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -255,7 +255,7 @@ const head=(t,s,a='')=>`<div class="ph"><div><h2>${t}</h2>${s?`<p>${s}</p>`:''}<
 const none=t=>`<div class="empty">${t}</div>`;
 const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z ]/g,' ').split(/\s+/).filter(Boolean).sort().join(' ');
 function lev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,i)=>i);for(let i=1;i<=m;i++){let c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
-function csvDown(name,rows){const t=rows.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download=name;a.click()}
+function csvDown(name,rows){const safe=c=>{let v=String(c??'');if(/^\s*[=+@-]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};const t=rows.map(r=>r.map(safe).join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download=name;a.click()}
 const val=id=>{const e=document.getElementById(id);return e?e.value.trim():''};
 
 /* nombre en lettres (français) */
@@ -271,7 +271,7 @@ function nf(n){n=Math.floor(+n||0);if(n===0)return 'zéro';
  return out.join(' ').replace(/\s+/g,' ').trim()}
 
 /* ---------- données ---------- */
-async function fetchAll(t){let out=[],from=0;for(;;){const {data,error}=await db.from(t).select('*').range(from,from+999);if(error||!data)return out;out=out.concat(data);if(data.length<1000)break;from+=1000}return out}
+async function fetchAll(t){let out=[],from=0;for(;;){const {data,error}=await db.from(t).select('*').range(from,from+999);if(error)throw new Error('Chargement '+t+' impossible : '+(error.message||'accès indisponible'));if(!data)throw new Error('Réponse vide pour '+t);out=out.concat(data);if(data.length<1000)break;from+=1000}return out}
 async function loadAll(){await Promise.all(TABLES.map(async t=>{D[t]=LIVE?await fetchAll(t):(D[t]||[])}));dirty()}
 function dirty(){SC=null}
 function demoTrig(t,r,op,old){
@@ -713,13 +713,16 @@ A.agSave=async()=>{const t=val('ag_t'),d=val('ag_d'),e=val('ag_e');if(!t||!d)ret
 A.agDel=id=>A.warnConfirm('Supprimer cet événement ?',async()=>{try{await delRow('agenda_events',{id});render()}catch(e){toast(e.message,1)}},'Supprimer');
 
 /* rapports élèves : synthèse par classe (présence, moyenne, arriérés) */
-function rapClasse(){const sd=soldes();return D.classes.map(c=>{const st=D.students.filter(s=>s.class_id===c.id&&s.status==='valide'),ids=new Set(st.map(s=>s.id)),at=D.attendance.filter(a=>ids.has(a.student_id)),pres=at.filter(a=>a.state==='present'||a.state==='retard').length,gr=D.grades.filter(g=>ids.has(g.student_id)&&g.score!==null&&g.score!==undefined),avg=gr.length?gr.reduce((a,g)=>a+ +g.score,0)/gr.length:null,due=sd.filter(x=>x.s.class_id===c.id&&x.due>0).reduce((a,x)=>a+x.due,0);
+function rapClasse(){const sd=can('promoteur','comptable')?soldes():[];return D.classes.map(c=>{const st=D.students.filter(s=>s.class_id===c.id&&s.status==='valide'),ids=new Set(st.map(s=>s.id)),at=D.attendance.filter(a=>ids.has(a.student_id)),pres=at.filter(a=>a.state==='present'||a.state==='retard').length,gr=D.grades.filter(g=>ids.has(g.student_id)&&g.score!==null&&g.score!==undefined),avg=gr.length?gr.reduce((a,g)=>a+pct(g),0)/gr.length:null,due=sd.filter(x=>x.s.class_id===c.id&&x.due>0).reduce((a,x)=>a+x.due,0);
   return {c,n:st.length,garcons:st.filter(s=>s.sex==='Masculin').length,filles:st.filter(s=>s.sex==='Féminin').length,pres:at.length?Math.round(pres*100/at.length):null,avg,due}}).filter(r=>r.n)}
-P.rapports=()=>{const l=rapClasse(),tot=l.reduce((a,r)=>a+r.n,0);
- return head('Rapports élèves','Synthèse par classe : effectif, présence, moyenne des notes et arriérés.',`<button class="btn line" onclick="A.rapCsv()">⬇ Exporter</button>`)+
- `<div class="grid g3">${kpi('Élèves validés',tot,l.length+' classes')}${kpi('Arriérés totaux',fc(l.reduce((a,r)=>a+r.due,0)),'')}${kpi('Présence moyenne',(l.filter(r=>r.pres!==null).length?Math.round(l.filter(r=>r.pres!==null).reduce((a,r)=>a+r.pres,0)/l.filter(r=>r.pres!==null).length)+' %':'—'),'')}</div>
- <div class="card" style="margin-top:14px"><div class="tw"><table><thead><tr><th>Classe</th><th class="r">Effectif</th><th class="r">Garçons</th><th class="r">Filles</th><th class="r">Présence</th><th class="r">Moyenne notes</th><th class="r">Arriérés</th></tr></thead><tbody>${l.map(r=>`<tr><td><b>${esc(clsLabel(r.c))}</b></td><td class="r">${r.n}</td><td class="r">${r.garcons}</td><td class="r">${r.filles}</td><td class="r">${r.pres===null?'—':r.pres+' %'}</td><td class="r">${r.avg===null?'—':r.avg.toFixed(1)}</td><td class="r">${fc(r.due)}</td></tr>`).join('')||`<tr><td colspan="7">${none('Aucune donnée.')}</td></tr>`}</tbody></table></div></div>`};
-A.rapCsv=()=>csvDown('rapport-classes.csv',[['Classe','Effectif','Garçons','Filles','Présence %','Moyenne notes','Arriérés'],...rapClasse().map(r=>[clsLabel(r.c),r.n,r.garcons,r.filles,r.pres??'',r.avg===null?'':r.avg.toFixed(1),r.due])]);
+P.rapports=()=>{const l=rapClasse(),tot=l.reduce((a,r)=>a+r.n,0),finance=can('promoteur','comptable');
+ return head('Rapports élèves',finance?'Effectifs, présence, moyennes (%) et arriérés.':'Effectifs, présence et moyennes des résultats (%).',`<button class="btn line" onclick="A.rapCsv()">⬇ Exporter</button>`)+
+ `<div class="grid g3">${kpi('Élèves validés',tot,l.length+' classes')}${finance?kpi('Arriérés totaux',fc(l.reduce((a,r)=>a+r.due,0)),''):''}${kpi('Présence moyenne',(l.filter(r=>r.pres!==null).length?Math.round(l.filter(r=>r.pres!==null).reduce((a,r)=>a+r.pres,0)/l.filter(r=>r.pres!==null).length)+' %':'—'),'')}</div>
+ <div class="card" style="margin-top:14px"><div class="tw"><table><thead><tr><th>Classe</th><th class="r">Effectif</th><th class="r">Garçons</th><th class="r">Filles</th><th class="r">Présence</th><th class="r">Moyenne notes (%)</th>${finance?'<th class="r">Arriérés</th>':''}</tr></thead><tbody>${l.map(r=>`<tr><td><b>${esc(clsLabel(r.c))}</b></td><td class="r">${r.n}</td><td class="r">${r.garcons}</td><td class="r">${r.filles}</td><td class="r">${r.pres===null?'—':r.pres+' %'}</td><td class="r">${r.avg===null?'—':r.avg.toFixed(1)}</td>${finance?`<td class="r">${fc(r.due)}</td>`:''}</tr>`).join('')||`<tr><td colspan="${finance?7:6}">${none('Aucune donnée.')}</td></tr>`}</tbody></table></div></div>`};
+A.rapCsv=()=>{const finance=can('promoteur','comptable'),headers=['Classe','Effectif','Garçons','Filles','Présence %','Moyenne notes %'];
+ if(finance)headers.push('Arriérés');
+ csvDown('rapport-classes.csv',[headers,...rapClasse().map(r=>{const row=[clsLabel(r.c),r.n,r.garcons,r.filles,r.pres??'',r.avg===null?'':r.avg.toFixed(1)];if(finance)row.push(r.due);return row})]);
+};
 
 A.exportSoldes=()=>csvDown('arrieres.csv',[['Élève','Classe','Mensualité','Attendu','Payé','Reste dû'],...fSo().map(x=>[x.s.full_name,clsLabel(x.c),x.monthly,x.expected,x.paid,x.due])]);
 
@@ -1053,12 +1056,25 @@ function bootDemo(){
  ${[['promoteur','👑','Promoteur','Voit tout, sans exception'],['direction','🏫','Directeur Général','Élèves, personnel, avances — sans la caisse'],['directeur_etudes','📘','Directeur des Études','Classes, horaires, notes — toutes les classes'],['prefet_discipline','🛡️','Préfet de Discipline','Présences et discipline — toutes les classes'],['comptable','🧾','Comptable-secrétaire','Inscriptions, paiements, reçus'],['professeur','📚','Professeur','Ses classes : présences et notes']].map(([k,i,t,d])=>`<button onclick="A.demo('${k}')"><i>${i}</i><b>${t}</b><small>${d}</small></button>`).join('')}</div></div></div>`}
 A.demo=async role=>{const who={promoteur:['p-promo','Promoteur Démo'],direction:['p-dir','Directeur Général Démo'],directeur_etudes:['p-etudes','Directeur des Études Démo'],prefet_discipline:['p-prefet','Préfet de Discipline Démo'],comptable:['p-comp','Caissière Démo'],professeur:['p-prof','Professeur Démo']}[role];S={role,uid:who[0],name:who[1]};seedDemo();demoRestrict();await loadAll();start()};
 (async()=>{
- if('serviceWorker' in navigator&&LIVE)navigator.serviceWorker.register('sw.js').catch(()=>{});
- if(LIVE){const {data}=await db.auth.getSession();if(!data.session){location.href='connexion.html';return}
-  const {data:prof}=await db.from('profiles').select('*').eq('id',data.session.user.id).single();
-  if(!prof||!prof.active){await db.auth.signOut();location.href='connexion.html';return}
-  S={role:prof.role,uid:prof.id,name:prof.full_name,section:prof.section||null};await loadAll();start()}
- else bootDemo()})();
+ try{
+  if('serviceWorker' in navigator&&LIVE)navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if(LIVE){
+    const {data,error:sessionError}=await db.auth.getSession();
+    if(sessionError)throw sessionError;
+    if(!data.session){location.href='connexion.html';return}
+    const {data:prof,error:profileError}=await db.from('profiles').select('*').eq('id',data.session.user.id).single();
+    if(profileError)throw profileError;
+    if(!prof||!prof.active){await db.auth.signOut();location.href='connexion.html';return}
+    S={role:prof.role,uid:prof.id,name:prof.full_name,section:prof.section||null};
+    await loadAll();start()
+  }else bootDemo()
+ }catch(e){
+  console.error('Chargement de l\'application impossible',e);
+  $('#app').hidden=true;
+  $('#boot').hidden=false;
+  $('#boot').innerHTML='<div class="boot"><div class="box"><h2>Données momentanément indisponibles</h2><p>La connexion ou les autorisations nécessaires au chargement ont échoué. Aucune donnée n\'a été remplacée par zéro.</p><button class="btn pri" onclick="location.reload()">Réessayer</button> <a href="connexion.html">Connexion</a></div></div>';
+ }
+})();
 
 /* =====================================================================
    DONNÉES DE DÉMONSTRATION (fictives)

@@ -1,7 +1,27 @@
-/* Cache minimal : l'application s'ouvre même avec une connexion lente.
-   Les données ne sont jamais mises en cache (toujours lues sur le serveur). */
-const V='mdss-v1',FILES=['connexion.html','app.html','verifier.html','config.js','logo.png','manifest.webmanifest'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(FILES)));self.skipWaiting()});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))));self.clients.claim()});
-self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin!==location.origin||e.request.method!=='GET')return;
- e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(V).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request)))});
+/* Cache sûr : les données scolaires, connexions, reçus et URL à jeton ne
+   doivent jamais être conservés dans le cache de l'application. */
+const V='mdss-public-assets-v2';
+const ASSETS=['logo.png','manifest.webmanifest'];
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(V).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
+});
+self.addEventListener('activate',event=>{
+  event.waitUntil(caches.keys().then(keys=>Promise.all(
+    keys.filter(key=>key.startsWith('mdss-')&&key!==V).map(key=>caches.delete(key))
+  )).then(()=>self.clients.claim()));
+});
+self.addEventListener('fetch',event=>{
+  const request=event.request;
+  if(request.method!=='GET')return;
+  const url=new URL(request.url);
+  if(url.origin!==self.location.origin||url.search)return;
+  const name=url.pathname.split('/').pop();
+  if(!ASSETS.includes(name))return;
+  event.respondWith(fetch(request).then(response=>{
+    if(response.ok&&response.type==='basic'){
+      const copy=response.clone();
+      event.waitUntil(caches.open(V).then(cache=>cache.put(request,copy)));
+    }
+    return response;
+  }).catch(()=>caches.match(request)));
+});
