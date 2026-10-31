@@ -621,3 +621,6 @@ begin
      and (sender_id = auth.uid() or to_all
           or (to_role = my_role() and (to_zone is null or my_zone() is null or my_zone() = to_zone)));
 end $$;
+
+-- Le règlement d'ordre intérieur (clés roi_*) est lisible par tout compte actif ; l'écriture reste au promoteur (set_write).
+create policy set_read_roi on settings for select using (my_role() is not null and key like 'roi\_%');
