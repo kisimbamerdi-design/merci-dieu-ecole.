@@ -32,6 +32,17 @@ h3{margin:28px 0 12px;font-size:19px}
 .liens a:hover,.bouton:hover{filter:brightness(.95)}
 .note{background:#fff8e6;border-left:4px solid var(--or);padding:14px 16px;border-radius:0 10px 10px 0;margin-top:22px;font-size:14px}
 footer{text-align:center;padding:0 18px 28px;font-size:13px;color:#5a7162}
+
+.stats{margin-top:24px}
+.stats-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.stats-head h3{margin:0 0 14px}
+.stats-head small{margin:0;color:#5c7064;text-align:right}
+.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat{background:white;border:1px solid #dbe5dd;border-radius:16px;padding:19px 12px;text-align:center}
+.stat strong{display:block;color:var(--vert);font-size:clamp(26px,4vw,37px);line-height:1.3;font-variant-numeric:tabular-nums}
+.stat span{display:block;margin-top:5px;font-size:14px;font-weight:650}
+.stats-status{color:#567060;font-size:13px;margin:11px 0 2px}
+@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.stats-head{display:block}}
 @media(max-width:640px){.grille,.liens{grid-template-columns:1fr}.carte{padding:21px}}
 </style></head><body>
 <a class="skip" href="#contenu">Aller au contenu</a>
@@ -47,6 +58,16 @@ footer{text-align:center;padding:0 18px 28px;font-size:13px;color:#5a7162}
 <a class="bouton vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Accéder aux paiements</a>
 <small>Choisissez « Paiement » sur le portail historique. Une déclaration n'est pas un reçu confirmé.</small></article>
 </section>
+<section class="stats" aria-labelledby="chiffres-titre">
+<div class="stats-head"><h3 id="chiffres-titre">L'école en chiffres</h3><small>Données de gestion de l'établissement</small></div>
+<div class="stats-grid" aria-live="polite" aria-atomic="true">
+<div class="stat"><strong id="stat-eleves">—</strong><span>Élèves inscrits et validés</span></div>
+<div class="stat"><strong id="stat-classes">—</strong><span>Classes enregistrées</span></div>
+<div class="stat"><strong id="stat-personnel">—</strong><span>Membres du personnel enregistrés</span></div>
+</div>
+<p class="stats-status" id="stats-etat" role="status">Chargement des statistiques…</p>
+<small>Ces chiffres comptent uniquement les dossiers enregistrés dans le logiciel. Ils ne représentent pas nécessairement l'effectif réel de l'école tant que l'importation des données n'est pas terminée.</small>
+</section>
 <section aria-label="Services complémentaires"><h3>Autres services</h3><nav class="liens" aria-label="Liens utiles">
 <a href="verifier.html">✓ Vérifier un reçu</a>
 <a href="reglement.html">📜 Règlement d'ordre intérieur</a>
@@ -54,4 +75,32 @@ footer{text-align:center;padding:0 18px 28px;font-size:13px;color:#5a7162}
 <a href="confidentialite.html">🔒 Confidentialité</a>
 </nav></section>
 <p class="note">Les parents sans smartphone peuvent continuer à utiliser les documents papier délivrés par l'école. Cette page fonctionne aussi sur un ordinateur ou un navigateur mobile compatible.</p>
-</main><footer>Collège Merci-Dieu — Kasumbalesa, République démocratique du Congo</footer></body></html>
+</main><footer>Collège Merci-Dieu — Kasumbalesa, République démocratique du Congo</footer><script>
+(()=>{
+  const endpoint='https://lotzbcvzvgtsvszbigek.supabase.co/functions/v1/school-public-stats';
+  const out=document.getElementById('stats-etat');
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),9000);
+  fetch(endpoint,{method:'GET',headers:{'Accept':'application/json'},signal:ctrl.signal})
+  .then(async response=>{
+    if(!response.ok)throw new Error('Statistiques indisponibles');
+    return response.json();
+  })
+  .then(data=>{
+    const pairs=[
+      ['stat-eleves',data.eleves_inscrits],
+      ['stat-classes',data.classes_enregistrees],
+      ['stat-personnel',data.personnel_enregistre]
+    ];
+    if(!pairs.every(([,value])=>Number.isSafeInteger(value)&&value>=0))
+      throw new Error('Données incorrectes');
+    for(const [id,value] of pairs)
+      document.getElementById(id).textContent=value.toLocaleString('fr-FR');
+    const at=new Date(data.actualise_le);
+    out.textContent='Source : base de gestion scolaire'+(Number.isNaN(at.getTime())?'':' · Mise à jour le '+at.toLocaleDateString('fr-FR'));
+  })
+  .catch(()=>{out.textContent='Statistiques momentanément indisponibles. Les autres services restent accessibles.'})
+  .finally(()=>clearTimeout(timer));
+})();
+</script>
+</body></html>
