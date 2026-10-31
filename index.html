@@ -1,33 +1,57 @@
 <!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Collège Merci-Dieu — Kasumbalesa</title>
-<meta name="description" content="Collège Merci-Dieu, Kasumbalesa : inscription, paiement et vérification d'un reçu.">
-<link rel="icon" href="logo.png"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0d3b2a">
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0d3b2a">
+<meta name="description" content="Collège Merci-Dieu à Kasumbalesa : inscriptions, déclarations de paiement, vérification de reçus et espace du personnel.">
+<title>Bienvenue — Collège Merci-Dieu</title>
+<link rel="icon" href="logo.png"><link rel="manifest" href="manifest.webmanifest">
 <style>
-:root{--g:#0d3b2a;--g2:#176b52;--gold:#f2b81c;--ink:#20323b}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;font:16px/1.5 system-ui,'Segoe UI',Roboto,sans-serif;color:#fff;background:radial-gradient(900px 500px at 15% -10%,#2e9a42 0,transparent 60%),linear-gradient(160deg,#0d3b2a,#082a1f);display:flex;flex-direction:column;align-items:center}
-main{width:100%;max-width:460px;padding:36px 20px 20px;text-align:center}
-img{width:96px;height:96px;border-radius:50%;background:#fff;padding:5px;box-shadow:0 8px 30px #0006}
-h1{margin:14px 0 2px;font-size:26px}.dev{color:var(--gold);letter-spacing:.14em;font-size:12px;font-weight:700;text-transform:uppercase}
-p{color:#cfe3d8;margin:18px 0 26px}
-a.big{display:block;margin:12px 0;padding:20px;border-radius:18px;font-size:20px;font-weight:800;text-decoration:none;box-shadow:0 10px 26px #0005}
-.a{background:var(--gold);color:#3a2a00}.b{background:#fff;color:var(--g)}
-.small{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin-top:26px;font-size:14px}.small a{color:#cfe3d8}
-footer{margin-top:auto;padding:20px;color:#9fbcae;font-size:12px}
-</style>
-</head>
-<body>
-<main>
-<img src="logo.png" alt="Logo du Collège Merci-Dieu">
-<h1>Collège Merci-Dieu</h1><div class="dev">Distinction · Docilité · Charité</div>
-<p>Kasumbalesa — Que voulez-vous faire ?</p>
-<a class="big a" href="https://college-merci-dieu-kasumbalesa.netlify.app/">📝 S'inscrire</a>
-<a class="big b" href="https://college-merci-dieu-kasumbalesa.netlify.app/">💳 Payer</a>
-<div class="small"><a href="verifier.html">Vérifier un reçu</a><a href="confidentialite.html">Confidentialité</a><a href="connexion.html">Connexion du personnel</a></div>
-</main>
-<footer>© Collège Merci-Dieu</footer>
-</body>
-</html>
+:root{--vert:#0d3b2a;--clair:#176b52;--or:#f2b81c;--texte:#24352b}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#f3f7f4;color:var(--texte);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+a:focus-visible{outline:3px solid #e7aa00;outline-offset:4px}
+.skip{position:absolute;top:-100px;left:12px;background:#fff;color:var(--vert);padding:10px;z-index:2}.skip:focus{top:12px}
+header{text-align:center;color:#fff;padding:32px 18px 70px;background:radial-gradient(650px 300px at 50% -20%,#358b6b88,transparent 80%),linear-gradient(140deg,#0d3b2a,#08291e)}
+header img{width:94px;height:94px;border-radius:50%;background:#fff;padding:5px;object-fit:contain;box-shadow:0 8px 24px #0003}
+.kicker{color:#f9d36d;font-size:12px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;margin:14px 0 4px}
+h1{font-size:clamp(28px,5vw,40px);margin:0;line-height:1.2}
+.devise{color:#d4e7dc;font-size:14px;margin:10px 0 0}
+main{max-width:880px;margin:-38px auto 0;position:relative;padding:0 18px 40px}
+.intro{background:#fff;text-align:center;border-radius:14px;padding:16px 20px;margin:0 0 16px;font-weight:700;box-shadow:0 10px 22px #0d3b2a16}
+.grille{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.carte{background:#fff;border:1px solid #dae5dd;border-radius:18px;box-shadow:0 7px 24px #0d3b2a10;padding:24px;display:flex;flex-direction:column;align-items:flex-start}
+.icone{font-size:32px;line-height:1.2}
+h2{font-size:22px;margin:14px 0 8px;line-height:1.3}
+.carte p{margin:0 0 18px;color:#576d60;flex-grow:1}
+.bouton{display:block;text-align:center;background:var(--or);color:#263419;text-decoration:none;padding:13px 16px;border-radius:11px;font-weight:800;width:100%}
+.bouton.vert{background:var(--clair);color:#fff}
+small{display:block;margin-top:9px;font-size:12px;color:#587065}
+h3{margin:28px 0 12px;font-size:19px}
+.liens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.liens a{display:flex;align-items:center;min-height:56px;padding:12px 16px;border-radius:12px;border:1px solid #dbe5dd;background:#fff;color:var(--vert);text-decoration:none;font-weight:700}
+.liens a:hover,.bouton:hover{filter:brightness(.95)}
+.note{background:#fff8e6;border-left:4px solid var(--or);padding:14px 16px;border-radius:0 10px 10px 0;margin-top:22px;font-size:14px}
+footer{text-align:center;padding:0 18px 28px;font-size:13px;color:#5a7162}
+@media(max-width:640px){.grille,.liens{grid-template-columns:1fr}.carte{padding:21px}}
+</style></head><body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+<header><img src="logo.png" alt="Logo du Collège Merci-Dieu"><p class="kicker">Portail de l'établissement · Kasumbalesa</p><h1>Collège Merci-Dieu</h1><p class="devise">Distinction · Docilité · Charité</p></header>
+<main id="contenu"><p class="intro">Bienvenue ! Que souhaitez-vous faire ?</p>
+<section class="grille" aria-label="Démarches des familles">
+<article class="carte"><span class="icone" aria-hidden="true">📝</span><h2>Inscrire un élève</h2>
+<p>Remplissez une demande d'inscription depuis le portail historique de l'école.</p>
+<a class="bouton" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Accéder à l'inscription</a>
+<small>Sur le portail qui s'ouvre, choisissez « Inscription ».</small></article>
+<article class="carte"><span class="icone" aria-hidden="true">💳</span><h2>Déclarer un paiement</h2>
+<p>Signalez un versement à vérifier par le service de comptabilité.</p>
+<a class="bouton vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Accéder aux paiements</a>
+<small>Choisissez « Paiement » sur le portail historique. Une déclaration n'est pas un reçu confirmé.</small></article>
+</section>
+<section aria-label="Services complémentaires"><h3>Autres services</h3><nav class="liens" aria-label="Liens utiles">
+<a href="verifier.html">✓ Vérifier un reçu</a>
+<a href="reglement.html">📜 Règlement d'ordre intérieur</a>
+<a href="connexion.html">🔐 Connexion du personnel</a>
+<a href="confidentialite.html">🔒 Confidentialité</a>
+</nav></section>
+<p class="note">Les parents sans smartphone peuvent continuer à utiliser les documents papier délivrés par l'école. Cette page fonctionne aussi sur un ordinateur ou un navigateur mobile compatible.</p>
+</main><footer>Collège Merci-Dieu — Kasumbalesa, République démocratique du Congo</footer></body></html>
