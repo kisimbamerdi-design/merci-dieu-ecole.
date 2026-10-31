@@ -4,24 +4,24 @@ import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 // Aucun identifiant d'élève, salaire, numéro ou autre donnée personnelle n'est exposé.
 const HOME = "https://merci-dieu-smart-school.netlify.app";
 const PREVIEW = /^https:\/\/deploy-preview-[0-9]+--merci-dieu-smart-school\.netlify\.app$/;
-const allowed = (origin: string | null) => origin === HOME || !!(origin && PREVIEW.test(origin));
+const allowed = (origin) => origin === HOME || !!(origin && PREVIEW.test(origin));
 const shared = {
   "Content-Type": "application/json; charset=utf-8",
   "Cache-Control": "public, max-age=60, s-maxage=300",
   "X-Content-Type-Options": "nosniff",
   "Vary": "Origin"
 };
-const response = (data: Record<string, unknown>, status: number, origin: string | null) =>
+const response = (data, status, origin) =>
   new Response(JSON.stringify(data), {
     status,
     headers: {
       ...shared,
-      ...(allowed(origin) ? {"Access-Control-Allow-Origin": origin!} : {})
+      ...(allowed(origin) ? {"Access-Control-Allow-Origin": origin} : {})
     }
   });
-let memo: { timestamp: number; data: Record<string, unknown> } | null = null;
+let memo = null;
 
-Deno.serve(async (request: Request) => {
+Deno.serve(async (request) => {
   const origin = request.headers.get("Origin");
   if (origin && !allowed(origin)) return response({error: "Origine refusée"},403,origin);
   if (request.method === "OPTIONS")
