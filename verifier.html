@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>Vérification — Collège Merci-Dieu</title>
 <link rel="icon" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
@@ -30,15 +31,36 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const fc=n=>new Intl.NumberFormat('fr-FR').format(Math.round(+n||0)).replace(/[  ]/g,' ')+' FC';
 const q=new URLSearchParams(location.search);
 function show(r){
- if(!r||r.type==='inconnu'){document.getElementById('r').innerHTML='<div class="ko">✕</div><h2>Code non reconnu</h2><p>Ce code ne correspond à aucune inscription ni à aucun paiement du collège.</p>';return}
- const rows=[['Élève',r.eleve],['Classe',r.classe]];
- if(r.type==='paiement')rows.push(['Motif',r.motif],['Montant',fc(r.montant)],['Date',new Date(r.date).toLocaleDateString('fr-FR')],['Reçu n°',r.recu]);
- document.getElementById('r').innerHTML=(r.valide?'<div class="ok">✓</div>':'<div class="ko">!</div>')+`<h2>${r.type==='paiement'?(r.valide?'Paiement validé':'Paiement non validé'):(r.valide?'Inscription validée':'Inscription non encore validée')}</h2><div class="d">${rows.map(x=>`<div><span>${x[0]}</span><b>${esc(x[1])}</b></div>`).join('')}</div>`}
+ const type=(r&&['inscription','paiement'].includes(r.type))?r.type:null;
+ const valid=(r&&r.valide===true);
+ if(!type){
+   document.getElementById('r').innerHTML='<div class="ko">✕</div><h2>Code non reconnu</h2><p>Vérifiez que ce QR code provient d’un reçu officiel de l’école.</p>';
+   return;
+ }
+ const rows=[];
+ if(type==='paiement'){
+   if(r.recu) rows.push(['Reçu n°',String(r.recu)]);
+   if(typeof r.date==='string'&&/^\\d{4}-\\d{2}-\\d{2}$/.test(r.date)){
+     const date=new Date(r.date+'T12:00:00');
+     if(!Number.isNaN(date.getTime()))rows.push(['Date',date.toLocaleDateString('fr-FR')]);
+   }
+ }
+ const title=type==='paiement'?(valid?'Paiement confirmé':'Paiement non confirmé'):(valid?'Inscription validée':'Inscription non validée');
+ document.getElementById('r').innerHTML=(valid?'<div class="ok">✓</div>':'<div class="ko">!</div>')+
+   '<h2>'+title+'</h2>'+(rows.length?'<div class="d">'+rows.map(x=>'<div><span>'+x[0]+'</span><b>'+esc(x[1])+'</b></div>').join('')+'</div>':'');
+}
 (async()=>{
- if(q.get('d')){try{show(JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(q.get('d')))))));document.getElementById('demo').textContent='Démonstration : données fictives.'}catch(e){show(null)}return}
- if(!LIVE||!q.get('t')){show(null);return}
- const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON),{data,error}=await db.rpc('verify_qr',{p_token:q.get('t')});
- show(error?null:data)})();
+ // Les anciens liens ?d= acceptaient des JSON arbitraires comme « reçu valide ».
+ // Ne jamais simuler une preuve officielle à partir du contenu de l'URL.
+ if(q.has('d')){show(null);document.getElementById('demo').textContent='Les liens de démonstration ne constituent pas une vérification.';return}
+ const token=q.get('t')||'';
+ if(!LIVE||!(/^[0-9a-f]{32}$/i).test(token)){show(null);return}
+ try{
+   const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+   const {data,error}=await db.rpc('verify_qr',{p_token:token});
+   show(error?null:data);
+ }catch(e){show(null)}
+})();
 </script>
 </body>
 </html>
