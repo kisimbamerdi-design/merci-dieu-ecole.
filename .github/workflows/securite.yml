@@ -20,6 +20,8 @@ jobs:
           node-version: '22'
       - name: Tester les preuves QR et la configuration
         run: node --test scripts/test-security.mjs
+      - name: Tester le catalogue des modules et la syntaxe JavaScript
+        run: node --test scripts/test-release.mjs
       - name: Construire les fichiers autorisés
         run: sh scripts/build-public.sh
       - name: Vérifier le site publié
