@@ -699,3 +699,23 @@ create policy ag_update on agenda_events for update using (my_role() in ('promot
 create policy ag_delete on agenda_events for delete using (my_role() in ('promoteur','direction','directeur_etudes'));
 
 revoke all on treasury_entries, circulars, school_documents, agenda_events from anon;
+
+-- ============================================================
+--  DURCISSEMENT DES PRIVILÈGES (migration « durcissement_privileges_anon », appliquée le 31 octobre 2026)
+--  Testé avant application par rôle (promoteur, professeur, visiteur anonyme) dans une transaction annulée.
+--  Le visiteur anonyme ne peut plus que : lire `classes`, déposer une inscription (`online_registrations`),
+--  appeler `verify_qr`. Les fonctions d'aide aux politiques ne sont exécutables que par les comptes connectés.
+--  Le script d'origine et ses garde-fous : supabase/security/proposition_durcissement.sql
+-- ============================================================
+revoke all on all tables in schema public from anon;
+grant select on public.classes to anon;
+grant insert on public.online_registrations to anon;
+revoke execute on all functions in schema public from public, anon, authenticated;
+grant execute on function public.my_role(), public.my_section(), public.my_class_ids(), public.my_zone(),
+                         public.print_receipt(uuid), public.mark_message_read(uuid) to authenticated;
+grant execute on function public.verify_qr(text) to anon, authenticated;
+revoke all on table public.audit_log from authenticated;
+grant select, insert on public.audit_log to authenticated;
+alter default privileges for role postgres in schema public revoke all on tables from anon;
+alter default privileges for role postgres in schema public revoke execute on functions from anon;
+-- Les anciennes politiques « to public » (toutes sauf classes_read_public et reg_insert_public) ont été ramenées à « to authenticated ».

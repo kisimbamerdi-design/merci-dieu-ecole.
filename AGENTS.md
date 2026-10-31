@@ -21,7 +21,7 @@ Demande-le si tu ne l'as pas, et lis-le avant tout travail.
 2. **Ne mets jamais de clé `service_role`, de mot de passe ou de jeton dans le dépôt.** Seule la clé `anon`
    (publique par conception) figure dans `config.js`.
 3. **Ne mets aucune donnée réelle d'élève, de parent, de membre du personnel ou de paiement dans le dépôt.**
-   Le dépôt est publié en entier sur le web (`netlify.toml` : `publish = "."`).
+   Seuls les fichiers de la liste fermée de `scripts/build-public.sh` sont publiés (`netlify.toml` : `publish = "dist"`). Toute nouvelle page publique doit y être ajoutée, sinon elle n'est pas mise en ligne.
 4. **Ne renomme pas et ne supprime pas l'existant sans demande explicite.** Préfère une modification ciblée.
 5. **Ne change pas les choix de design validés** (rôles, sections, format des reçus, ordre des champs)
    sans demande explicite de la propriétaire.
@@ -52,3 +52,6 @@ Demande-le si tu ne l'as pas, et lis-le avant tout travail.
 - Création de comptes : fonction serveur `manage-user` (supabase/functions/manage-user). Les identifiants de connexion sont de la forme `nom@merci-dieu.app`.
 - Ne pas ajouter de bibliothèque non officielle pour WhatsApp (risque de blocage du numéro de l'école).
 - Les secrets des fonctions serveur vivent uniquement dans les secrets Supabase.
+
+- Sécurité appliquée en production le 31 octobre 2026 (migration `durcissement_privileges_anon`) : le visiteur anonyme ne peut que lire `classes`, déposer une inscription et appeler `verify_qr`. Toute nouvelle fonction SQL doit recevoir ses droits explicitement (aucun droit par défaut). Mots de passe : 12 caractères minimum (comptes créés par `manage-user` : 14).
+- La protection des mots de passe divulgués (Supabase Auth) se règle dans le tableau de bord Supabase : elle n'est pas disponible sans abonnement.

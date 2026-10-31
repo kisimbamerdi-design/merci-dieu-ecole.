@@ -13,7 +13,7 @@ const json = (b: unknown, s = 200) =>
 
 function password(): string {
   const a = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  const r = crypto.getRandomValues(new Uint32Array(10));
+  const r = crypto.getRandomValues(new Uint32Array(14));
   return Array.from(r, (n) => a[n % a.length]).join("");
 }
 
