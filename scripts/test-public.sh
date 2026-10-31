@@ -3,7 +3,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 test -d dist || { echo "Répertoire dist absent" >&2; exit 1; }
-attendus='index.html app.html connexion.html verifier.html confidentialite.html config.js sw.js manifest.webmanifest version.json logo.png'
+attendus='index.html app.html connexion.html verifier.html confidentialite.html reglement.html config.js sw.js manifest.webmanifest version.json logo.png'
 for f in $attendus; do
   test -f "dist/$f" || { echo "Fichier public manquant dans dist : $f" >&2; exit 1; }
 done
@@ -12,7 +12,7 @@ done
 for f in dist/* dist/.[!.]*; do
   test -e "$f" || continue
   case "$(basename "$f")" in
-    index.html|app.html|connexion.html|verifier.html|confidentialite.html|config.js|sw.js|manifest.webmanifest|version.json|logo.png) ;;
+    index.html|app.html|connexion.html|verifier.html|confidentialite.html|reglement.html|config.js|sw.js|manifest.webmanifest|version.json|logo.png) ;;
     *) echo "Publication refusée : fichier non autorisé $(basename "$f")" >&2; exit 1 ;;
   esac
 done
@@ -23,4 +23,4 @@ test ! -e dist/PASSATION.md
 if grep -qiE 'service_role|supabase_service_role|sb_secret_' dist/config.js; then
   echo "Clé Supabase privée ou référence suspecte dans config.js" >&2; exit 1
 fi
-echo "OK : seuls les 10 fichiers autorisés sont publiés"
+echo "OK : seuls les 11 fichiers autorisés sont publiés"
