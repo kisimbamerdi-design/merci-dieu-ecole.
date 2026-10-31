@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-for f in index.html app.html connexion.html verifier.html confidentialite.html config.js sw.js manifest.webmanifest version.json logo.png; do
+for f in index.html app.html connexion.html verifier.html confidentialite.html reglement.html config.js sw.js manifest.webmanifest version.json logo.png; do
   test -f "dist/$f" || { echo "Manque dans le site publié : $f" >&2; exit 1; }
 done
 for f in schema.sql AGENTS.md README.md netlify.toml PASSATION.md; do
