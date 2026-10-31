@@ -101,3 +101,11 @@ test('Le résultat rejeté par Supabase ne montre jamais un QR vert',async()=>{
   assert.match(result.output,/Paiement non confirmé/);
   assert.doesNotMatch(result.output,/<div class="ok">/);
 });
+
+test('Un changement de mot de passe demande au moins 12 caractères',()=>{
+  const app=read('app.html');
+  const version=JSON.parse(read('version.json')).version;
+  assert.match(app,/Nouveau mot de passe \(12 caractères minimum\)/);
+  assert.match(app,/if\(a\.length<12\)return toast\('12 caractères minimum\.',1\)/);
+  assert.match(app,new RegExp("const APP_VERSION='"+version.replaceAll('.','\\.')+"'"));
+});
