@@ -72,3 +72,55 @@ test('Liens publics orientés vers les pages livrées et ancien formulaire ident
  assert.ok(home.includes('https://college-merci-dieu-kasumbalesa.netlify.app/'));
  assert.ok(read('reglement.html').includes('En attente du document officiel'));
 });
+
+
+test('Le portail expose uniquement des statistiques publiques vérifiées',()=>{
+ const page=read('index.html'),source=read('supabase/functions/school-public-stats/index.ts');
+ assert.match(page,/L'école en chiffres/);
+ for(const s of ['stat-eleves','stat-classes','stat-personnel']) assert.ok(page.includes('id="'+s+'"'),s);
+ assert.match(page,/Statistiques momentanément indisponibles/);
+ assert.match(source,/admin\.from\("students"\)\.select\("id",\{head:true,count:"exact"\}\)\.eq\("status","valide"\)/);
+ assert.match(source,/admin\.from\("classes"\)/);
+ assert.match(source,/admin\.from\("staff"\)/);
+ assert.doesNotMatch(page,/SUPABASE_SERVICE_ROLE_KEY|sb_secret_/);
+ assert.doesNotMatch(source,/select\("\*"\)/);
+});
+test('L’API statistiques refuse les méthodes et origines interdites',async()=>{
+ const file=read('supabase/functions/school-public-stats/index.ts');
+ const program=file.replace(/^import \{ createClient \} from .+;\n/, 'const createClient = globalThis.__createClient;\n');
+ let handler;
+ let invoked=0;
+ const env={SUPABASE_URL:'https://exemple.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fake-only-in-test'};
+ const globals={
+   __createClient:()=>({from:table=>{
+     invoked++;
+     return {select:()=>table==='students'?
+       {eq:async()=>({count:3,error:null})}:
+       Promise.resolve({count:2,error:null})};
+   }}),
+   Deno:{serve:fn=>{handler=fn},env:{get:name=>env[name]}},
+   Request,Response,URL,Date,console
+ };
+ const {runInNewContext}=await import('node:vm');
+ runInNewContext(program,globals,{timeout:3000});
+ const endpoint='https://exemple.supabase.co/functions/v1/school-public-stats';
+ const valid='https://merci-dieu-smart-school.netlify.app';
+ const evil=await handler(new Request(endpoint,{headers:{Origin:'https://autre-site.example'}}));
+ assert.equal(evil.status,403);
+ const post=await handler(new Request(endpoint,{method:'POST',headers:{Origin:valid}}));
+ assert.equal(post.status,405);
+ const params=await handler(new Request(endpoint+'?table=profiles',{headers:{Origin:valid}}));
+ assert.equal(params.status,400);
+ assert.equal(invoked,0,'Aucune lecture de base pour une demande refusée');
+ const good=await handler(new Request(endpoint,{headers:{Origin:valid}}));
+ assert.equal(good.status,200);
+ assert.equal(good.headers.get('access-control-allow-origin'),valid);
+ const body=await good.json();
+ assert.deepEqual(JSON.parse(JSON.stringify({
+  eleves_inscrits:body.eleves_inscrits,classes_enregistrees:body.classes_enregistrees,personnel_enregistre:body.personnel_enregistre
+ })),{eleves_inscrits:3,classes_enregistrees:2,personnel_enregistre:2});
+ assert.ok(!('eleves' in body)&&!('emails' in body)&&!('payments' in body));
+ const cached=await handler(new Request(endpoint,{headers:{Origin:valid}}));
+ assert.equal(cached.status,200);
+ assert.equal(invoked,3,'Réutilisation du cache pendant 5 minutes');
+});
