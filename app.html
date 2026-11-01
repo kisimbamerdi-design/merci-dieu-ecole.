@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.11.01.5';
+const APP_VERSION='2026.11.01.6';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -535,7 +535,7 @@ A.payForm=sid=>{if(!can('comptable','promoteur'))return;
  <div class="full" id="pf_w"></div></div>
  <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.savePay()">Encaisser et générer le reçu</button></div>`);
  if(sid){const m=FEE_MONTHS[feeMonths()-1];$('#pf_r').value='Frais mensuel — '+m}A.payAuto()};
-A.payAuto2=()=>{const r=val('pf_r');if(!/^Frais mensuel/.test(r)||/Juin/.test(r))return;const sid=$('#pf_s')&&$('#pf_s').value,st=sid?stu(sid):null,x=splitOf(+val('pf_a')||0,st?levelKey(cls(st.class_id)):null),w=$('#pf_w');if(!w)return;const old=w.querySelector('.rep');if(old)old.remove();if(x.juin||x.etat)w.insertAdjacentHTML('beforeend',`<div class="note rep">Répartition : mensualité ${fc(x.base)} · part de Juin ${fc(x.juin)} · part des frais de l'État ${fc(x.etat)}.</div>`)};
+A.payAuto2=()=>{const r=val('pf_r');if(!can('promoteur')||!/^Frais mensuel/.test(r)||/Juin/.test(r))return;const sid=$('#pf_s')&&$('#pf_s').value,st=sid?stu(sid):null,x=splitOf(+val('pf_a')||0,st?levelKey(cls(st.class_id)):null),w=$('#pf_w');if(!w)return;const old=w.querySelector('.rep');if(old)old.remove();if(x.juin||x.etat)w.insertAdjacentHTML('beforeend',`<div class="note rep">Répartition : mensualité ${fc(x.base)} · part de Juin ${fc(x.juin)} · part des frais de l'État ${fc(x.etat)}.</div>`)};
 A.payFilter=()=>{const q=norm(val('pf_q'));[...$('#pf_s').options].forEach(o=>o.hidden=q&&!norm(o.text).includes(q))};
 A.payAuto=()=>{const sid=$('#pf_s').value,s=stu(sid),c=cls(s.class_id),k=levelKey(c),r=val('pf_r');let a='';
  if(k){if(/^Frais mensuel/.test(r))a=rate('NIVEAU_'+k);else if(/^Frais de l/.test(r))a=rate('ETAT_'+k)}
