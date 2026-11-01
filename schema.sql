@@ -731,3 +731,15 @@ create policy onp_read on online_payments for select to authenticated using (my_
 create policy onp_update on online_payments for update to authenticated using (my_role() in ('promoteur','comptable')) with check (my_role() in ('promoteur','comptable'));
 revoke all on online_payments from anon;
 revoke insert, delete on online_payments from authenticated;
+
+-- Inscription ouverte à tous les administrateurs ; modification/suppression réservées au promoteur et au comptable
+drop policy if exists students_write on students;
+create policy students_update on students for update
+  using (my_role() in ('promoteur','comptable')) with check (my_role() in ('promoteur','comptable'));
+create policy students_delete on students for delete
+  using (my_role() in ('promoteur','comptable'));
+create policy students_insert on students for insert
+  with check (
+    my_role() in ('promoteur','direction','comptable')
+    or (my_role() in ('directeur_etudes','prefet_discipline')
+      and (my_section() is null or exists(select 1 from classes c where c.id = students.class_id and c.section = my_section()))));

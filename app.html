@@ -445,7 +445,7 @@ P.dash=()=>{
 Q.el={q:'',c:'',s:''};
 const STAT={valide:['Validé','ok'],a_verifier:['À vérifier','warn'],a_completer:['À compléter','info'],refuse:['Refusé','bad']};
 P.eleves=()=>{
- const add=can('promoteur','comptable')?`<button class="btn pri" onclick="A.studentForm()">＋ Nouvel élève</button>`:'';
+ const add=can('promoteur','direction','comptable','directeur_etudes','prefet_discipline')?`<button class="btn pri" onclick="A.studentForm()">＋ Nouvel élève</button>`:'';
  return head('Élèves',can('professeur')?'Les élèves de vos classes uniquement.':'Liste complète des élèves du collège.',`<button class="btn line" onclick="A.exportStudents()">⇩ Exporter</button>${add}`)+
  `<div class="tools"><input id="elq" placeholder="Rechercher un nom, un numéro, un parent…" oninput="Q.el.q=this.value;A.elList()" value="${esc(Q.el.q)}">
  <select onchange="Q.el.c=this.value;A.elList()"><option value="">Toutes les classes</option>${D.classes.map(c=>`<option value="${c.id}" ${Q.el.c===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select>
@@ -494,7 +494,7 @@ A.saveStudent=async(id,reg,force)=>{
  const n=norm(r.full_name),dup=D.students.filter(s=>s.id!==id&&(norm(s.full_name)===n||(n.length>=8&&lev(norm(s.full_name),n)<=2)));
  if(dup.length&&!force)return A.warnConfirm(`Un élève très semblable existe déjà : <b>${esc(dup.map(d=>d.full_name+' ('+clsLabel(cls(d.class_id))+')').join(', '))}</b>. S'agit-il de la même personne ?`,()=>A.saveStudent(id,reg,true),'Créer quand même');
  try{if(id){await upd('students',id,r);await audit('Fiche modifiée',r.full_name)}else{r.status='a_verifier';r.created_by=S.uid;const s=await ins('students',r);await audit('Élève inscrit',s.full_name);
-   if(reg)await upd('online_registrations',reg,{processed:true,student_id:s.id})}
+   if(reg&&can('promoteur','comptable'))await upd('online_registrations',reg,{processed:true,student_id:s.id})}
   A.close();toast('Enregistré ✓');renderNav();render();if(!id&&r.parent_phone&&can('promoteur','comptable')){const ns=D.students.find(x=>x.full_name===r.full_name&&x.parent_phone===r.parent_phone);if(ns)setTimeout(()=>A.inviteParent(ns.id),300)}}catch(e){toast("Erreur : "+e.message,1)}};
 A.warnConfirm=(html,fn,label='Enregistrer quand même')=>{window.__wc=fn;const d=document.createElement('div');d.className='mask';d.style.zIndex=80;d.innerHTML=`<div class="dlg"><h3>⚠ Vérification</h3><p style="line-height:1.6">${html}</p><div class="foot"><button class="btn" onclick="this.closest('.mask').remove()">Revenir</button><button class="btn gold" onclick="this.closest('.mask').remove();window.__wc()">${label}</button></div></div>`;document.body.appendChild(d)};
 
