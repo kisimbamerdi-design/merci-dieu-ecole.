@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.11.01.1';
+const APP_VERSION='2026.11.01.2';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -233,7 +233,9 @@ const SEC_ZONE=s=>['Maternelle','Primaire'].includes(s)?'Primaire':(['Éducation
 function roleLabel(p){if(!p)return'';const z=SEC_ZONE(p.section);if(p.role==='directeur_etudes')return z==='Primaire'?'Directeur (Primaire)':z==='Secondaire'?'Préfet (Secondaire)':'Directeur des Études';if(p.role==='prefet_discipline')return z?`Directeur de Discipline (${z})`:'Directeur de Discipline';return ROLES[p.role]||p.role}
 const TABLES=['profiles','classes','teacher_classes','students','online_registrations','fee_rates','payments','cash_closings','staff','staff_pay','salary_advances','attendance','grades','timetable','settings','audit_log','staff_messages','treasury_entries','circulars','school_documents','agenda_events','online_payments'];
 const MONTHS=['Septembre','Octobre','Novembre','Décembre','Janvier','Février','Mars','Avril','Mai','Juin'];
-const REASONS=[...MONTHS.map(m=>'Frais mensuel — '+m),"Frais de l'État — 1ère tranche","Frais de l'État — 2e tranche","Frais de l'État — 3e tranche",'Frais technique','Minervale','Autre'];
+const FEE_MONTHS=MONTHS.slice(0,9);
+/* Règle 2026-27 : 9 mensualités (septembre à mai) ; juin et les frais de l'État sont répartis dans ces mensualités */
+const REASONS=[...FEE_MONTHS.map(m=>'Frais mensuel — '+m),'Frais technique','Minervale','Autre'];
 const A={},P={},AFTER={};
 let S={},D={},Q={},SC=null;
 
@@ -299,12 +301,13 @@ async function audit(action,ref,detail){
  if(LIVE){try{await db.from('audit_log').insert({action,ref,detail})}catch(e){}}else D.audit_log.unshift({id:uid(),...row})}
 
 /* ---------- calculs ---------- */
+const feeMonths=()=>Math.min(monthsElapsed(),9);
 function monthsElapsed(){const i=(new Date().getMonth()+4)%12;return Math.min(i,9)+1}
 const rate=k=>{const r=D.fee_rates.find(x=>x.key===k);return r?+r.amount:0};
 function levelKey(c){if(!c||!c.section)return null;if(c.section==='Maternelle')return 'MATERNELLE';if(c.section==='Primaire')return 'PRIMAIRE';if(c.section==='Éducation de Base')return '7_8';return /^4/.test(c.name)?'SEC_4':'SEC_1_3'}
 const latePct=()=>{const v=getSetting('late_enrolment_pct');return v===undefined||v===null||v===''||isNaN(+v)?50:Math.min(100,Math.max(0,+v))};
-function firstMonth(d){if(!d)return 1;const dt=new Date(d+'T12:00:00'),now=new Date(),y0=now.getMonth()>=8?now.getFullYear():now.getFullYear()-1;if(isNaN(dt)||dt<new Date(y0,8,1))return 1;return Math.min(((dt.getMonth()+4)%12)+1,10)}
-function soldes(){if(SC)return SC;const n=monthsElapsed(),out=[],pct=latePct();
+function firstMonth(d){if(!d)return 1;const dt=new Date(d+'T12:00:00'),now=new Date(),y0=now.getMonth()>=8?now.getFullYear():now.getFullYear()-1;if(isNaN(dt)||dt<new Date(y0,8,1))return 1;return Math.min(((dt.getMonth()+4)%12)+1,9)}
+function soldes(){if(SC)return SC;const n=feeMonths(),out=[],pct=latePct();
  for(const s of D.students){if(s.status!=='valide')continue;const c=cls(s.class_id),k=levelKey(c),monthly=k?rate('NIVEAU_'+k):0,m0=Math.min(firstMonth(s.enrolled_on),n),expected=s.social_case?0:Math.round(monthly*((n-m0+1)+(m0-1)*pct/100));
   const paid=D.payments.filter(p=>p.student_id===s.id&&p.status==='confirme'&&/^Frais mensuel/.test(p.reason)).reduce((a,p)=>a+ +p.amount,0);
   out.push({s,c,monthly,expected,paid,due:expected-paid,m0,pct})}
@@ -527,7 +530,7 @@ A.payForm=sid=>{if(!can('comptable','promoteur'))return;
  <div><label>Date</label><input id="pf_d" type="date" value="${today()}"></div>
  <div class="full" id="pf_w"></div></div>
  <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.savePay()">Encaisser et générer le reçu</button></div>`);
- if(sid){const m=MONTHS[Math.min(monthsElapsed(),10)-1];$('#pf_r').value='Frais mensuel — '+m}A.payAuto()};
+ if(sid){const m=FEE_MONTHS[feeMonths()-1];$('#pf_r').value='Frais mensuel — '+m}A.payAuto()};
 A.payFilter=()=>{const q=norm(val('pf_q'));[...$('#pf_s').options].forEach(o=>o.hidden=q&&!norm(o.text).includes(q))};
 A.payAuto=()=>{const sid=$('#pf_s').value,s=stu(sid),c=cls(s.class_id),k=levelKey(c),r=val('pf_r');let a='';
  if(k){if(/^Frais mensuel/.test(r))a=rate('NIVEAU_'+k);else if(/^Frais de l/.test(r))a=rate('ETAT_'+k)}
@@ -597,7 +600,7 @@ P.recus=()=>{const l=paidOK().sort((a,b)=>String(b.receipt_no).localeCompare(Str
 
 /* ---------- soldes ---------- */
 Q.so={c:'',only:true};
-P.soldes=()=>{const n=monthsElapsed();return head('Soldes et arriérés',`Calcul : mensualité de la classe × ${n} mois écoulés depuis septembre, moins les mensualités payées. Les inscrits en retard paient les mois passés à ${latePct()} % (réglable dans Paramètres → Tarifs). Les cas sociaux ne doivent rien.`,`<button class="btn line" onclick="A.exportSoldes()">⇩ Exporter</button>`)+
+P.soldes=()=>{const n=feeMonths();return head('Soldes et arriérés',`Calcul : mensualité de la classe × ${n} mois écoulés depuis septembre (9 mensualités de septembre à mai ; juin et les frais de l'État sont inclus dans chaque mensualité), moins les mensualités payées. Les inscrits en retard paient les mois passés à ${latePct()} % (réglable dans Paramètres → Tarifs). Les cas sociaux ne doivent rien.`,`<button class="btn line" onclick="A.exportSoldes()">⇩ Exporter</button>`)+
  `<div class="tools"><select onchange="Q.so.c=this.value;A.soList()"><option value="">Toutes les classes</option>${D.classes.map(c=>`<option value="${c.id}">${esc(clsLabel(c))}</option>`).join('')}</select><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${Q.so.only?'checked':''} onchange="Q.so.only=this.checked;A.soList()"> Seulement les élèves en retard</label></div>
  <div class="grid g3" id="sok" style="margin-bottom:16px"></div><div class="tw"><table><thead><tr><th>Élève</th><th>Classe</th><th class="r">Mensualité</th><th class="r">Attendu</th><th class="r">Payé</th><th class="r">Reste dû</th><th></th></tr></thead><tbody id="sob"></tbody></table></div>`};
 AFTER.soldes=()=>A.soList();
