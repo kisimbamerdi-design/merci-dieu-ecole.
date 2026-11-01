@@ -55,3 +55,5 @@ Demande-le si tu ne l'as pas, et lis-le avant tout travail.
 
 - Sécurité appliquée en production le 31 octobre 2026 (migration `durcissement_privileges_anon`) : le visiteur anonyme ne peut que lire `classes`, déposer une inscription et appeler `verify_qr`. Toute nouvelle fonction SQL doit recevoir ses droits explicitement (aucun droit par défaut). Mots de passe : 12 caractères minimum (comptes créés par `manage-user` : 14).
 - La protection des mots de passe divulgués (Supabase Auth) se règle dans le tableau de bord Supabase : elle n'est pas disponible sans abonnement.
+
+- Pont ancien site : fonction `legacy-bridge` (verify_jwt false, secret BRIDGE_SECRET) → tables online_registrations / online_payments ; voir docs/PONT_ANCIEN_SITE.md.

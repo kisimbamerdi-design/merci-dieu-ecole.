@@ -719,3 +719,15 @@ grant select, insert on public.audit_log to authenticated;
 alter default privileges for role postgres in schema public revoke all on tables from anon;
 alter default privileges for role postgres in schema public revoke execute on functions from anon;
 -- Les anciennes politiques « to public » (toutes sauf classes_read_public et reg_insert_public) ont été ramenées à « to authenticated ».
+
+-- Pont ancien site : paiements déclarés (migration pont_ancien_site_paiements_en_ligne)
+create table if not exists online_payments (
+  id uuid primary key default gen_random_uuid(),
+  received_at timestamptz not null default now(),
+  payload jsonb not null check (octet_length(payload::text) < 4000),
+  processed boolean not null default false);
+alter table online_payments enable row level security;
+create policy onp_read on online_payments for select to authenticated using (my_role() in ('promoteur','comptable'));
+create policy onp_update on online_payments for update to authenticated using (my_role() in ('promoteur','comptable')) with check (my_role() in ('promoteur','comptable'));
+revoke all on online_payments from anon;
+revoke insert, delete on online_payments from authenticated;
