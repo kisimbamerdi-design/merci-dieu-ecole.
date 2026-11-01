@@ -74,5 +74,33 @@ Deno.serve(async (req) => {
     return json({ ok: true });
   }
 
+  if (b.type === "modification") {
+    // Modification faite dans Google Sheets : on retrouve l'élève par son nom exact (ancien nom) ; ambigu ou introuvable = refusé.
+    const ancien = up(b.ancienNom, 120);
+    if (ancien.length < 3) return json({ error: "Nom manquant." }, 400);
+    const { data: found, error: e1 } = await db.from("students").select("id").eq("full_name", ancien).limit(2);
+    if (e1) return json({ error: "Recherche impossible." }, 500);
+    if (!found || found.length !== 1) return json({ error: found && found.length > 1 ? "Plusieurs élèves portent ce nom." : "Élève introuvable." }, 409);
+    const patch: Record<string, unknown> = {};
+    const put = (k: string, v: unknown) => { if (v !== undefined && v !== null) patch[k] = v; };
+    if (b.nom !== undefined) { const n = up(b.nom, 120); if (n.length >= 3) put("full_name", n); }
+    if (b.sexe !== undefined) { const x = clean(b.sexe, 12); put("sex", /^M/i.test(x) ? "Masculin" : /^F/i.test(x) ? "Féminin" : null); }
+    if (b.dateNaissance !== undefined) put("birth_date", isoDate(b.dateNaissance) || null);
+    if (b.lieuNaissance !== undefined) put("birth_place", up(b.lieuNaissance));
+    if (b.province !== undefined) put("province", up(b.province));
+    if (b.secteur !== undefined) put("sector", up(b.secteur));
+    if (b.adresse !== undefined) put("address", up(b.adresse));
+    if (b.pere !== undefined) put("father_name", up(b.pere));
+    if (b.mere !== undefined) put("mother_name", up(b.mere));
+    if (b.telParent !== undefined) put("parent_phone", clean(b.telParent, 20));
+    if (b.ecole !== undefined) put("prev_school", up(b.ecole));
+    if (b.numPermanent !== undefined) put("perm_number", clean(b.numPermanent, 40));
+    if (!Object.keys(patch).length) return json({ ok: true, changed: 0 });
+    const { error: e2 } = await db.from("students").update(patch).eq("id", found[0].id);
+    if (e2) return json({ error: "Modification impossible." }, 500);
+    await db.from("audit_log").insert({ action: "Modification depuis Google Sheets", ref: ancien, detail: Object.keys(patch).join(", ") });
+    return json({ ok: true, changed: Object.keys(patch).length });
+  }
+
   return json({ error: "Type inconnu." }, 400);
 });
