@@ -743,3 +743,7 @@ create policy students_insert on students for insert
     my_role() in ('promoteur','direction','comptable')
     or (my_role() in ('directeur_etudes','prefet_discipline')
       and (my_section() is null or exists(select 1 from classes c where c.id = students.class_id and c.section = my_section()))));
+
+-- Anti-doublons du pont ancien site (migration anti_doublons_pont)
+create unique index if not exists online_registrations_event_uidx on online_registrations ((payload->>'event_id')) where payload ? 'event_id';
+create unique index if not exists online_payments_event_uidx on online_payments ((payload->>'event_id')) where payload ? 'event_id';

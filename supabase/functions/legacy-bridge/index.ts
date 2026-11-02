@@ -36,6 +36,9 @@ Deno.serve(async (req) => {
   let b: Record<string, unknown>;
   try { b = JSON.parse(raw); } catch { return json({ error: "Requête invalide." }, 400); }
 
+  // Identifiant d'événement : un même envoi reçu deux fois n'est enregistré qu'une fois.
+  const eid = clean(b.eventId, 64);
+  const eventId = /^[A-Za-z0-9_-]{8,64}$/.test(eid) ? eid : null;
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
   if (b.type === "inscription") {
@@ -58,8 +61,10 @@ Deno.serve(async (req) => {
       perm_number: clean(b.numPermanent, 40),
       source: "ancien-site",
       declared_on: clean(b.date, 30),
+      ...(eventId ? { event_id: eventId } : {}),
     };
     const { error } = await db.from("online_registrations").insert({ payload });
+    if (error && error.code === "23505") return json({ ok: true, duplicate: true });
     if (error) return json({ error: "Enregistrement impossible." }, 500);
     return json({ ok: true });
   }
@@ -68,13 +73,16 @@ Deno.serve(async (req) => {
     const montant = Math.round(Number(b.montant));
     const nom = up(b.nomEleve, 120);
     if (!nom || !(montant > 0) || montant > 100000000) return json({ error: "Paiement invalide." }, 400);
-    const payload = { student_name: nom, amount: montant, reason: clean(b.motif, 80), declared_on: clean(b.date, 30), source: "ancien-site" };
+    const payload = { student_name: nom, amount: montant, reason: clean(b.motif, 80), declared_on: clean(b.date, 30), source: "ancien-site", ...(eventId ? { event_id: eventId } : {}) };
     const { error } = await db.from("online_payments").insert({ payload });
+    if (error && error.code === "23505") return json({ ok: true, duplicate: true });
     if (error) return json({ error: "Enregistrement impossible." }, 500);
     return json({ ok: true });
   }
 
   if (b.type === "modification") {
+    // Désactivé par défaut (risque d'homonymes) : activer seulement avec le secret ALLOW_SHEET_MODIFICATION=1.
+    if (Deno.env.get("ALLOW_SHEET_MODIFICATION") !== "1") return json({ error: "Modification depuis Sheets désactivée." }, 403);
     // Modification faite dans Google Sheets : on retrouve l'élève par son nom exact (ancien nom) ; ambigu ou introuvable = refusé.
     const ancien = up(b.ancienNom, 120);
     if (ancien.length < 3) return json({ error: "Nom manquant." }, 400);

@@ -1,5 +1,7 @@
 # Pont ancien site → application
 
+> Mise à jour 2 novembre : utiliser `integrations/ancien-site/Bridge.gs` (relais strict, avec identifiant anti-doublon `eventId`) à la place de la fonction ci-dessous. Le type « modification » est DÉSACTIVÉ côté serveur (403) tant que le secret `ALLOW_SHEET_MODIFICATION=1` n'est pas créé : ne l'activer qu'avec un identifiant élève stable.
+
 L'ancien site (Google Apps Script) envoie chaque inscription / paiement à la fonction Supabase `legacy-bridge`.
 Les données arrivent « à traiter » dans **Inscriptions en ligne** et **Paiements en ligne** ; rien n'est créé automatiquement.
 

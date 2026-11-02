@@ -57,3 +57,5 @@ Demande-le si tu ne l'as pas, et lis-le avant tout travail.
 - La protection des mots de passe divulgués (Supabase Auth) se règle dans le tableau de bord Supabase : elle n'est pas disponible sans abonnement.
 
 - Pont ancien site : fonction `legacy-bridge` (verify_jwt false, secret BRIDGE_SECRET) → tables online_registrations / online_payments ; voir docs/PONT_ANCIEN_SITE.md.
+
+- Pont : eventId anti-doublon (index uniques), type modification désactivé par défaut (ALLOW_SHEET_MODIFICATION) ; relais Apps Script dans integrations/ancien-site/Bridge.gs (base : PR n°5 de Codex).
