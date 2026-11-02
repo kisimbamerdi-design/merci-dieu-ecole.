@@ -7,7 +7,7 @@
  *
  * Il envoie à l'application, « à traiter », uniquement :
  *   - les NOUVELLES inscriptions de la Feuille 1 ;
- *   - les paiements des onglets « Paiements - <mois> » (nom, classe, option, montant versé, statut, date).
+ *   - les paiements lus dans la Feuille 1 (colonnes de l'ancien script : montant, statut EN ATTENTE ou APPROUVÉ, date).
  * Le comptable les vérifie dans l'application (Inscriptions en ligne / Paiements en ligne).
  *
  * Propriétés du script à créer (Paramètres du projet -> Propriétés du script) :
@@ -19,7 +19,25 @@
  * puis installerDeclencheur(). Pour envoyer l'historique plus tard, uniquement sur ordre : envoyerTout().
  */
 
-var MOIS = ["Septembre", "Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin"];
+// Copie en lecture seule des colonnes de l'ancien script (1 = colonne A). Ne pas modifier sans changer l'ancien script.
+var COLONNES_MOTIFS = {
+  "Septembre": { date: 13, montant: 14, statut: 15 }, "Octobre": { date: 16, montant: 17, statut: 18 },
+  "Novembre": { date: 19, montant: 20, statut: 21 }, "Décembre": { date: 22, montant: 23, statut: 24 },
+  "Janvier": { date: 25, montant: 26, statut: 27 }, "Février": { date: 28, montant: 29, statut: 30 },
+  "Mars": { date: 31, montant: 32, statut: 33 }, "Avril": { date: 34, montant: 35, statut: 36 },
+  "Mai": { date: 37, montant: 38, statut: 39 }, "Juin": { date: 40, montant: 41, statut: 42 },
+  "1ère tranche - Frais de l'État": { date: 43, montant: 44, statut: 45 },
+  "2ème tranche - Frais de l'État": { date: 46, montant: 47, statut: 48 },
+  "3ème tranche - Frais de l'État": { date: 49, montant: 50, statut: 51 },
+  "Frais Technique": { date: 52, montant: 53, statut: 54 }, "Minervale": { date: 55, montant: 56, statut: 57 }
+};
+var MOTIF_APP = {
+  "Septembre": "Frais mensuel — Septembre", "Octobre": "Frais mensuel — Octobre", "Novembre": "Frais mensuel — Novembre",
+  "Décembre": "Frais mensuel — Décembre", "Janvier": "Frais mensuel — Janvier", "Février": "Frais mensuel — Février",
+  "Mars": "Frais mensuel — Mars", "Avril": "Frais mensuel — Avril", "Mai": "Frais mensuel — Mai", "Juin": "Frais mensuel — Juin",
+  "1ère tranche - Frais de l'État": "Frais de l'État — 1ère tranche", "2ème tranche - Frais de l'État": "Frais de l'État — 2e tranche",
+  "3ème tranche - Frais de l'État": "Frais de l'État — 3e tranche", "Frais Technique": "Frais technique", "Minervale": "Minervale"
+};
 var MAX_PAR_PASSAGE = 80;
 
 function config_() {
@@ -82,21 +100,26 @@ function evenements_(ss) {
       });
     }
   }
-  MOIS.forEach(function (m) {
-    var t = ss.getSheetByName("Paiements - " + m);
-    if (!t || t.getLastRow() < 2) return;
-    var d = t.getRange(2, 1, t.getLastRow() - 1, 6).getValues();
-    for (var i = 0; i < d.length; i++) {
-      var nom = norm_(d[i][0]), montant = Number(d[i][3]) || 0, statut = norm_(d[i][4]);
-      if (nom.length < 3 || montant <= 0) continue;
-      if (/ATTENTE|REJET|ANNUL|REFUS/.test(statut)) continue;
-      ev.push({
-        cle: "PAIE",
-        id: court_("P|" + m + "|" + nom + "|" + montant + "|" + txt_(d[i][5])),
-        corps: { type: "paiement", nomEleve: nom, montant: montant, motif: "Frais mensuel — " + m, date: txt_(d[i][5]) }
-      });
+  // Paiements : lus dans la Feuille 1, colonnes réelles de l'ancien script (MOTIF_COLONNES : date, montant, statut)
+  if (n >= 2) {
+    var d2 = feuille1.getRange(2, 1, n - 1, 60).getValues();
+    for (var r = 0; r < d2.length; r++) {
+      var nomP = norm_(d2[r][1]);
+      if (nomP.length < 3) continue;
+      for (var motif in COLONNES_MOTIFS) {
+        var cc = COLONNES_MOTIFS[motif];
+        var montant = Number(d2[r][cc.montant - 1]) || 0;
+        var statut = norm_(d2[r][cc.statut - 1]);
+        if (montant <= 0 || (statut !== "EN ATTENTE" && statut !== "APPROUVÉ")) continue;
+        var datep = txt_(d2[r][cc.date - 1]);
+        ev.push({
+          cle: "PAIE",
+          id: court_("P|" + nomP + "|" + motif + "|" + montant + "|" + statut),
+          corps: { type: "paiement", nomEleve: nomP, montant: montant, motif: MOTIF_APP[motif] + " (" + statut + ")", date: datep }
+        });
+      }
     }
-  });
+  }
   return ev;
 }
 

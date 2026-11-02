@@ -14,7 +14,7 @@ Ne modifie ni votre script existant, ni le classeur Google Sheets, ni Telegram. 
 6. Exécutez **installerDeclencheur** : lecture automatique toutes les 10 minutes.
 
 ## Ensuite
-- Chaque nouvelle inscription ou chaque paiement apparu dans les onglets « Paiements - <mois> » arrive dans l'application, « à traiter » (Inscriptions en ligne / Paiements en ligne).
+- Chaque nouvelle inscription ou chaque paiement apparu dans la Feuille 1 (colonnes de paiement de l'ancien script, statut EN ATTENTE ou APPROUVÉ) arrive dans l'application, « à traiter » (Inscriptions en ligne / Paiements en ligne).
 - L'historique n'est PAS envoyé. Pour l'envoyer, uniquement sur ordre : exécuter **envoyerTout** (à faire avec le plan d'import, pas avant).
 - Un montant corrigé dans un onglet de paiement arrive comme une nouvelle déclaration (le comptable voit les deux et garde la bonne).
-- Les paiements en attente, rejetés ou annulés (colonne Statut) ne sont pas envoyés.
+- Un paiement apparaît d'abord « EN ATTENTE » puis « APPROUVÉ » : l'application reçoit les deux étapes (le statut est indiqué dans le motif). Les paiements REJETÉ ou GRATUIT ne sont pas envoyés.
