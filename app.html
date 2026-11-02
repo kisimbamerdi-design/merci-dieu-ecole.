@@ -214,7 +214,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.11.01.7';
+const APP_VERSION='2026.11.02.1';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -475,27 +475,37 @@ A.fiche=id=>{const s=stu(id),c=cls(s.class_id),m=can('promoteur','comptable'),[t
  ${s.status==='valide'&&s.qr_token?`<div style="text-align:center"><div data-url="${esc(qrURL('s',s))}" data-size="120" style="display:flex;justify-content:center"></div><small style="color:var(--mut)">QR de validation<br>d'inscription</small></div>`:''}</div>${pay}
  <div class="foot">${can('promoteur','comptable')&&s.status!=='valide'?`<button class="btn pri" onclick="A.validate('${id}')">✓ Valider l'inscription</button>`:''}${can('promoteur','comptable')?`<button class="btn line" onclick="A.studentForm('${id}')">Modifier</button>`:''}${can('promoteur','comptable')?`<button class="btn line" onclick="A.inscriptionDoc('${id}')">🧾 Facture d'inscription</button><button class="btn line" onclick="A.inviteParent('${id}')">✉ Inviter au groupe</button>`:''}${can('promoteur','direction','professeur')?`<button class="btn line" onclick="A.bulletin('${id}')">Bulletin</button>`:''}${can('comptable','promoteur')?`<button class="btn gold" onclick="A.payForm('${id}')">Encaisser</button>`:''}<button class="btn" onclick="A.close()">Fermer</button></div>`,true);drawQRs($('#modal'))};
 A.validate=async id=>{try{await upd('students',id,{status:'valide'});await audit('Inscription validée',sname(id));toast('Inscription validée ✓');renderNav();render();A.fiche(id)}catch(e){toast(e.message,1)}};
-A.studentForm=(id,pre)=>{const s=id?stu(id):(pre||{}),o=(k)=>esc(s[k]||'');
- modal(`<h3>${id?'Modifier la fiche':'Nouvel élève'}</h3><p class="sub">Les doublons sont vérifiés avant l'enregistrement.</p><div class="f">
- <div class="full"><label>Nom complet (nom, postnom, prénom)</label><input id="f_full_name" value="${o('full_name')}"></div>
- <div><label>Matricule</label><input id="f_matricule" value="${o('matricule')}"></div>
- <div><label>Sexe</label><select id="f_sex"><option></option><option ${s.sex==='Masculin'?'selected':''}>Masculin</option><option ${s.sex==='Féminin'?'selected':''}>Féminin</option></select></div>
- <div><label>Date de naissance</label><input id="f_birth_date" type="date" value="${o('birth_date')}"></div>
- <div><label>Lieu de naissance</label><input id="f_birth_place" value="${o('birth_place')}"></div>
- <div><label>Classe</label><select id="f_class_id"><option value="">—</option>${D.classes.map(c=>`<option value="${c.id}" ${s.class_id===c.id?'selected':''}>${esc(clsLabel(c))}</option>`).join('')}</select></div>
- <div><label>École précédente</label><input id="f_prev_school" value="${o('prev_school')}"></div>
- <div><label>N° permanent</label><input id="f_perm_number" value="${o('perm_number')}"></div>
- <div><label>Date d'inscription</label><input type="date" id="f_enrolled_on" value="${o('enrolled_on')||(id?'':today())}"></div>
- <div><label>Nom du père</label><input id="f_father_name" value="${o('father_name')}"></div>
- <div><label>Nom de la mère</label><input id="f_mother_name" value="${o('mother_name')}"></div>
- <div><label>Téléphone du parent</label><input id="f_parent_phone" value="${o('parent_phone')}" inputmode="tel"></div>
- <div><label>Adresse</label><input id="f_address" value="${o('address')}"></div>
- <div><label>Province</label><input id="f_province" value="${o('province')}"></div>
- <div><label>Secteur</label><input id="f_sector" value="${o('sector')}"></div>
+/* Fiche d'inscription : mêmes champs, même ordre et mêmes listes que sur le site du Collège (tous obligatoires) */
+const CLS_STD=[['Maternelle','Maternelle',['Maternelle']],...['1ère','2ème','3ème','4ème','5ème','6ème'].map(n=>[n+' Primaire','Primaire',['Primaire']]),['7ème EB','Éducation de Base',['Éducation de Base']],['8ème EB','Éducation de Base',['Éducation de Base']],...['1ère','2ème','3ème','4ème'].map(n=>[n+' Secondaire','Secondaire',['Coupe et Couture','Maçonnerie','Menuiserie','Électricité','Mécanique Automobile','Mécanique Générale','Informatique','I.T.M. (Institut Technique Médical)','Pédagogie Générale','Sciences','Commercial et Administratif']])];
+A.seedClasses=async()=>{if(!can('promoteur'))return toast('Réservé au promoteur.',1);try{const yr=getSetting('school_year')||'2026-2027';for(const [name,section,opts] of CLS_STD)for(const option of opts)if(!D.classes.some(c=>c.name===name&&c.option===option))await ins('classes',{name,section,option,year:yr});await audit('Classes standard créées');toast('Classes créées ✓');render()}catch(e){toast(e.message,1)}};
+A.clsNames=()=>[...new Set(D.classes.map(c=>c.name))];
+A.optFill=(name,sel)=>{const o=$('#f_option');if(!o)return;const l=D.classes.filter(c=>c.name===name);o.innerHTML='<option value="">'+(name?'Choisir une option':'Choisir d\'abord la classe')+'</option>'+l.map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.option||c.section||c.name)}</option>`).join('');if(l.length===1&&name){o.value=l[0].id}};
+A.studentForm=(id,pre)=>{const s=id?stu(id):(pre||{}),o=(k)=>esc(s[k]||''),cur=s.class_id?cls(s.class_id):null,req=id?'':' *';
+ const noCls=!D.classes.length;
+ modal(`<div class="eyebrow" style="font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--g,#176b52)">COLLÈGE MERCI-DIEU</div><h3>${id?'Modifier la fiche':'Fiche d\'inscription'}</h3>${noCls?`<div class="note" style="margin-bottom:12px">Aucune classe n'est encore créée. ${can('promoteur')?`<button class="btn pri sm" onclick="A.seedClasses()">Créer les classes standard</button>`:'Demandez au promoteur de créer les classes.'}</div>`:''}<div class="f">
+ <div><label>Date${req}</label><input type="date" id="f_enrolled_on" value="${o('enrolled_on')||(id?'':today())}"></div>
+ <div><label>Nom complet${req}</label><input id="f_full_name" value="${o('full_name')}" placeholder="Nom, postnom, prénom"></div>
+ <div><label>Sexe${req}</label><select id="f_sex"><option value="">Choisir</option><option ${s.sex==='Masculin'?'selected':''}>Masculin</option><option ${s.sex==='Féminin'?'selected':''}>Féminin</option></select></div>
+ <div><label>Date de naissance${req}</label><input id="f_birth_date" type="date" value="${o('birth_date')}"></div>
+ <div><label>Lieu de naissance${req}</label><input id="f_birth_place" value="${o('birth_place')}"></div>
+ <div><label>École de provenance${req}</label><input id="f_prev_school" value="${o('prev_school')}"></div>
+ <div><label>Numéro permanent de l'élève${req}</label><input id="f_perm_number" value="${o('perm_number')}"></div>
+ <div><label>Province d'origine${req}</label><input id="f_province" value="${o('province')}"></div>
+ <div><label>Secteur / Collectivité d'origine${req}</label><input id="f_sector" value="${o('sector')}"></div>
+ <div><label>Adresse${req}</label><input id="f_address" value="${o('address')}"></div>
+ <div><label>Nom du père${req}</label><input id="f_father_name" value="${o('father_name')}"></div>
+ <div><label>Nom de la mère${req}</label><input id="f_mother_name" value="${o('mother_name')}"></div>
+ <div><label>Téléphone / WhatsApp des parents${req}</label><input id="f_parent_phone" value="${o('parent_phone')}" inputmode="tel"></div>
+ <div><label>Classe${req}</label><select id="f_class_name" onchange="A.optFill(this.value)"><option value="">Choisir une classe</option>${A.clsNames().map(n=>`<option ${cur&&cur.name===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
+ <div><label>Option${req}</label><select id="f_option"><option value="">Choisir d'abord la classe</option></select></div>
+ ${id?`<div><label>Matricule</label><input id="f_matricule" value="${o('matricule')}"></div>`:''}
  <div class="full"><label style="display:flex;gap:8px;align-items:center;font-size:13.5px"><input type="checkbox" id="f_social_case" style="width:auto" ${s.social_case?'checked':''}> Cas social (gratuité)</label></div></div>
- <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStudent('${id||''}',${pre&&pre._reg?`'${pre._reg}'`:'null'})">Enregistrer</button></div>`)};
+ ${id?'':`<p class="sub" style="margin-top:6px">Tous les champs sont obligatoires, comme sur la fiche du site du Collège. Les doublons sont vérifiés avant l'enregistrement.</p>`}
+ <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStudent('${id||''}',${pre&&pre._reg?`'${pre._reg}'`:'null'})">${id?'Enregistrer':'Confirmer l\'inscription'}</button></div>`);
+ if(cur)A.optFill(cur.name,cur.id);else if(s.class_id===undefined&&pre&&pre.class_id)A.optFill((cls(pre.class_id)||{}).name,pre.class_id)};
 A.saveStudent=async(id,reg,force)=>{
- const r={};['full_name','matricule','sex','birth_date','birth_place','class_id','prev_school','perm_number','father_name','mother_name','parent_phone','address','province','sector','enrolled_on'].forEach(k=>{r[k]=val('f_'+k)||null});['full_name','father_name','mother_name','birth_place','prev_school','province','sector','address'].forEach(k=>{if(r[k])r[k]=r[k].toLocaleUpperCase('fr')});r.social_case=$('#f_social_case').checked;
+ const r={};['full_name','matricule','sex','birth_date','birth_place','prev_school','perm_number','father_name','mother_name','parent_phone','address','province','sector','enrolled_on'].forEach(k=>{const e=$('#f_'+k);r[k]=e?(val('f_'+k)||null):undefined;if(r[k]===undefined)delete r[k]});r.class_id=val('f_option')||null;
+ if(!id){const need=['enrolled_on','full_name','sex','birth_date','birth_place','prev_school','perm_number','province','sector','address','father_name','mother_name','parent_phone','class_id'];if(need.some(k=>!r[k]))return toast('Tous les champs de la fiche sont obligatoires.',1)}['full_name','father_name','mother_name','birth_place','prev_school','province','sector','address'].forEach(k=>{if(r[k])r[k]=r[k].toLocaleUpperCase('fr')});r.social_case=$('#f_social_case').checked;
  if(!r.full_name)return toast('Le nom est obligatoire.',1);
  const ph=String(r.parent_phone||'').replace(/\D/g,'');if(r.parent_phone&&(ph.length<9||/^(\d)\1+$/.test(ph))&&!force)return A.warnConfirm("Le numéro de téléphone semble invalide. Enregistrer quand même ?",()=>A.saveStudent(id,reg,true));
  const n=norm(r.full_name),dup=D.students.filter(s=>s.id!==id&&(norm(s.full_name)===n||(n.length>=8&&lev(norm(s.full_name),n)<=2)));
@@ -526,14 +536,15 @@ A.payList=()=>{const q=norm(Q.pay.q);let l=D.payments.filter(p=>(!Q.pay.m||Strin
  $('#pyc').innerHTML=`${l.length} paiement(s) · total confirmé : <b>${fc(tot)}</b>`};
 A.payForm=sid=>{if(!can('comptable','promoteur'))return;
  const opts=D.students.filter(s=>s.status!=='refuse').sort((a,b)=>String(a.full_name).localeCompare(b.full_name,'fr'));
- modal(`<h3>Encaisser un paiement</h3><p class="sub">Choisissez l'élève, le motif et le montant.</p><div class="f">
- <div class="full"><label>Élève</label><input id="pf_q" placeholder="Taper pour filtrer…" oninput="A.payFilter()" style="margin-bottom:8px"><select id="pf_s" size="5" onchange="A.payAuto()">${opts.map(s=>`<option value="${s.id}" ${sid===s.id?'selected':''}>${esc(s.full_name)} — ${esc(clsLabel(cls(s.class_id)))}</option>`).join('')}</select></div>
- <div><label>Motif</label><select id="pf_r" onchange="A.payAuto()">${REASONS.map(r=>`<option>${esc(r)}</option>`).join('')}</select></div>
- <div><label>Montant (FC)</label><input id="pf_a" type="number" min="0" inputmode="numeric" oninput="A.payAuto2()"></div>
- <div><label>Mode de paiement</label><select id="pf_m"><option>Espèces</option><option>Mobile money</option><option>Banque</option></select></div>
+ modal(`<div class="eyebrow" style="font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--g,#176b52)">COLLÈGE MERCI-DIEU</div><h3>Enregistrer un paiement</h3><p class="sub">Indiquez le nom de l'élève, le montant payé et le motif du paiement.</p><div class="f">
  <div><label>Date</label><input id="pf_d" type="date" value="${today()}"></div>
+ <div class="full"><label>Nom de l'élève</label><input id="pf_q" placeholder="Nom et prénom — taper pour chercher" oninput="A.payFilter()" style="margin-bottom:8px"><select id="pf_s" size="5" onchange="A.payAuto()">${opts.map(s=>`<option value="${s.id}" ${sid===s.id?'selected':''}>${esc(s.full_name)} — ${esc(clsLabel(cls(s.class_id)))}</option>`).join('')}</select></div>
+ <div><label>Montant payé (CDF)</label><input id="pf_a" type="number" min="0" inputmode="numeric" oninput="A.payAuto2()"></div>
+ <div><label>Motif du paiement</label><select id="pf_r" onchange="A.payAuto()"><option value="">Choisir un motif</option>${REASONS.map(r=>`<option>${esc(r)}</option>`).join('')}</select></div>
+ <div><label>Mode de paiement</label><select id="pf_m"><option>Espèces</option><option>Mobile money</option><option>Banque</option></select></div>
  <div class="full" id="pf_w"></div></div>
- <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.savePay()">Encaisser et générer le reçu</button></div>`);
+ <p class="sub">Tous les champs sont obligatoires.</p>
+ <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.savePay()">Confirmer le paiement</button></div>`);
  if(sid){const m=FEE_MONTHS[feeMonths()-1];$('#pf_r').value='Frais mensuel — '+m}A.payAuto()};
 A.payAuto2=()=>{const r=val('pf_r');if(!can('promoteur')||!/^Frais mensuel/.test(r)||/Juin/.test(r))return;const sid=$('#pf_s')&&$('#pf_s').value,st=sid?stu(sid):null,x=splitOf(+val('pf_a')||0,st?levelKey(cls(st.class_id)):null),w=$('#pf_w');if(!w)return;const old=w.querySelector('.rep');if(old)old.remove();if(x.juin||x.etat)w.insertAdjacentHTML('beforeend',`<div class="note rep">Répartition : mensualité ${fc(x.base)} · part de Juin ${fc(x.juin)} · part des frais de l'État ${fc(x.etat)}.</div>`)};
 A.payFilter=()=>{const q=norm(val('pf_q'));[...$('#pf_s').options].forEach(o=>o.hidden=q&&!norm(o.text).includes(q))};
@@ -543,7 +554,7 @@ A.payAuto=()=>{const sid=$('#pf_s').value,s=stu(sid),c=cls(s.class_id),k=levelKe
  const w=[];if(s.social_case)w.push('Cas social : mensualité gratuite.');
  if(sid&&D.payments.some(p=>p.student_id===sid&&p.status==='confirme'&&p.reason===r&&/Frais mensuel|tranche/.test(r)))w.push('⚠ Ce motif a déjà été payé pour cet élève : risque de doublon.');
  $('#pf_w').innerHTML=w.length?`<div class="note">${w.join('<br>')}</div>`:'';A.payAuto2()};
-A.savePay=async()=>{const sid=$('#pf_s').value,amount=+val('pf_a');if(!sid)return toast('Choisissez un élève.',1);if(!(amount>0))return toast('Le montant doit être supérieur à 0.',1);
+A.savePay=async()=>{const sid=$('#pf_s').value,amount=+val('pf_a');if(!sid)return toast('Choisissez un élève.',1);if(!val('pf_r'))return toast('Choisissez le motif du paiement.',1);if(!(amount>0))return toast('Le montant doit être supérieur à 0.',1);
  if(amount>3000000&&!window.__okbig){return A.warnConfirm(`Le montant ${fc(amount)} est très élevé. Est-ce correct ?`,()=>{window.__okbig=1;A.savePay()},'Oui, confirmer')}
  window.__okbig=0;
  try{const p=await ins('payments',{student_id:sid,reason:val('pf_r'),amount,method:val('pf_m'),paid_on:val('pf_d')||today()});
