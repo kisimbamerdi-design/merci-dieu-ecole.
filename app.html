@@ -104,6 +104,14 @@ td.r,th.r{text-align:right}
 .mask{position:fixed;inset:0;background:#0b1f17b3;backdrop-filter:blur(3px);display:grid;place-items:start center;z-index:60;padding:28px 16px;overflow:auto}
 .dlg{background:#fff;border-radius:20px;width:min(580px,100%);padding:26px;box-shadow:0 30px 80px #0007;animation:up .18s ease}
 .dlg.wide{width:min(940px,100%)}
+.dlg.mid{width:min(760px,100%)}
+.fsec{border:1.5px solid var(--line);border-radius:16px;padding:16px 16px 18px;margin-top:14px;background:#fcfdfc}
+.fh{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--g,#176b52);margin-bottom:14px}
+.fh span{width:24px;height:24px;border-radius:50%;background:var(--g,#176b52);color:#fff;display:grid;place-items:center;font-size:12px}
+.f label.chk{display:flex;gap:9px;align-items:center;font-size:13.5px;margin:2px 0 0}.f label.chk input{width:auto}
+.f .bad{border-color:#d64545!important;background:#fff5f5!important}
+.dlg .foot.stick{position:sticky;bottom:-26px;background:#fff;padding:14px 0 2px;border-top:1px solid var(--line);margin-top:18px}
+
 @keyframes up{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
 .dlg h3{font-size:20px;margin-bottom:4px}.dlg .sub{color:var(--mut);margin:0 0 18px}
 .dlg .foot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap}
@@ -214,7 +222,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.11.02.1';
+const APP_VERSION='2026.11.03.1';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -249,7 +257,7 @@ const sname=id=>stu(id).full_name||'—';
 const getSetting=k=>(D.settings.find(x=>x.key===k)||{}).value;
 let _seq=1000;const uid=()=>'d'+(++_seq);
 function toast(t,err){const e=document.createElement('div');e.className='toast'+(err?' err':'');e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),err?5200:2600)}
-function modal(html,wide){$('#modal').innerHTML=`<div class="mask" onmousedown="if(event.target===this)A.close()"><div class="dlg ${wide?'wide':''}">${html}</div></div>`}
+function modal(html,wide){$('#modal').innerHTML=`<div class="mask" onmousedown="if(event.target===this)A.close()"><div class="dlg ${wide===true?'wide':(wide||'')}">${html}</div></div>`}
 A.close=()=>{$('#modal').innerHTML=''};
 const chip=(t,k='')=>`<span class="chip ${k}">${esc(t)}</span>`;
 const kpi=(l,v,s,k='')=>`<div class="card kpi ${k}"><small>${l}</small><b>${v}</b><span>${s||''}</span></div>`;
@@ -482,30 +490,35 @@ A.clsNames=()=>[...new Set(D.classes.map(c=>c.name))];
 A.optFill=(name,sel)=>{const o=$('#f_option');if(!o)return;const l=D.classes.filter(c=>c.name===name);o.innerHTML='<option value="">'+(name?'Choisir une option':'Choisir d\'abord la classe')+'</option>'+l.map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.option||c.section||c.name)}</option>`).join('');if(l.length===1&&name){o.value=l[0].id}};
 A.studentForm=(id,pre)=>{const s=id?stu(id):(pre||{}),o=(k)=>esc(s[k]||''),cur=s.class_id?cls(s.class_id):null,req=id?'':' *';
  const noCls=!D.classes.length;
- modal(`<div class="eyebrow" style="font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--g,#176b52)">COLLÈGE MERCI-DIEU</div><h3>${id?'Modifier la fiche':'Fiche d\'inscription'}</h3>${noCls?`<div class="note" style="margin-bottom:12px">Aucune classe n'est encore créée. ${can('promoteur')?`<button class="btn pri sm" onclick="A.seedClasses()">Créer les classes standard</button>`:'Demandez au promoteur de créer les classes.'}</div>`:''}<div class="f">
- <div><label>Date${req}</label><input type="date" id="f_enrolled_on" value="${o('enrolled_on')||(id?'':today())}"></div>
- <div><label>Nom complet${req}</label><input id="f_full_name" value="${o('full_name')}" placeholder="Nom, postnom, prénom"></div>
- <div><label>Sexe${req}</label><select id="f_sex"><option value="">Choisir</option><option ${s.sex==='Masculin'?'selected':''}>Masculin</option><option ${s.sex==='Féminin'?'selected':''}>Féminin</option></select></div>
- <div><label>Date de naissance${req}</label><input id="f_birth_date" type="date" value="${o('birth_date')}"></div>
- <div><label>Lieu de naissance${req}</label><input id="f_birth_place" value="${o('birth_place')}"></div>
- <div><label>École de provenance${req}</label><input id="f_prev_school" value="${o('prev_school')}"></div>
- <div><label>Numéro permanent de l'élève${req}</label><input id="f_perm_number" value="${o('perm_number')}"></div>
- <div><label>Province d'origine${req}</label><input id="f_province" value="${o('province')}"></div>
- <div><label>Secteur / Collectivité d'origine${req}</label><input id="f_sector" value="${o('sector')}"></div>
- <div><label>Adresse${req}</label><input id="f_address" value="${o('address')}"></div>
- <div><label>Nom du père${req}</label><input id="f_father_name" value="${o('father_name')}"></div>
- <div><label>Nom de la mère${req}</label><input id="f_mother_name" value="${o('mother_name')}"></div>
- <div><label>Téléphone / WhatsApp des parents${req}</label><input id="f_parent_phone" value="${o('parent_phone')}" inputmode="tel"></div>
+ modal(`<div class="eyebrow" style="font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--g,#176b52)">COLLÈGE MERCI-DIEU</div><h3>${id?'Modifier la fiche':'Fiche d\'inscription'}</h3>${noCls?`<div class="note" style="margin-bottom:12px">Aucune classe n'est encore créée. ${can('promoteur')?`<button class="btn pri sm" onclick="A.seedClasses()">Créer les classes standard</button>`:'Demandez au promoteur de créer les classes.'}</div>`:''}
+ <div class="fsec"><div class="fh"><span>1</span>Inscription</div><div class="f">
+ <div class="full"><label>Date d'inscription${req}</label><input type="date" id="f_enrolled_on" value="${o('enrolled_on')||(id?'':today())}"></div>
  <div><label>Classe${req}</label><select id="f_class_name" onchange="A.optFill(this.value)"><option value="">Choisir une classe</option>${A.clsNames().map(n=>`<option ${cur&&cur.name===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
  <div><label>Option${req}</label><select id="f_option"><option value="">Choisir d'abord la classe</option></select></div>
- ${id?`<div><label>Matricule</label><input id="f_matricule" value="${o('matricule')}"></div>`:''}
- <div class="full"><label style="display:flex;gap:8px;align-items:center;font-size:13.5px"><input type="checkbox" id="f_social_case" style="width:auto" ${s.social_case?'checked':''}> Cas social (gratuité)</label></div></div>
+ ${id?`<div class="full"><label>Matricule</label><input id="f_matricule" value="${o('matricule')}"></div>`:''}
+ <div class="full"><label class="chk"><input type="checkbox" id="f_social_case" ${s.social_case?'checked':''}> Cas social (gratuité)</label></div></div></div>
+ <div class="fsec"><div class="fh"><span>2</span>Identité de l'élève</div><div class="f">
+ <div class="full"><label>Nom complet${req}</label><input id="f_full_name" value="${o('full_name')}" placeholder="Nom, postnom, prénom" autocomplete="off"></div>
+ <div><label>Sexe${req}</label><select id="f_sex"><option value="">Choisir</option><option ${s.sex==='Masculin'?'selected':''}>Masculin</option><option ${s.sex==='Féminin'?'selected':''}>Féminin</option></select></div>
+ <div><label>Date de naissance${req}</label><input id="f_birth_date" type="date" value="${o('birth_date')}"></div>
+ <div class="full"><label>Lieu de naissance${req}</label><input id="f_birth_place" value="${o('birth_place')}"></div></div></div>
+ <div class="fsec"><div class="fh"><span>3</span>Origine et adresse</div><div class="f">
+ <div><label>Province d'origine${req}</label><input id="f_province" value="${o('province')}"></div>
+ <div><label>Secteur / Collectivité d'origine${req}</label><input id="f_sector" value="${o('sector')}"></div>
+ <div class="full"><label>Adresse actuelle${req}</label><input id="f_address" value="${o('address')}"></div></div></div>
+ <div class="fsec"><div class="fh"><span>4</span>Parents</div><div class="f">
+ <div><label>Nom du père${req}</label><input id="f_father_name" value="${o('father_name')}"></div>
+ <div><label>Nom de la mère${req}</label><input id="f_mother_name" value="${o('mother_name')}"></div>
+ <div class="full"><label>Téléphone / WhatsApp des parents${req}</label><input id="f_parent_phone" value="${o('parent_phone')}" inputmode="tel" placeholder="Ex. 0970000000"></div></div></div>
+ <div class="fsec"><div class="fh"><span>5</span>Scolarité antérieure</div><div class="f">
+ <div><label>École de provenance${req}</label><input id="f_prev_school" value="${o('prev_school')}"></div>
+ <div><label>Numéro permanent de l'élève${req}</label><input id="f_perm_number" value="${o('perm_number')}"></div></div></div>
  ${id?'':`<p class="sub" style="margin-top:6px">Tous les champs sont obligatoires, comme sur la fiche du site du Collège. Les doublons sont vérifiés avant l'enregistrement.</p>`}
- <div class="foot"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStudent('${id||''}',${pre&&pre._reg?`'${pre._reg}'`:'null'})">${id?'Enregistrer':'Confirmer l\'inscription'}</button></div>`);
+ <div class="foot stick"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStudent('${id||''}',${pre&&pre._reg?`'${pre._reg}'`:'null'})">${id?'Enregistrer':'Confirmer l\'inscription'}</button></div>`,'mid');
  if(cur)A.optFill(cur.name,cur.id);else if(s.class_id===undefined&&pre&&pre.class_id)A.optFill((cls(pre.class_id)||{}).name,pre.class_id)};
 A.saveStudent=async(id,reg,force)=>{
  const r={};['full_name','matricule','sex','birth_date','birth_place','prev_school','perm_number','father_name','mother_name','parent_phone','address','province','sector','enrolled_on'].forEach(k=>{const e=$('#f_'+k);r[k]=e?(val('f_'+k)||null):undefined;if(r[k]===undefined)delete r[k]});r.class_id=val('f_option')||null;
- if(!id){const need=['enrolled_on','full_name','sex','birth_date','birth_place','prev_school','perm_number','province','sector','address','father_name','mother_name','parent_phone','class_id'];if(need.some(k=>!r[k]))return toast('Tous les champs de la fiche sont obligatoires.',1)}['full_name','father_name','mother_name','birth_place','prev_school','province','sector','address'].forEach(k=>{if(r[k])r[k]=r[k].toLocaleUpperCase('fr')});r.social_case=$('#f_social_case').checked;
+ if(!id){const need=['enrolled_on','full_name','sex','birth_date','birth_place','prev_school','perm_number','province','sector','address','father_name','mother_name','parent_phone','class_id'];const miss=need.filter(k=>!r[k]);if(miss.length){document.querySelectorAll('.f .bad').forEach(e=>e.classList.remove('bad'));miss.forEach(k=>{const e=$('#'+(k==='class_id'?'f_option':'f_'+k));if(e)e.classList.add('bad')});const e1=document.querySelector('.f .bad');if(e1){e1.scrollIntoView({block:'center'});e1.focus()}return toast('Complétez les champs en rouge ('+miss.length+' manquant'+(miss.length>1?'s':'')+').',1)}}['full_name','father_name','mother_name','birth_place','prev_school','province','sector','address'].forEach(k=>{if(r[k])r[k]=r[k].toLocaleUpperCase('fr')});r.social_case=$('#f_social_case').checked;
  if(!r.full_name)return toast('Le nom est obligatoire.',1);
  const ph=String(r.parent_phone||'').replace(/\D/g,'');if(r.parent_phone&&(ph.length<9||/^(\d)\1+$/.test(ph))&&!force)return A.warnConfirm("Le numéro de téléphone semble invalide. Enregistrer quand même ?",()=>A.saveStudent(id,reg,true));
  const n=norm(r.full_name),dup=D.students.filter(s=>s.id!==id&&(norm(s.full_name)===n||(n.length>=8&&lev(norm(s.full_name),n)<=2)));
