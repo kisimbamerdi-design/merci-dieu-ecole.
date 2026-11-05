@@ -89,7 +89,17 @@ footer .bas{grid-column:1/-1;border-top:1px solid #ffffff1f;padding-top:18px;fon
 footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;background:#fff;border-radius:50%;padding:4px}footer .id b{color:#fff;font-size:20px;display:block}
 @media(max-width:860px){footer .wrap{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tuile{transition:none}}
-</style></head><body>
+
+/* Animations d'entrée (désactivées si la personne préfère moins de mouvement) */
+.js .rv{opacity:0;transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*90ms);will-change:opacity,transform}
+.js .rv.left{transform:translateX(-70px)}.js .rv.right{transform:translateX(70px)}.js .rv.up{transform:translateY(46px)}.js .rv.zoom{transform:scale(.86)}
+.js .rv.in{opacity:1;transform:none}
+.js .badge.rv img{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}.js .badge.rv:not(.in) img{transform:rotate(-14deg) scale(.8)}
+@keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.badge.in img{animation:flotte 5s ease-in-out 1.4s infinite}
+.hero:after{animation:tourne 40s linear infinite}@keyframes tourne{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.js .rv,.js .rv.left,.js .rv.right,.js .rv.up,.js .rv.zoom{opacity:1;transform:none;transition:none}.badge.in img,.hero:after{animation:none}.js .badge.rv:not(.in) img{transform:none}}
+</style><script>document.documentElement.classList.add("js")</script></head><body>
 <a class="skip" href="#contenu">Aller au contenu</a>
 <header class="top"><div class="wrap">
  <a class="brand" href="#accueil"><img src="logo.png" alt="Logo du Collège Merci-Dieu"><span><small>Kasumbalesa · RDC</small><b>Collège Merci-Dieu</b></span></a>
@@ -202,6 +212,19 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
   const b=document.getElementById('burger'),m=document.getElementById('menu');
   b.addEventListener('click',()=>{const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o);b.textContent=o?'✕':'☰'});
   m.addEventListener('click',e=>{if(e.target.tagName==='A'){m.classList.remove('open');b.setAttribute('aria-expanded','false');b.textContent='☰'}});
+  // Animations : les éléments entrent par le côté ou par le bas quand ils deviennent visibles
+  const groupes=[['.hero .wrap>div:first-child','left'],['.badge','right'],['.faits .wrap>div','up'],['.tuile','up'],['.kick,.titre,.sous','up'],
+   ['.sec','zoom'],['.options li','left'],['.etapes li','up'],['.stat','zoom'],['.deux>div:first-child','left'],['.deux>.panneau','right'],['.note','up'],['.btns','up'],['footer .wrap>div','up']];
+  const els=[];
+  groupes.forEach(([sel,dir])=>document.querySelectorAll(sel).forEach((e,i)=>{e.classList.add('rv',dir);e.style.setProperty('--i',i%6);els.push(e)}));
+  document.querySelectorAll('.carte').forEach((e,i)=>{e.classList.add('rv',['left','up','right'][i%3]);e.style.setProperty('--i',i%3);els.push(e)});
+  if('IntersectionObserver' in window){
+    const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+    els.forEach(e=>io.observe(e));
+  }else els.forEach(e=>e.classList.add('in'));
+  // Compteur animé des chiffres
+  const compte=(id,v)=>{const el=document.getElementById(id);if(matchMedia('(prefers-reduced-motion: reduce)').matches||v===0){el.textContent=v.toLocaleString('fr-FR');return}
+    const t0=performance.now(),d=1400;(function f(t){const k=Math.min(1,(t-t0)/d),e=1-Math.pow(1-k,3);el.textContent=Math.round(v*e).toLocaleString('fr-FR');if(k<1)requestAnimationFrame(f)})(t0)};
   // Coordonnées publiques : à renseigner ici (laisser vide pour ne pas afficher la ligne)
   const CONTACT={telephone:'',whatsapp:'',email:'',adresse:''};
   const ul=document.getElementById('contact-liste'),add=(i,h)=>{const li=document.createElement('li');li.innerHTML=i+' '+h;ul.appendChild(li)};
@@ -217,7 +240,7 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
   .then(d=>{
     const pairs=[['stat-eleves',d.eleves_inscrits],['stat-classes',d.classes_enregistrees],['stat-personnel',d.personnel_enregistre]];
     if(!pairs.every(([,v])=>Number.isSafeInteger(v)&&v>=0))throw new Error('incorrect');
-    for(const [id,v] of pairs)document.getElementById(id).textContent=v.toLocaleString('fr-FR');
+    for(const [id,v] of pairs)compte(id,v);
     const at=new Date(d.actualise_le);
     out.textContent='Source : base de gestion scolaire'+(Number.isNaN(at.getTime())?'':' · Mise à jour le '+at.toLocaleDateString('fr-FR'));
   })
