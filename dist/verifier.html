@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Vérification — Collège Merci-Dieu</title>
+<link rel="icon" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;font-family:'DM Sans',sans-serif;background:linear-gradient(160deg,#0d3b2a,#082a1f);color:#1d2b26}
+.c{width:min(440px,100%);background:#fff;border-radius:24px;padding:32px 26px;text-align:center;box-shadow:0 30px 70px #0008}
+.c img{width:84px;height:84px;border-radius:50%;box-shadow:0 0 0 3px #f2b81c80}
+h1{font:800 14px Manrope;letter-spacing:1.4px;text-transform:uppercase;color:#73837b;margin:12px 0 22px}
+.ok,.ko{width:84px;height:84px;border-radius:50%;margin:0 auto 14px;display:grid;place-items:center;font-size:44px;color:#fff}
+.ok{background:linear-gradient(135deg,#1f7a2e,#2e9a42)}.ko{background:#d0202a}
+h2{font:800 24px Manrope;margin:0 0 6px}
+.d{margin-top:20px;text-align:left;border-top:1px solid #e4eae6}
+.d div{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid #eff3f0}
+.d span{color:#73837b}.d b{text-align:right}
+small{display:block;margin-top:18px;color:#73837b}
+</style>
+</head>
+<body>
+<div class="c"><img src="logo.png" alt=""><h1>Collège Merci-Dieu · Vérification</h1><div id="r">Vérification en cours…</div><small id="demo"></small></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<script>
+const {SUPABASE_URL,SUPABASE_ANON}=window.MDSS,LIVE=!SUPABASE_URL.includes('VOTRE-PROJET');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fc=n=>new Intl.NumberFormat('fr-FR').format(Math.round(+n||0)).replace(/[  ]/g,' ')+' FC';
+const q=new URLSearchParams(location.search);
+function show(r){
+ const type=(r&&['inscription','paiement'].includes(r.type))?r.type:null;
+ const valid=(r&&r.valide===true);
+ if(!type){
+   document.getElementById('r').innerHTML='<div class="ko">✕</div><h2>Code non reconnu</h2><p>Vérifiez que ce QR code provient d’un reçu officiel de l’école.</p>';
+   return;
+ }
+ const rows=[];
+ if(type==='paiement'){
+   if(r.recu) rows.push(['Reçu n°',String(r.recu)]);
+   if(typeof r.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)){
+     const date=new Date(r.date+'T12:00:00');
+     if(!Number.isNaN(date.getTime()))rows.push(['Date',date.toLocaleDateString('fr-FR')]);
+   }
+ }
+ const title=type==='paiement'?(valid?'Paiement confirmé':'Paiement non confirmé'):(valid?'Inscription validée':'Inscription non validée');
+ document.getElementById('r').innerHTML=(valid?'<div class="ok">✓</div>':'<div class="ko">!</div>')+
+   '<h2>'+title+'</h2>'+(rows.length?'<div class="d">'+rows.map(x=>'<div><span>'+x[0]+'</span><b>'+esc(x[1])+'</b></div>').join('')+'</div>':'');
+}
+(async()=>{
+ // Les anciens liens ?d= acceptaient des JSON arbitraires comme « reçu valide ».
+ // Ne jamais simuler une preuve officielle à partir du contenu de l'URL.
+ if(q.has('d')){show(null);document.getElementById('demo').textContent='Les liens de démonstration ne constituent pas une vérification.';return}
+ const token=q.get('t')||'';
+ if(!LIVE||!(/^[0-9a-f]{32}$/i).test(token)){show(null);return}
+ try{
+   const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+   const {data,error}=await db.rpc('verify_qr',{p_token:token});
+   show(error?null:data);
+ }catch(e){show(null)}
+})();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 /* Cache sûr : les données scolaires, connexions, reçus et URL à jeton ne
    doivent jamais être conservés dans le cache de l'application. */
-const V='mdss-public-assets-v2';
-const ASSETS=['logo.png','manifest.webmanifest'];
+const V='mdss-public-assets-v3';
+const ASSETS=['logo.png','icon-192.png','icon-512.png','manifest.webmanifest'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(V).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });

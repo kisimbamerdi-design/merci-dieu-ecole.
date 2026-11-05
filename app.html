@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d3b2a">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="logo.png">
 <title>Merci-Dieu Smart School</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
@@ -222,7 +222,7 @@ td.r,th.r{text-align:right}
    Les droits réels sont appliqués par le serveur (schema.sql).
    Cet écran ne fait que masquer ce que le rôle ne doit pas voir.
    ===================================================================== */
-const APP_VERSION='2026.11.03.1';
+const APP_VERSION='2026.11.05.1';
 /* Les noms s'écrivent toujours en MAJUSCULES, dès la saisie (la base le garantit aussi). */
 const UPPER_IDS=['f_full_name','f_father_name','f_mother_name','f_birth_place','f_prev_school','f_province','f_sector','f_address','sf_n'];
 document.addEventListener('input',e=>{const t=e.target;if(t&&UPPER_IDS.includes(t.id)){const a=t.selectionStart,b=t.selectionEnd,u=t.value.toLocaleUpperCase('fr');if(u!==t.value){t.value=u;try{t.setSelectionRange(a,b)}catch(_){}}}});
@@ -488,44 +488,58 @@ const CLS_STD=[['Maternelle','Maternelle',['Maternelle']],...['1ère','2ème','3
 A.seedClasses=async()=>{if(!can('promoteur'))return toast('Réservé au promoteur.',1);try{const yr=getSetting('school_year')||'2026-2027';for(const [name,section,opts] of CLS_STD)for(const option of opts)if(!D.classes.some(c=>c.name===name&&c.option===option))await ins('classes',{name,section,option,year:yr});await audit('Classes standard créées');toast('Classes créées ✓');render()}catch(e){toast(e.message,1)}};
 A.clsNames=()=>[...new Set(D.classes.map(c=>c.name))];
 A.optFill=(name,sel)=>{const o=$('#f_option');if(!o)return;const l=D.classes.filter(c=>c.name===name);o.innerHTML='<option value="">'+(name?'Choisir une option':'Choisir d\'abord la classe')+'</option>'+l.map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.option||c.section||c.name)}</option>`).join('');if(l.length===1&&name){o.value=l[0].id}};
+/* Famille = même père ET même mère (fautes de frappe tolérées), comme dans l'ancien site */
+const famN=v=>String(v||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const famSame=(a,b)=>{if(!a||!b)return false;if(a===b)return true;const ta=a.split(' ').sort().join(' '),tb=b.split(' ').sort().join(' ');if(ta===tb)return true;const L=Math.min(ta.length,tb.length);if(L<5)return false;const t=L>=12?2:1;return lev(ta,tb)<=t};
+A.family=(father,mother,exceptId)=>{const f=famN(father),m=famN(mother);if(!f||!m)return[];return D.students.filter(x=>x.id!==exceptId&&famSame(famN(x.father_name),f)&&famSame(famN(x.mother_name),m))};
+const clsRank=c=>{const n=parseInt(String(c&&c.name||'').replace(/\D/g,''),10);return isNaN(n)?99:n};
+A.famNote=()=>{const box=$('#f_fam');if(!box)return;const id=box.dataset.id||'';const fam=A.family(val('f_father_name'),val('f_mother_name'),id);
+ if(!famN(val('f_father_name'))||!famN(val('f_mother_name'))){box.innerHTML='';return}
+ const n=fam.length+1,already=fam.some(x=>x.social_case);
+ box.innerHTML=!fam.length?'':`<div class="note ${n>=5&&!already?'warn':'info'}" style="margin-top:6px">Même famille (père et mère) : <b>${fam.length}</b> autre(s) enfant(s) déjà inscrit(s) — ${esc(fam.map(x=>x.full_name).join(', '))}.${n>=5?(already?' Un enfant de cette famille est déjà en cas social.':' Avec cet élève, la famille atteint <b>'+n+' enfants</b> : un enfant du primaire deviendra automatiquement cas social (gratuit).'):''}</div>`};
+/* À partir de 5 enfants de la même famille, UN seul devient gratuit : élève du PRIMAIRE, d'abord celui qui n'a encore rien payé, puis le plus bas degré (même règle que l'ancien site). */
+A.casSocialAuto=async stu0=>{try{const fam=[stu0,...A.family(stu0.father_name,stu0.mother_name,stu0.id)];
+ if(fam.length<5||fam.some(x=>x.social_case))return null;
+ const prim=fam.filter(x=>(cls(x.class_id)||{}).section==='Primaire');
+ if(!prim.length)return {manual:true,n:fam.length};
+ const paid=x=>D.payments.filter(p=>p.student_id===x.id&&p.status==='confirme'&&/^Frais mensuel/.test(p.reason)).reduce((a,p)=>a+ +p.amount,0);
+ prim.sort((x,y)=>((paid(x)>0)-(paid(y)>0))||(clsRank(cls(x.class_id))-clsRank(cls(y.class_id))));
+ const pick=prim[0];if(paid(pick)>0)return {manual:true,n:fam.length};
+ await upd('students',pick.id,{social_case:true});await audit('Cas social automatique (5e enfant)',pick.full_name);return {done:pick,n:fam.length}}catch(e){return null}};
 A.studentForm=(id,pre)=>{const s=id?stu(id):(pre||{}),o=(k)=>esc(s[k]||''),cur=s.class_id?cls(s.class_id):null,req=id?'':' *';
- const noCls=!D.classes.length;
- modal(`<div class="eyebrow" style="font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--g,#176b52)">COLLÈGE MERCI-DIEU</div><h3>${id?'Modifier la fiche':'Fiche d\'inscription'}</h3>${noCls?`<div class="note" style="margin-bottom:12px">Aucune classe n'est encore créée. ${can('promoteur')?`<button class="btn pri sm" onclick="A.seedClasses()">Créer les classes standard</button>`:'Demandez au promoteur de créer les classes.'}</div>`:''}
- <div class="fsec"><div class="fh"><span>1</span>Inscription</div><div class="f">
- <div class="full"><label>Date d'inscription${req}</label><input type="date" id="f_enrolled_on" value="${o('enrolled_on')||(id?'':today())}"></div>
+ const noCls=!D.classes.length,canSoc=can('promoteur','comptable');
+ modal(`<div class="eyebrow" style="font-size:12px;letter-spacing:.14em;font-weight:700;color:var(--g,#176b52)">COLLÈGE MERCI-DIEU</div><h3>${id?'Modifier la fiche':'Fiche d\'inscription'}</h3><p class="sub" style="margin:0 0 12px">${id?'':'Remplissez les informations de l\'élève. Tous les champs sont obligatoires. Les doublons sont vérifiés avant l\'enregistrement.'}</p>${noCls?`<div class="note" style="margin-bottom:12px">Aucune classe n'est encore créée. ${can('promoteur')?`<button class="btn pri sm" onclick="A.seedClasses()">Créer les classes standard</button>`:'Demandez au promoteur de créer les classes.'}</div>`:''}
+ <div class="f">
+ <div><label>Date${req}</label><input type="date" id="f_enrolled_on" value="${o('enrolled_on')||(id?'':today())}"></div>
+ <div><label>Nom complet${req}</label><input id="f_full_name" value="${o('full_name')}" placeholder="Nom, postnom, prénom" autocomplete="off"></div>
+ <div><label>Sexe${req}</label><select id="f_sex"><option value="">Choisir</option><option ${s.sex==='Masculin'?'selected':''}>Masculin</option><option ${s.sex==='Féminin'?'selected':''}>Féminin</option></select></div>
+ <div><label>Date de naissance${req}</label><input id="f_birth_date" type="date" value="${o('birth_date')}"></div>
+ <div><label>Lieu de naissance${req}</label><input id="f_birth_place" value="${o('birth_place')}" placeholder="Ville / localité"></div>
+ <div><label>École de provenance${req}</label><input id="f_prev_school" value="${o('prev_school')}" placeholder="Nom de l'ancienne école"></div>
+ <div><label>Numéro permanent de l'élève${req}</label><input id="f_perm_number" value="${o('perm_number')}" placeholder="Si déjà attribué"></div>
+ <div><label>Province d'origine${req}</label><input id="f_province" value="${o('province')}" placeholder="Ex. Haut-Katanga"></div>
+ <div><label>Secteur / Collectivité d'origine${req}</label><input id="f_sector" value="${o('sector')}" placeholder="Secteur ou collectivité"></div>
+ <div><label>Adresse${req}</label><input id="f_address" value="${o('address')}" placeholder="Adresse actuelle"></div>
+ <div><label>Nom du père${req}</label><input id="f_father_name" value="${o('father_name')}" placeholder="Nom complet du père" oninput="A.famNote()"></div>
+ <div><label>Nom de la mère${req}</label><input id="f_mother_name" value="${o('mother_name')}" placeholder="Nom complet de la mère" oninput="A.famNote()"></div>
+ <div class="full" id="f_fam" data-id="${id||''}"></div>
+ <div class="full"><label>Téléphone / WhatsApp des parents${req}</label><input id="f_parent_phone" value="${o('parent_phone')}" inputmode="tel" placeholder="Ex. 243970000000"></div>
  <div><label>Classe${req}</label><select id="f_class_name" onchange="A.optFill(this.value)"><option value="">Choisir une classe</option>${A.clsNames().map(n=>`<option ${cur&&cur.name===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
  <div><label>Option${req}</label><select id="f_option"><option value="">Choisir d'abord la classe</option></select></div>
  ${id?`<div class="full"><label>Matricule</label><input id="f_matricule" value="${o('matricule')}"></div>`:''}
- <div class="full"><label class="chk"><input type="checkbox" id="f_social_case" ${s.social_case?'checked':''}> Cas social (gratuité)</label></div></div></div>
- <div class="fsec"><div class="fh"><span>2</span>Identité de l'élève</div><div class="f">
- <div class="full"><label>Nom complet${req}</label><input id="f_full_name" value="${o('full_name')}" placeholder="Nom, postnom, prénom" autocomplete="off"></div>
- <div><label>Sexe${req}</label><select id="f_sex"><option value="">Choisir</option><option ${s.sex==='Masculin'?'selected':''}>Masculin</option><option ${s.sex==='Féminin'?'selected':''}>Féminin</option></select></div>
- <div><label>Date de naissance${req}</label><input id="f_birth_date" type="date" value="${o('birth_date')}"></div>
- <div class="full"><label>Lieu de naissance${req}</label><input id="f_birth_place" value="${o('birth_place')}"></div></div></div>
- <div class="fsec"><div class="fh"><span>3</span>Origine et adresse</div><div class="f">
- <div><label>Province d'origine${req}</label><input id="f_province" value="${o('province')}"></div>
- <div><label>Secteur / Collectivité d'origine${req}</label><input id="f_sector" value="${o('sector')}"></div>
- <div class="full"><label>Adresse actuelle${req}</label><input id="f_address" value="${o('address')}"></div></div></div>
- <div class="fsec"><div class="fh"><span>4</span>Parents</div><div class="f">
- <div><label>Nom du père${req}</label><input id="f_father_name" value="${o('father_name')}"></div>
- <div><label>Nom de la mère${req}</label><input id="f_mother_name" value="${o('mother_name')}"></div>
- <div class="full"><label>Téléphone / WhatsApp des parents${req}</label><input id="f_parent_phone" value="${o('parent_phone')}" inputmode="tel" placeholder="Ex. 0970000000"></div></div></div>
- <div class="fsec"><div class="fh"><span>5</span>Scolarité antérieure</div><div class="f">
- <div><label>École de provenance${req}</label><input id="f_prev_school" value="${o('prev_school')}"></div>
- <div><label>Numéro permanent de l'élève${req}</label><input id="f_perm_number" value="${o('perm_number')}"></div></div></div>
- ${id?'':`<p class="sub" style="margin-top:6px">Tous les champs sont obligatoires, comme sur la fiche du site du Collège. Les doublons sont vérifiés avant l'enregistrement.</p>`}
+ ${canSoc?`<div class="full"><label class="chk"><input type="checkbox" id="f_social_case" ${s.social_case?'checked':''}> Cas social (gratuité) — marquage manuel, école primaire seulement</label><p class="sub" style="margin:4px 0 0">Automatique : à partir de 5 enfants de la même famille (même père et même mère), un enfant du primaire devient gratuit.</p></div>`:''}</div>
  <div class="foot stick"><button class="btn" onclick="A.close()">Annuler</button><button class="btn pri" onclick="A.saveStudent('${id||''}',${pre&&pre._reg?`'${pre._reg}'`:'null'})">${id?'Enregistrer':'Confirmer l\'inscription'}</button></div>`,'mid');
- if(cur)A.optFill(cur.name,cur.id);else if(s.class_id===undefined&&pre&&pre.class_id)A.optFill((cls(pre.class_id)||{}).name,pre.class_id)};
+ if(cur)A.optFill(cur.name,cur.id);else if(s.class_id===undefined&&pre&&pre.class_id)A.optFill((cls(pre.class_id)||{}).name,pre.class_id);A.famNote()};
 A.saveStudent=async(id,reg,force)=>{
  const r={};['full_name','matricule','sex','birth_date','birth_place','prev_school','perm_number','father_name','mother_name','parent_phone','address','province','sector','enrolled_on'].forEach(k=>{const e=$('#f_'+k);r[k]=e?(val('f_'+k)||null):undefined;if(r[k]===undefined)delete r[k]});r.class_id=val('f_option')||null;
- if(!id){const need=['enrolled_on','full_name','sex','birth_date','birth_place','prev_school','perm_number','province','sector','address','father_name','mother_name','parent_phone','class_id'];const miss=need.filter(k=>!r[k]);if(miss.length){document.querySelectorAll('.f .bad').forEach(e=>e.classList.remove('bad'));miss.forEach(k=>{const e=$('#'+(k==='class_id'?'f_option':'f_'+k));if(e)e.classList.add('bad')});const e1=document.querySelector('.f .bad');if(e1){e1.scrollIntoView({block:'center'});e1.focus()}return toast('Complétez les champs en rouge ('+miss.length+' manquant'+(miss.length>1?'s':'')+').',1)}}['full_name','father_name','mother_name','birth_place','prev_school','province','sector','address'].forEach(k=>{if(r[k])r[k]=r[k].toLocaleUpperCase('fr')});r.social_case=$('#f_social_case').checked;
+ if(!id){const need=['enrolled_on','full_name','sex','birth_date','birth_place','prev_school','perm_number','province','sector','address','father_name','mother_name','parent_phone','class_id'];const miss=need.filter(k=>!r[k]);if(miss.length){document.querySelectorAll('.f .bad').forEach(e=>e.classList.remove('bad'));miss.forEach(k=>{const e=$('#'+(k==='class_id'?'f_option':'f_'+k));if(e)e.classList.add('bad')});const e1=document.querySelector('.f .bad');if(e1){e1.scrollIntoView({block:'center'});e1.focus()}return toast('Complétez les champs en rouge ('+miss.length+' manquant'+(miss.length>1?'s':'')+').',1)}}['full_name','father_name','mother_name','birth_place','prev_school','province','sector','address'].forEach(k=>{if(r[k])r[k]=r[k].toLocaleUpperCase('fr')});if($('#f_social_case')){r.social_case=$('#f_social_case').checked;if(r.social_case&&(cls(r.class_id)||{}).section!=='Primaire')return toast('Le cas social ne s\'applique qu\'à l\'école primaire.',1)}
  if(!r.full_name)return toast('Le nom est obligatoire.',1);
  const ph=String(r.parent_phone||'').replace(/\D/g,'');if(r.parent_phone&&(ph.length<9||/^(\d)\1+$/.test(ph))&&!force)return A.warnConfirm("Le numéro de téléphone semble invalide. Enregistrer quand même ?",()=>A.saveStudent(id,reg,true));
  const n=norm(r.full_name),dup=D.students.filter(s=>s.id!==id&&(norm(s.full_name)===n||(n.length>=8&&lev(norm(s.full_name),n)<=2)));
  if(dup.length&&!force)return A.warnConfirm(`Un élève très semblable existe déjà : <b>${esc(dup.map(d=>d.full_name+' ('+clsLabel(cls(d.class_id))+')').join(', '))}</b>. S'agit-il de la même personne ?`,()=>A.saveStudent(id,reg,true),'Créer quand même');
  try{if(id){await upd('students',id,r);await audit('Fiche modifiée',r.full_name)}else{r.status='a_verifier';r.created_by=S.uid;const s=await ins('students',r);await audit('Élève inscrit',s.full_name);
    if(reg&&can('promoteur','comptable'))await upd('online_registrations',reg,{processed:true,student_id:s.id})}
-  A.close();toast('Enregistré ✓');renderNav();render();if(!id&&r.parent_phone&&can('promoteur','comptable')){const ns=D.students.find(x=>x.full_name===r.full_name&&x.parent_phone===r.parent_phone);if(ns)setTimeout(()=>A.inviteParent(ns.id),300)}}catch(e){toast("Erreur : "+e.message,1)}};
+  A.close();toast('Enregistré ✓');const saved=id?{...stu(id),...r,id}:D.students.find(x=>x.full_name===r.full_name&&x.parent_phone===r.parent_phone);const cs=saved&&r.father_name&&r.mother_name?await A.casSocialAuto(saved):null;if(cs&&cs.done)toast('Cas social automatique : '+cs.done.full_name+' (famille de '+cs.n+' enfants) devient gratuit.');else if(cs&&cs.manual)toast('Famille de '+cs.n+' enfants : cas social à décider par le promoteur (aucun enfant du primaire sans paiement).',1);renderNav();render();if(!id&&r.parent_phone&&can('promoteur','comptable')){const ns=D.students.find(x=>x.full_name===r.full_name&&x.parent_phone===r.parent_phone);if(ns)setTimeout(()=>A.inviteParent(ns.id),300)}}catch(e){toast("Erreur : "+e.message,1)}};
 A.warnConfirm=(html,fn,label='Enregistrer quand même')=>{window.__wc=fn;const d=document.createElement('div');d.className='mask';d.style.zIndex=80;d.innerHTML=`<div class="dlg"><h3>⚠ Vérification</h3><p style="line-height:1.6">${html}</p><div class="foot"><button class="btn" onclick="this.closest('.mask').remove()">Revenir</button><button class="btn gold" onclick="this.closest('.mask').remove();window.__wc()">${label}</button></div></div>`;document.body.appendChild(d)};
 
 /* ---------- inscriptions en ligne ---------- */
@@ -949,7 +963,7 @@ AFTER.params=()=>{const b=$('#pab'),t=Q.pa.tab;
   <div class="card"><h3>Langue de l'application</h3><p style="color:var(--mut)">Le choix s'applique à cet appareil. Le français est complet ; l'anglais et le swahili couvrent le menu, les titres et les boutons principaux.</p><div class="pill-row">${LANGS.map(([k,l])=>`<button class="btn ${getLang()===k?'pri':'line'}" onclick="A.lang('${k}')">${l}</button>`).join('')}</div><h3 style="margin-top:24px">Documents</h3><p><a href="confidentialite.html" target="_blank">Politique de confidentialité ↗</a></p></div></div>`}
  else if(t==='roi'){b.innerHTML=ROI.map(([k,l])=>`<div class="card" style="margin-bottom:16px"><h3>${esc(l)}</h3><textarea id="roi_${k}" rows="10" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px" placeholder="Rédigez ou collez ici le texte du règlement…">${esc((getSetting(k)||{}).text||'')}</textarea><div style="margin-top:12px"><button class="btn pri" onclick="A.roiSave('${k}')">Enregistrer</button></div></div>`).join('')}
  else if(t==='users'){const SECOPT=['','Maternelle','Primaire','Éducation de Base','Secondaire'];b.innerHTML=`<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px"><button class="btn pri" onclick="A.userNew()">＋ Ajouter un compte</button><span style="color:var(--mut);font-size:14px">Directeur, professeur, comptable… Pour un directeur, choisissez sa section (primaire ou secondaire) ; plusieurs comptes peuvent la partager (titulaire et second).</span></div><div class="tw"><table><thead><tr><th>Nom</th><th>Rôle</th><th>Section</th><th>Actif</th><th></th></tr></thead><tbody>${D.profiles.map(p=>`<tr><td><input id="u_n_${p.id}" value="${esc(p.full_name||'')}" style="border:1.5px solid var(--line);border-radius:9px;padding:7px 9px"></td><td><select id="u_r_${p.id}" style="border:1.5px solid var(--line);border-radius:9px;padding:7px 9px">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${p.role===k?'selected':''}>${v}</option>`).join('')}</select></td><td><select id="u_s_${p.id}" style="border:1.5px solid var(--line);border-radius:9px;padding:7px 9px">${SECOPT.map(s=>`<option value="${s}" ${p.section===s||(!p.section&&s==='')?'selected':''}>${s||'— Toutes —'}</option>`).join('')}</select></td><td><input type="checkbox" id="u_a_${p.id}" ${p.active?'checked':''}></td><td class="r"><button class="btn sm pri" onclick="A.saveUser('${p.id}')">Enregistrer</button> <button class="btn sm line" onclick="A.userReset('${p.id}')" title="Nouveau mot de passe">🔑</button></td></tr>`).join('')}</tbody></table></div>`}
- else if(t==='maj'){b.innerHTML=`<div class="card" style="max-width:520px"><h3>Mises à jour de l'application</h3><p style="color:var(--mut)">Version installée : <b>${APP_VERSION}</b></p><div id="majr" style="margin:14px 0"></div><button class="btn pri" onclick="A.checkUpdate()">🔄 Vérifier les mises à jour</button></div>`}
+ else if(t==='maj'){b.innerHTML=`<div class="card" style="max-width:520px"><h3>Mises à jour de l'application</h3><p style="color:var(--mut)">Version installée : <b>${APP_VERSION}</b></p>${isStandalone()?'<div class="note info">Application installée sur cet appareil.</div>':'<button class="btn gold" id="instb" onclick="A.install()" style="margin:6px 0">📲 Installer l\'application sur cet appareil</button>'}<div id="majr" style="margin:14px 0"></div><button class="btn pri" onclick="A.checkUpdate()">🔄 Vérifier les mises à jour</button></div>`}
 else{b.innerHTML=`<div class="card"><h3>Sauvegarde</h3><p style="color:var(--mut)">Téléchargez une copie complète des données de l'école. Conservez-la hors de l'ordinateur de l'école.</p><button class="btn pri" onclick="A.backup()">⇩ Télécharger la sauvegarde</button></div>`}};
 const phoneIntl=p=>{let d=String(p||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.startsWith('243'))return d;if(d.startsWith('0'))return '243'+d.slice(1);if(d.length===9)return '243'+d;return d};
 A.saveGroups=async()=>{const o={};let bad=0;document.querySelectorAll('.gl').forEach(i=>{const v=i.value.trim();if(!v)return;if(!/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+/.test(v)){bad++;i.style.borderColor='var(--red)';return}i.style.borderColor='';o[i.dataset.c]=v});
@@ -1097,6 +1111,17 @@ function start(){applyLogo();{const l=$('#langSel');if(l){l.innerHTML=LANGS.map(
  $('#boot').hidden=true;$('#app').hidden=false;$('#fab').hidden=false;$('#demobar').hidden=LIVE;
  $('#av').textContent=(S.name||'?').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();$('#meName').textContent=S.name||'';$('#meRole').textContent=roleLabel({role:S.role,section:S.section});
  const h=location.hash.slice(1);go(allowed(h)?h:'dash')}
+
+/* Installation sur le téléphone / l'ordinateur + mise à jour automatique */
+let __ip=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();__ip=e;const b=$('#instb');if(b)b.style.display=''});
+window.addEventListener('appinstalled',()=>{__ip=null;const b=$('#instb');if(b)b.style.display='none';toast('Application installée ✓')});
+A.install=async()=>{if(!__ip)return toast("Ouvrez le menu du navigateur (⋮) puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».");__ip.prompt();try{await __ip.userChoice}catch(e){}__ip=null};
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+async function autoCheckUpdate(){try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});const v=await r.json();
+ if(v.version&&v.version!==APP_VERSION&&!$('#updbar')){const d=document.createElement('div');d.id='updbar';d.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:90;background:#0d3b2a;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(0,0,0,.3)';
+ d.innerHTML='<span>Une nouvelle version est disponible ('+esc(v.version)+').</span><span style="display:flex;gap:8px"><button class="btn sm" onclick="this.closest(\'#updbar\').remove()">Plus tard</button><button class="btn gold sm" onclick="A.applyUpdate()">Mettre à jour</button></span>';document.body.appendChild(d)}}catch(e){}}
+setTimeout(autoCheckUpdate,4000);setInterval(autoCheckUpdate,30*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoCheckUpdate()});
 function bootDemo(){
  $('#boot').innerHTML=`<div class="boot"><div class="box"><img src="logo.png" alt=""><h1>Merci-Dieu Smart School</h1><p>Démonstration avec des données fictives. Choisissez un rôle pour voir ce qu'il voit.</p><div class="roles">
  ${[['promoteur','👑','Promoteur','Voit tout, sans exception'],['direction','🏫','Directeur Général','Élèves, personnel, avances — sans la caisse'],['directeur_etudes','📘','Directeur des Études','Classes, horaires, notes — toutes les classes'],['prefet_discipline','🛡️','Préfet de Discipline','Présences et discipline — toutes les classes'],['comptable','🧾','Comptable-secrétaire','Inscriptions, paiements, reçus'],['professeur','📚','Professeur','Ses classes : présences et notes']].map(([k,i,t,d])=>`<button onclick="A.demo('${k}')"><i>${i}</i><b>${t}</b><small>${d}</small></button>`).join('')}</div></div></div>`}
