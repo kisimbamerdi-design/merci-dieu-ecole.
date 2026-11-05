@@ -99,6 +99,29 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
 .badge.in img{animation:flotte 5s ease-in-out 1.4s infinite}
 .hero:after{animation:tourne 40s linear infinite}@keyframes tourne{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.js .rv,.js .rv.left,.js .rv.right,.js .rv.up,.js .rv.zoom{opacity:1;transform:none;transition:none}.badge.in img,.hero:after{animation:none}.js .badge.rv:not(.in) img{transform:none}}
+
+/* Fenêtre de détail : donne l'impression d'une nouvelle page sans quitter l'accueil */
+.carte[data-v],.sec[data-v]{cursor:pointer;position:relative;transition:box-shadow .2s,border-color .2s}
+.carte[data-v]:hover{box-shadow:0 14px 34px #0d3b2a1f;border-color:#b9d3c5}.sec[data-v]:hover{background:#ffffff18}
+.carte[data-v]:after,.sec[data-v]:after{content:"En savoir plus →";display:block;margin-top:14px;font-weight:800;font-size:14px;color:var(--clair)}.sec[data-v]:after{color:var(--or2)}
+#vue{position:fixed;inset:0;z-index:100;display:flex;justify-content:flex-end;visibility:hidden;pointer-events:none}
+#vue .voile{position:absolute;inset:0;background:#08291ecc;opacity:0;transition:opacity .35s}
+#vue .page{position:relative;width:min(620px,100%);height:100%;overflow:auto;background:#fff;transform:translateX(100%);transition:transform .45s cubic-bezier(.2,.8,.2,1);box-shadow:-20px 0 60px #0005}
+#vue.ouvert{visibility:visible;pointer-events:auto}#vue.ouvert .voile{opacity:1}#vue.ouvert .page{transform:none}
+#vue .haut{position:sticky;top:0;background:#fffffff0;backdrop-filter:blur(6px);border-bottom:1px solid var(--ligne);padding:12px 18px;display:flex;align-items:center;gap:12px;z-index:2}
+#vue .retour{border:1px solid var(--ligne);background:#fff;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;color:var(--vert);cursor:pointer}
+#vue .haut b{color:var(--vert)}
+#vue .ent{background:linear-gradient(160deg,#0d3b2a,#08291e);color:#fff;padding:38px 24px 34px}
+#vue .ent .gd{font-size:46px}#vue .ent h2{margin:10px 0 8px;font-size:clamp(28px,6vw,38px);line-height:1.1}#vue .ent p{margin:0;color:#d7e9df;font-size:18px}
+#vue .corps{padding:26px 24px 40px}
+#vue .corps ul{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:12px}
+#vue .corps li{display:flex;gap:12px;align-items:flex-start;background:var(--fond);border:1px solid var(--ligne);border-radius:14px;padding:15px 16px;font-weight:650;color:var(--vert)}
+#vue .corps li:before{content:"✓";display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--clair);color:#fff;font-size:14px;flex:none}
+#vue .corps .btns{margin-top:8px}
+#vue .corps li,#vue .ent>*{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s}
+#vue.ouvert .corps li,#vue.ouvert .ent>*{opacity:1;transform:none;transition-delay:calc(.18s + var(--k,0)*70ms)}
+body.fige{overflow:hidden}
+@media(prefers-reduced-motion:reduce){#vue .page,#vue .voile,#vue .corps li,#vue .ent>*{transition:none;transform:none;opacity:1}#vue .voile{opacity:1}}
 </style><script>document.documentElement.classList.add("js")</script></head><body>
 <a class="skip" href="#contenu">Aller au contenu</a>
 <header class="top"><div class="wrap">
@@ -134,12 +157,12 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
  <h2 class="titre">Une école pensée pour accompagner chaque élève et rassurer les familles.</h2>
  <p class="sous">Des valeurs claires, une organisation sérieuse et des outils modernes pour que les parents restent informés.</p>
  <div class="cartes">
-  <article class="carte"><div class="ic">🏅</div><h3>Distinction</h3><p>Viser l'excellence dans le travail, le comportement et les résultats.</p></article>
-  <article class="carte"><div class="ic">🤝</div><h3>Docilité</h3><p>Une vie scolaire structurée, fondée sur le respect et la discipline.</p></article>
-  <article class="carte"><div class="ic">💚</div><h3>Charité</h3><p>Une communauté solidaire, attentive aux familles et aux plus fragiles.</p></article>
-  <article class="carte"><div class="ic">🛠️</div><h3>Options techniques</h3><p>Des filières concrètes pour apprendre par la pratique et préparer l'avenir.</p></article>
-  <article class="carte"><div class="ic">🧾</div><h3>Reçus vérifiables</h3><p>Chaque paiement donne un reçu dont l'authenticité se contrôle en ligne.</p></article>
-  <article class="carte"><div class="ic">📱</div><h3>Démarches simples</h3><p>Inscription et déclaration de paiement depuis votre téléphone.</p></article>
+  <article class="carte" data-v="distinction" role="button" tabindex="0"><div class="ic">🏅</div><h3>Distinction</h3><p>Viser l'excellence dans le travail, le comportement et les résultats.</p></article>
+  <article class="carte" data-v="docilite" role="button" tabindex="0"><div class="ic">🤝</div><h3>Docilité</h3><p>Une vie scolaire structurée, fondée sur le respect et la discipline.</p></article>
+  <article class="carte" data-v="charite" role="button" tabindex="0"><div class="ic">💚</div><h3>Charité</h3><p>Une communauté solidaire, attentive aux familles et aux plus fragiles.</p></article>
+  <article class="carte" data-v="options" role="button" tabindex="0"><div class="ic">🛠️</div><h3>Options techniques</h3><p>Des filières concrètes pour apprendre par la pratique et préparer l'avenir.</p></article>
+  <article class="carte" data-v="recus" role="button" tabindex="0"><div class="ic">🧾</div><h3>Reçus vérifiables</h3><p>Chaque paiement donne un reçu dont l'authenticité se contrôle en ligne.</p></article>
+  <article class="carte" data-v="demarches" role="button" tabindex="0"><div class="ic">📱</div><h3>Démarches simples</h3><p>Inscription et déclaration de paiement depuis votre téléphone.</p></article>
  </div>
 </div></section>
 
@@ -148,10 +171,10 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
  <h2 class="titre">Un parcours complet, de la maternelle au secondaire.</h2>
  <p class="sous">Les enfants sont accompagnés étape par étape, depuis les premières bases jusqu'aux classes d'orientation.</p>
  <div class="sections">
-  <div class="sec"><span class="ic">🧸</span><b>Maternelle</b><span>Éveil et premiers apprentissages.</span></div>
-  <div class="sec"><span class="ic">📚</span><b>Primaire</b><span>1ère à 6ème : bases solides.</span></div>
-  <div class="sec"><span class="ic">🧭</span><b>Éducation de base</b><span>7ème et 8ème : orientation.</span></div>
-  <div class="sec"><span class="ic">🎖️</span><b>Secondaire</b><span>1ère à 4ème : options générales et techniques.</span></div>
+  <div class="sec" data-v="maternelle" role="button" tabindex="0"><span class="ic">🧸</span><b>Maternelle</b><span>Éveil et premiers apprentissages.</span></div>
+  <div class="sec" data-v="primaire" role="button" tabindex="0"><span class="ic">📚</span><b>Primaire</b><span>1ère à 6ème : bases solides.</span></div>
+  <div class="sec" data-v="eb" role="button" tabindex="0"><span class="ic">🧭</span><b>Éducation de base</b><span>7ème et 8ème : orientation.</span></div>
+  <div class="sec" data-v="secondaire" role="button" tabindex="0"><span class="ic">🎖️</span><b>Secondaire</b><span>1ère à 4ème : options générales et techniques.</span></div>
  </div>
 </div></section>
 
@@ -207,11 +230,42 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
  <div class="bas"><span>© 2026 Collège Merci-Dieu — Kasumbalesa, RDC</span><a href="#accueil" style="display:inline">Retour en haut ↑</a></div>
 </div></footer>
 
+<div id="vue" role="dialog" aria-modal="true" aria-labelledby="vue-titre" aria-hidden="true"><div class="voile" data-fermer></div>
+ <div class="page" tabindex="-1"><div class="haut"><button class="retour" type="button" data-fermer>← Retour</button><b>Collège Merci-Dieu</b></div>
+ <div class="ent"><div class="gd" id="vue-ic"></div><h2 id="vue-titre"></h2><p id="vue-lead"></p></div>
+ <div class="corps"><ul id="vue-liste"></ul><div class="btns"><a class="btn vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Demander une inscription →</a><button class="btn contour" type="button" data-fermer>Fermer</button></div></div></div></div>
 <script>
 (()=>{
   const b=document.getElementById('burger'),m=document.getElementById('menu');
   b.addEventListener('click',()=>{const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o);b.textContent=o?'✕':'☰'});
   m.addEventListener('click',e=>{if(e.target.tagName==='A'){m.classList.remove('open');b.setAttribute('aria-expanded','false');b.textContent='☰'}});
+  // Fenêtres de détail (sans changer de page) : textes à ajuster ici
+  const OPT=['Commercial et administratif','Sciences','Pédagogie générale','Informatique','Électricité','Mécanique automobile','Mécanique générale','Menuiserie','Maçonnerie','Coupe et couture','I.T.M. (Institut technique médical)'];
+  const V={
+   distinction:{ic:'🏅',t:'Distinction',l:'Viser l\'excellence dans le travail, le comportement et les résultats.',li:['Un travail soigné et régulier, encouragé chaque jour','Une tenue et un comportement exemplaires','Des résultats suivis par les enseignants et la direction']},
+   docilite:{ic:'🤝',t:'Docilité',l:'Une vie scolaire structurée, fondée sur le respect et la discipline.',li:['Respect des enseignants, du personnel et des camarades','Ponctualité, ordre et uniforme','Un règlement d\'ordre intérieur connu de tous (voir la page « Règlement »)']},
+   charite:{ic:'💚',t:'Charité',l:'Une communauté solidaire, attentive aux familles et aux plus fragiles.',li:['Entraide entre élèves et accompagnement des familles','Une mesure de gratuité existe pour les grandes familles (cas social)','Une administration à l\'écoute des parents']},
+   options:{ic:'🛠️',t:'Options techniques',l:'Des filières concrètes pour apprendre par la pratique et préparer l\'avenir.',li:OPT},
+   recus:{ic:'🧾',t:'Reçus vérifiables',l:'Chaque paiement donne un reçu dont l\'authenticité se contrôle en ligne.',li:['Un numéro et un code QR sur chaque reçu','Vérification en quelques secondes depuis un téléphone','Page « Vérifier un reçu » accessible à tous']},
+   demarches:{ic:'📱',t:'Démarches simples',l:'Inscription et déclaration de paiement depuis votre téléphone.',li:['Demande d\'inscription en ligne','Déclaration d\'un paiement, vérifiée ensuite par la comptabilité','Documents papier toujours possibles pour les parents sans smartphone']},
+   maternelle:{ic:'🧸',t:'Maternelle',l:'Éveil et premiers apprentissages.',li:['Découverte, jeux éducatifs et vie en groupe','Premiers pas vers la lecture, l\'écriture et le calcul','Encadrement attentif des tout-petits']},
+   primaire:{ic:'📚',t:'Primaire',l:'De la 1ère à la 6ème année : des bases solides.',li:['Français, mathématiques et éveil','Suivi régulier du travail de chaque élève','Préparation aux étapes suivantes']},
+   eb:{ic:'🧭',t:'Éducation de base',l:'7ème et 8ème années : consolider et s\'orienter.',li:['Approfondissement des matières fondamentales','Accompagnement dans le choix de l\'option','Passage progressif vers le secondaire']},
+   secondaire:{ic:'🎖️',t:'Secondaire',l:'De la 1ère à la 4ème : options générales et techniques.',li:OPT}
+  };
+  const vue=document.getElementById('vue'),page=vue.querySelector('.page');let last=null,ouvert=false;
+  function ouvrir(k){const d=V[k];if(!d)return;last=document.activeElement;
+   document.getElementById('vue-ic').textContent=d.ic;document.getElementById('vue-titre').textContent=d.t;document.getElementById('vue-lead').textContent=d.l;
+   const ul=document.getElementById('vue-liste');ul.innerHTML='';d.li.forEach((x,i)=>{const li=document.createElement('li');li.style.setProperty('--k',i);li.textContent=x;ul.appendChild(li)});
+   vue.querySelectorAll('.ent>*').forEach((e,i)=>e.style.setProperty('--k',i));
+   page.scrollTop=0;vue.classList.add('ouvert');vue.setAttribute('aria-hidden','false');document.body.classList.add('fige');ouvert=true;
+   history.pushState({vue:k},'','#'+k);setTimeout(()=>page.focus(),50)}
+  function fermer(depuisHistorique){if(!ouvert)return;ouvert=false;vue.classList.remove('ouvert');vue.setAttribute('aria-hidden','true');document.body.classList.remove('fige');
+   if(!depuisHistorique&&history.state&&history.state.vue)history.back();if(last&&last.focus)last.focus()}
+  document.querySelectorAll('[data-v]').forEach(e=>{e.addEventListener('click',()=>ouvrir(e.dataset.v));e.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();ouvrir(e.dataset.v)}})});
+  vue.querySelectorAll('[data-fermer]').forEach(e=>e.addEventListener('click',()=>fermer(false)));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')fermer(false)});
+  window.addEventListener('popstate',()=>fermer(true));
   // Animations : les éléments entrent par le côté ou par le bas quand ils deviennent visibles
   const groupes=[['.hero .wrap>div:first-child','left'],['.badge','right'],['.faits .wrap>div','up'],['.tuile','up'],['.kick,.titre,.sous','up'],
    ['.sec','zoom'],['.options li','left'],['.etapes li','up'],['.stat','zoom'],['.deux>div:first-child','left'],['.deux>.panneau','right'],['.note','up'],['.btns','up'],['footer .wrap>div','up']];
