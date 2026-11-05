@@ -122,6 +122,18 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
 #vue.ouvert .corps li,#vue.ouvert .ent>*{opacity:1;transform:none;transition-delay:calc(.18s + var(--k,0)*70ms)}
 body.fige{overflow:hidden}
 @media(prefers-reduced-motion:reduce){#vue .page,#vue .voile,#vue .corps li,#vue .ent>*{transition:none;transform:none;opacity:1}#vue .voile{opacity:1}}
+
+/* Effet d'appui : la carte s'incline, rebondit et reste sur place, avec une onde sous le doigt */
+.tap{position:relative;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.js .rv.in.done.tap{transition:transform .22s ease,box-shadow .22s ease;transition-delay:0s}
+.js .rv.in.tap:active,.tap:active{transform:scale(.95)}
+.tap.pop{animation:pop .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{0%{transform:perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.95)}
+ 55%{transform:perspective(700px) rotateX(calc(var(--rx,0deg)*-.35)) rotateY(calc(var(--ry,0deg)*-.35)) scale(1.045) translateY(-6px);box-shadow:0 22px 44px #0d3b2a30}
+ 100%{transform:none}}
+.ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.22;transform:scale(0);pointer-events:none;animation:onde .7s ease-out forwards}
+@keyframes onde{to{transform:scale(1);opacity:0}}
+@media(prefers-reduced-motion:reduce){.tap.pop,.ripple{animation:none}.tap:active{transform:none}}
 </style><script>document.documentElement.classList.add("js")</script></head><body>
 <a class="skip" href="#contenu">Aller au contenu</a>
 <header class="top"><div class="wrap">
@@ -273,9 +285,21 @@ body.fige{overflow:hidden}
   groupes.forEach(([sel,dir])=>document.querySelectorAll(sel).forEach((e,i)=>{e.classList.add('rv',dir);e.style.setProperty('--i',i%6);els.push(e)}));
   document.querySelectorAll('.carte').forEach((e,i)=>{e.classList.add('rv',['left','up','right'][i%3]);e.style.setProperty('--i',i%3);els.push(e)});
   if('IntersectionObserver' in window){
-    const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+    const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');setTimeout(()=>x.target.classList.add('done'),1600);io.unobserve(x.target)}}),{threshold:.12,rootMargin:'0px 0px -6% 0px'});
     els.forEach(e=>io.observe(e));
-  }else els.forEach(e=>e.classList.add('in'));
+  }else els.forEach(e=>e.classList.add('in','done'));
+  // Effet d'appui sur les cartes
+  const cibles=document.querySelectorAll('.carte,.sec,.options li,.etapes li,.stat,.tuile,.faits .wrap>div,.panneau');
+  cibles.forEach(c=>{c.classList.add('tap');
+    c.addEventListener('pointerdown',e=>{
+      const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,d=Math.max(r.width,r.height)*2.2;
+      const o=document.createElement('span');o.className='ripple';o.style.cssText='width:'+d+'px;height:'+d+'px;left:'+(x-d/2)+'px;top:'+(y-d/2)+'px';c.appendChild(o);o.addEventListener('animationend',()=>o.remove());
+      if(c.tagName==='A')return;
+      c.style.setProperty('--ry',((x/r.width-.5)*-14).toFixed(1)+'deg');c.style.setProperty('--rx',((y/r.height-.5)*10).toFixed(1)+'deg');
+      c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
+    });
+    c.addEventListener('animationend',e=>{if(e.animationName==='pop')c.classList.remove('pop')});
+  });
   // Compteur animé des chiffres
   const compte=(id,v)=>{const el=document.getElementById(id);if(matchMedia('(prefers-reduced-motion: reduce)').matches||v===0){el.textContent=v.toLocaleString('fr-FR');return}
     const t0=performance.now(),d=1400;(function f(t){const k=Math.min(1,(t-t0)/d),e=1-Math.pow(1-k,3);el.textContent=Math.round(v*e).toLocaleString('fr-FR');if(k<1)requestAnimationFrame(f)})(t0)};
