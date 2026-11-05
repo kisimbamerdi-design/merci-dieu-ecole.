@@ -2,101 +2,223 @@
 <html lang="fr"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0d3b2a">
-<meta name="description" content="Collège Merci-Dieu à Kasumbalesa : inscriptions, déclarations de paiement, vérification de reçus et espace du personnel.">
-<title>Bienvenue — Collège Merci-Dieu</title>
-<link rel="icon" href="logo.png"><link rel="manifest" href="manifest.webmanifest">
+<meta name="description" content="Collège Merci-Dieu à Kasumbalesa : présentation de l'école, sections et options, inscriptions, déclaration de paiement, vérification de reçus.">
+<title>Collège Merci-Dieu — Kasumbalesa</title>
+<link rel="icon" href="logo.png"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
-:root{--vert:#0d3b2a;--clair:#176b52;--or:#f2b81c;--texte:#24352b}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:#f3f7f4;color:var(--texte);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
-a:focus-visible{outline:3px solid #e7aa00;outline-offset:4px}
-.skip{position:absolute;top:-100px;left:12px;background:#fff;color:var(--vert);padding:10px;z-index:2}.skip:focus{top:12px}
-header{text-align:center;color:#fff;padding:32px 18px 70px;background:radial-gradient(650px 300px at 50% -20%,#358b6b88,transparent 80%),linear-gradient(140deg,#0d3b2a,#08291e)}
-header img{width:94px;height:94px;border-radius:50%;background:#fff;padding:5px;object-fit:contain;box-shadow:0 8px 24px #0003}
-.kicker{color:#f9d36d;font-size:12px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;margin:14px 0 4px}
-h1{font-size:clamp(28px,5vw,40px);margin:0;line-height:1.2}
-.devise{color:#d4e7dc;font-size:14px;margin:10px 0 0}
-main{max-width:880px;margin:-38px auto 0;position:relative;padding:0 18px 40px}
-.intro{background:#fff;text-align:center;border-radius:14px;padding:16px 20px;margin:0 0 16px;font-weight:700;box-shadow:0 10px 22px #0d3b2a16}
-.grille{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.carte{background:#fff;border:1px solid #dae5dd;border-radius:18px;box-shadow:0 7px 24px #0d3b2a10;padding:24px;display:flex;flex-direction:column;align-items:flex-start}
-.icone{font-size:32px;line-height:1.2}
-h2{font-size:22px;margin:14px 0 8px;line-height:1.3}
-.carte p{margin:0 0 18px;color:#576d60;flex-grow:1}
-.bouton{display:block;text-align:center;background:var(--or);color:#263419;text-decoration:none;padding:13px 16px;border-radius:11px;font-weight:800;width:100%}
-.bouton.vert{background:var(--clair);color:#fff}
-small{display:block;margin-top:9px;font-size:12px;color:#587065}
-h3{margin:28px 0 12px;font-size:19px}
-.liens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.liens a{display:flex;align-items:center;min-height:56px;padding:12px 16px;border-radius:12px;border:1px solid #dbe5dd;background:#fff;color:var(--vert);text-decoration:none;font-weight:700}
-.liens a:hover,.bouton:hover{filter:brightness(.95)}
-.note{background:#fff8e6;border-left:4px solid var(--or);padding:14px 16px;border-radius:0 10px 10px 0;margin-top:22px;font-size:14px}
-footer{text-align:center;padding:0 18px 28px;font-size:13px;color:#5a7162}
-
-.stats{margin-top:24px}
-.stats-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.stats-head h3{margin:0 0 14px}
-.stats-head small{margin:0;color:#5c7064;text-align:right}
-.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.stat{background:white;border:1px solid #dbe5dd;border-radius:16px;padding:19px 12px;text-align:center}
-.stat strong{display:block;color:var(--vert);font-size:clamp(26px,4vw,37px);line-height:1.3;font-variant-numeric:tabular-nums}
-.stat span{display:block;margin-top:5px;font-size:14px;font-weight:650}
-.stats-status{color:#567060;font-size:13px;margin:11px 0 2px}
-@media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.stats-head{display:block}}
-@media(max-width:640px){.grille,.liens{grid-template-columns:1fr}.carte{padding:21px}}
+:root{--vert:#0d3b2a;--vert2:#08291e;--clair:#176b52;--menthe:#e7f1ec;--or:#f2b81c;--or2:#f9d36d;--texte:#1d2b24;--gris:#5a6f63;--ligne:#dbe5dd;--fond:#f5f8f6;--r:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:#fff;color:var(--texte);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+img{max-width:100%;display:block}a{color:inherit}
+a:focus-visible,button:focus-visible{outline:3px solid #e7aa00;outline-offset:3px}
+.skip{position:absolute;top:-100px;left:12px;background:#fff;color:var(--vert);padding:10px;z-index:99}.skip:focus{top:12px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.top{position:sticky;top:0;z-index:50;background:#fffffff2;backdrop-filter:blur(8px);border-bottom:1px solid var(--ligne)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;height:72px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand img{width:48px;height:48px;object-fit:contain}
+.brand small{display:block;color:var(--clair);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;line-height:1.2}
+.brand b{display:block;font-size:19px;color:var(--vert);line-height:1.2}
+nav.menu{display:flex;align-items:center;gap:4px}
+nav.menu a{text-decoration:none;font-weight:650;font-size:15px;padding:9px 12px;border-radius:10px;color:#2b4538}
+nav.menu a:hover{background:var(--menthe)}
+nav.menu a.cta{background:var(--clair);color:#fff;margin-left:6px}
+.burger{display:none;width:46px;height:46px;border:1px solid var(--ligne);background:#fff;border-radius:12px;font-size:22px;cursor:pointer;color:var(--vert)}
+@media(max-width:860px){.burger{display:block}nav.menu{display:none;position:absolute;left:0;right:0;top:72px;background:#fff;border-bottom:1px solid var(--ligne);flex-direction:column;align-items:stretch;padding:12px 20px 18px}nav.menu.open{display:flex}nav.menu a{padding:14px 12px}nav.menu a.cta{margin:8px 0 0;text-align:center}}
+.hero{position:relative;color:#fff;background:radial-gradient(900px 420px at 85% -10%,#2f8a69aa,transparent 70%),linear-gradient(160deg,rgba(13,59,42,.94),rgba(8,41,30,.97)),var(--hero-img,none);background-size:cover;background-position:center;overflow:hidden}
+.hero:after{content:"";position:absolute;inset:auto -60px -90px auto;width:320px;height:320px;border-radius:50%;border:44px solid #ffffff0d}
+.hero .wrap{position:relative;z-index:1;padding-top:64px;padding-bottom:70px;display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;color:var(--or2);font-weight:800;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+.hero h1{font-size:clamp(36px,6vw,62px);line-height:1.05;margin:14px 0 18px;letter-spacing:-.02em}
+.hero p.lead{font-size:clamp(17px,2.2vw,20px);color:#d7e9df;max-width:560px;margin:0 0 28px}
+.btns{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:800;padding:15px 24px;border-radius:12px;border:2px solid transparent;font-size:16px}
+.btn.or{background:var(--or);color:#2a2410}.btn.or:hover{filter:brightness(.95)}
+.btn.vide{border-color:#ffffff66;color:#fff}.btn.vide:hover{background:#ffffff14}
+.btn.vert{background:var(--clair);color:#fff}.btn.contour{border-color:var(--clair);color:var(--clair);background:#fff}
+.badge{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.badge img{width:min(260px,60vw);background:#fff;border-radius:50%;padding:14px;box-shadow:0 24px 60px #0006}
+.devise{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;font-weight:800;color:var(--or2);letter-spacing:.08em;font-size:13px;text-transform:uppercase}
+.devise i{font-style:normal;opacity:.6}
+.faits{background:var(--vert2);color:#fff}
+.faits .wrap{display:grid;grid-template-columns:repeat(4,1fr)}
+.faits div{padding:18px 14px;border-left:1px solid #ffffff1f;font-weight:750;text-align:center;font-size:15px}
+.faits div:first-child{border-left:0}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr;padding-top:44px;padding-bottom:50px}.badge{order:-1}.badge img{width:130px}.faits .wrap{grid-template-columns:1fr 1fr}.faits div:nth-child(3){border-left:0}}
+section.bloc{padding:72px 0}section.bloc.gris{background:var(--fond)}section.bloc.sombre{background:var(--vert);color:#fff}
+.kick{color:var(--clair);font-weight:800;font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px}
+.sombre .kick{color:var(--or2)}
+h2.titre{font-size:clamp(28px,4.2vw,42px);line-height:1.15;margin:0 0 14px;letter-spacing:-.015em;color:var(--vert);max-width:760px}
+.sombre h2.titre{color:#fff}
+.sous{color:var(--gris);font-size:18px;max-width:700px;margin:0 0 34px}.sombre .sous{color:#cfe4d9}
+.tuiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:32px;position:relative;z-index:2}
+.tuile{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:22px 20px;text-decoration:none;box-shadow:0 12px 30px #0d3b2a14;display:flex;flex-direction:column;gap:6px;transition:transform .15s}
+.tuile:hover{transform:translateY(-3px)}.tuile .ic{font-size:30px}.tuile b{font-size:18px;color:var(--vert)}.tuile span{color:var(--gris);font-size:14px}
+@media(max-width:860px){.tuiles{grid-template-columns:1fr 1fr;margin-top:24px}}
+.cartes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.carte{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:26px}
+.carte .ic{width:48px;height:48px;border-radius:14px;background:var(--menthe);display:grid;place-items:center;font-size:24px;margin-bottom:14px}
+.carte h3{margin:0 0 6px;font-size:20px;color:var(--vert)}.carte p{margin:0;color:var(--gris)}
+@media(max-width:860px){.cartes{grid-template-columns:1fr}}
+.sections{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.sec{border:1px solid #ffffff2b;border-radius:var(--r);padding:24px 20px;background:#ffffff0c}
+.sec .ic{font-size:30px}.sec b{display:block;font-size:21px;margin:10px 0 4px}.sec span{color:#cfe4d9;font-size:15px}
+@media(max-width:860px){.sections{grid-template-columns:1fr 1fr}}
+.options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0;padding:0;list-style:none}
+.options li{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--ligne);border-radius:14px;padding:16px 18px;font-weight:700;color:var(--vert)}
+.options li:before{content:"✓";display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--clair);color:#fff;font-size:14px;flex:none}
+@media(max-width:860px){.options{grid-template-columns:1fr 1fr}}@media(max-width:520px){.options{grid-template-columns:1fr}}
+.etapes{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;counter-reset:e;padding:0;list-style:none;margin:0 0 34px}
+.etapes li{counter-increment:e;background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:22px 20px;font-weight:700;color:var(--vert)}
+.etapes li:before{content:counter(e);display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--vert);color:#fff;margin-bottom:12px;font-size:17px}
+@media(max-width:860px){.etapes{grid-template-columns:1fr 1fr}}@media(max-width:520px){.etapes{grid-template-columns:1fr}}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.stat{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:24px 14px;text-align:center}
+.stat strong{display:block;color:var(--vert);font-size:clamp(30px,5vw,46px);line-height:1.2;font-variant-numeric:tabular-nums}.stat span{display:block;margin-top:4px;font-size:15px;font-weight:650;color:var(--gris)}
+.petit{font-size:13px;color:var(--gris);margin:12px 0 0}
+@media(max-width:520px){.stats-grid{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}}
+.deux{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:860px){.deux{grid-template-columns:1fr}}
+.contact{list-style:none;margin:0;padding:0}.contact li{display:flex;gap:14px;padding:15px 0;border-top:1px solid #ffffff22;color:#e3f1ea}.contact li:first-child{border-top:0}.contact a{text-decoration:none;font-weight:700}
+.panneau{background:#fff;color:var(--texte);border-radius:var(--r);padding:28px}.panneau h3{margin:0 0 8px;color:var(--vert);font-size:24px}.panneau p{margin:0 0 18px;color:var(--gris)}
+.note{background:#fff8e6;border-left:4px solid var(--or);padding:14px 16px;border-radius:0 12px 12px 0;font-size:14px;margin-top:22px;color:#4a3d12}
+footer{background:var(--vert2);color:#bcd3c7;padding:48px 0 28px}
+footer .wrap{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:30px}
+footer h4{margin:0 0 10px;color:#fff;font-size:14px;letter-spacing:.1em;text-transform:uppercase}footer a{display:block;text-decoration:none;padding:5px 0;color:#bcd3c7}footer a:hover{color:#fff}
+footer .bas{grid-column:1/-1;border-top:1px solid #ffffff1f;padding-top:18px;font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;background:#fff;border-radius:50%;padding:4px}footer .id b{color:#fff;font-size:20px;display:block}
+@media(max-width:860px){footer .wrap{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tuile{transition:none}}
 </style></head><body>
 <a class="skip" href="#contenu">Aller au contenu</a>
-<header><img src="logo.png" alt="Logo du Collège Merci-Dieu"><p class="kicker">Portail de l'établissement · Kasumbalesa</p><h1>Collège Merci-Dieu</h1><p class="devise">Distinction · Docilité · Charité</p></header>
-<main id="contenu"><p class="intro">Bienvenue ! Que souhaitez-vous faire ?</p>
-<section class="grille" aria-label="Démarches des familles">
-<article class="carte"><span class="icone" aria-hidden="true">📝</span><h2>Inscrire un élève</h2>
-<p>Remplissez une demande d'inscription depuis le portail historique de l'école.</p>
-<a class="bouton" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Accéder à l'inscription</a>
-<small>Sur le portail qui s'ouvre, choisissez « Inscription ».</small></article>
-<article class="carte"><span class="icone" aria-hidden="true">💳</span><h2>Déclarer un paiement</h2>
-<p>Signalez un versement à vérifier par le service de comptabilité.</p>
-<a class="bouton vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Accéder aux paiements</a>
-<small>Choisissez « Paiement » sur le portail historique. Une déclaration n'est pas un reçu confirmé.</small></article>
-</section>
-<section class="stats" aria-labelledby="chiffres-titre">
-<div class="stats-head"><h3 id="chiffres-titre">L'école en chiffres</h3><small>Données de gestion de l'établissement</small></div>
-<div class="stats-grid" aria-live="polite" aria-atomic="true">
-<div class="stat"><strong id="stat-eleves">—</strong><span>Élèves inscrits et validés</span></div>
-<div class="stat"><strong id="stat-classes">—</strong><span>Classes enregistrées</span></div>
-<div class="stat"><strong id="stat-personnel">—</strong><span>Membres du personnel enregistrés</span></div>
-</div>
-<p class="stats-status" id="stats-etat" role="status">Chargement des statistiques…</p>
-<small>Ces chiffres comptent uniquement les dossiers enregistrés dans le logiciel. Ils ne représentent pas nécessairement l'effectif réel de l'école tant que l'importation des données n'est pas terminée.</small>
-</section>
-<section aria-label="Services complémentaires"><h3>Autres services</h3><nav class="liens" aria-label="Liens utiles">
-<a href="verifier.html">✓ Vérifier un reçu</a>
-<a href="reglement.html">📜 Règlement d'ordre intérieur</a>
-<a href="connexion.html">🔐 Connexion du personnel</a>
-<a href="confidentialite.html">🔒 Confidentialité</a>
-</nav></section>
-<p class="note">Les parents sans smartphone peuvent continuer à utiliser les documents papier délivrés par l'école. Cette page fonctionne aussi sur un ordinateur ou un navigateur mobile compatible.</p>
-</main><footer>Collège Merci-Dieu — Kasumbalesa, République démocratique du Congo</footer><script>
+<header class="top"><div class="wrap">
+ <a class="brand" href="#accueil"><img src="logo.png" alt="Logo du Collège Merci-Dieu"><span><small>Kasumbalesa · RDC</small><b>Collège Merci-Dieu</b></span></a>
+ <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="menu">☰</button>
+ <nav class="menu" id="menu" aria-label="Navigation principale">
+  <a href="#ecole">L'école</a><a href="#sections">Sections</a><a href="#options">Options</a><a href="#admission">Admission</a><a href="#contact">Contact</a>
+  <a class="cta" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">S'inscrire →</a>
+ </nav>
+</div></header>
+
+<main id="contenu">
+<section class="hero" id="accueil"><div class="wrap">
+ <div>
+  <span class="eyebrow">🎓 Établissement d'enseignement · Kasumbalesa</span>
+  <h1>Collège Merci-Dieu</h1>
+  <p class="lead">Une école où l'on apprend, grandit et se prépare à l'avenir : de la maternelle au secondaire, avec des options techniques et un suivi attentif des familles.</p>
+  <div class="btns"><a class="btn or" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Demander une inscription →</a><a class="btn vide" href="#ecole">Découvrir l'école</a></div>
+ </div>
+ <div class="badge"><img src="logo.png" alt="Blason du Collège Merci-Dieu"><div class="devise"><span>Distinction</span><i>·</i><span>Docilité</span><i>·</i><span>Charité</span></div></div>
+</div></section>
+<div class="faits"><div class="wrap"><div>Maternelle</div><div>Primaire</div><div>Éducation de base</div><div>Secondaire technique</div></div></div>
+
+<div class="wrap"><div class="tuiles" aria-label="Accès directs">
+ <a class="tuile" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener"><span class="ic">📝</span><b>Inscription</b><span>Demander l'inscription d'un élève</span></a>
+ <a class="tuile" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener"><span class="ic">💳</span><b>Paiement</b><span>Déclarer un versement</span></a>
+ <a class="tuile" href="verifier.html"><span class="ic">✓</span><b>Vérifier un reçu</b><span>Contrôler l'authenticité</span></a>
+ <a class="tuile" href="connexion.html"><span class="ic">🔐</span><b>Espace du personnel</b><span>Connexion sécurisée</span></a>
+</div></div>
+
+<section class="bloc" id="ecole"><div class="wrap">
+ <p class="kick">Pourquoi Merci-Dieu</p>
+ <h2 class="titre">Une école pensée pour accompagner chaque élève et rassurer les familles.</h2>
+ <p class="sous">Des valeurs claires, une organisation sérieuse et des outils modernes pour que les parents restent informés.</p>
+ <div class="cartes">
+  <article class="carte"><div class="ic">🏅</div><h3>Distinction</h3><p>Viser l'excellence dans le travail, le comportement et les résultats.</p></article>
+  <article class="carte"><div class="ic">🤝</div><h3>Docilité</h3><p>Une vie scolaire structurée, fondée sur le respect et la discipline.</p></article>
+  <article class="carte"><div class="ic">💚</div><h3>Charité</h3><p>Une communauté solidaire, attentive aux familles et aux plus fragiles.</p></article>
+  <article class="carte"><div class="ic">🛠️</div><h3>Options techniques</h3><p>Des filières concrètes pour apprendre par la pratique et préparer l'avenir.</p></article>
+  <article class="carte"><div class="ic">🧾</div><h3>Reçus vérifiables</h3><p>Chaque paiement donne un reçu dont l'authenticité se contrôle en ligne.</p></article>
+  <article class="carte"><div class="ic">📱</div><h3>Démarches simples</h3><p>Inscription et déclaration de paiement depuis votre téléphone.</p></article>
+ </div>
+</div></section>
+
+<section class="bloc sombre" id="sections"><div class="wrap">
+ <p class="kick">Sections</p>
+ <h2 class="titre">Un parcours complet, de la maternelle au secondaire.</h2>
+ <p class="sous">Les enfants sont accompagnés étape par étape, depuis les premières bases jusqu'aux classes d'orientation.</p>
+ <div class="sections">
+  <div class="sec"><span class="ic">🧸</span><b>Maternelle</b><span>Éveil et premiers apprentissages.</span></div>
+  <div class="sec"><span class="ic">📚</span><b>Primaire</b><span>1ère à 6ème : bases solides.</span></div>
+  <div class="sec"><span class="ic">🧭</span><b>Éducation de base</b><span>7ème et 8ème : orientation.</span></div>
+  <div class="sec"><span class="ic">🎖️</span><b>Secondaire</b><span>1ère à 4ème : options générales et techniques.</span></div>
+ </div>
+</div></section>
+
+<section class="bloc gris" id="options"><div class="wrap">
+ <p class="kick">Options</p>
+ <h2 class="titre">Humanités et métiers : choisir une voie qui prépare à l'avenir.</h2>
+ <p class="sous">Les options proposées au secondaire.</p>
+ <ul class="options">
+  <li>Commercial et administratif</li><li>Sciences</li><li>Pédagogie générale</li><li>Informatique</li><li>Électricité</li>
+  <li>Mécanique automobile</li><li>Mécanique générale</li><li>Menuiserie</li><li>Maçonnerie</li><li>Coupe et couture</li><li>I.T.M. (Institut technique médical)</li>
+ </ul>
+</div></section>
+
+<section class="bloc" id="admission"><div class="wrap">
+ <p class="kick">Admission</p>
+ <h2 class="titre">Un parcours d'inscription clair et suivi.</h2>
+ <p class="sous">Envoyez une demande depuis votre téléphone : l'administration la retrouve et vous contacte pour finaliser.</p>
+ <ol class="etapes"><li>Remplir la demande d'inscription</li><li>Choisir la classe et l'option</li><li>Recevoir l'orientation de l'administration</li><li>Finaliser le dossier à l'école</li></ol>
+ <div class="btns"><a class="btn vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Commencer l'inscription →</a><a class="btn contour" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Déclarer un paiement</a></div>
+ <p class="note">Une déclaration de paiement n'est pas un reçu : le reçu officiel est délivré par la comptabilité après vérification. Les parents sans smartphone peuvent continuer à utiliser les documents papier de l'école.</p>
+</div></section>
+
+<section class="bloc gris" id="chiffres" aria-labelledby="chiffres-titre"><div class="wrap">
+ <p class="kick">L'école en chiffres</p>
+ <h2 class="titre" id="chiffres-titre">Des données de gestion actualisées.</h2>
+ <div class="stats-grid" aria-live="polite" aria-atomic="true">
+  <div class="stat"><strong id="stat-eleves">—</strong><span>Élèves inscrits et validés</span></div>
+  <div class="stat"><strong id="stat-classes">—</strong><span>Classes enregistrées</span></div>
+  <div class="stat"><strong id="stat-personnel">—</strong><span>Membres du personnel</span></div>
+ </div>
+ <p class="petit" id="stats-etat" role="status">Chargement des statistiques…</p>
+ <p class="petit">Ces chiffres comptent uniquement les dossiers enregistrés dans le logiciel ; ils ne représentent pas l'effectif réel tant que l'importation des données n'est pas terminée.</p>
+</div></section>
+
+<section class="bloc sombre" id="contact"><div class="wrap deux">
+ <div>
+  <p class="kick">Contact</p>
+  <h2 class="titre">Admissions et renseignements</h2>
+  <ul class="contact" id="contact-liste">
+   <li>📍 <span>Collège Merci-Dieu — Kasumbalesa, République démocratique du Congo</span></li>
+   <li>🕘 <span>Accueil des parents et orientation scolaire</span></li>
+  </ul>
+ </div>
+ <div class="panneau"><h3>Former une personne prête à l'action</h3><p>Notre équipe vous accompagne pour choisir la section, préparer le dossier et finaliser l'inscription.</p>
+  <a class="btn vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Préparer une admission →</a></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+ <div><div class="id"><img src="logo.png" alt=""><div><b>Collège Merci-Dieu</b>Distinction · Docilité · Charité</div></div></div>
+ <div><h4>Familles</h4><a href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Inscription et paiement</a><a href="verifier.html">Vérifier un reçu</a><a href="reglement.html">Règlement d'ordre intérieur</a></div>
+ <div><h4>Établissement</h4><a href="connexion.html">Connexion du personnel</a><a href="confidentialite.html">Confidentialité</a></div>
+ <div class="bas"><span>© 2026 Collège Merci-Dieu — Kasumbalesa, RDC</span><a href="#accueil" style="display:inline">Retour en haut ↑</a></div>
+</div></footer>
+
+<script>
 (()=>{
-  const endpoint='https://lotzbcvzvgtsvszbigek.supabase.co/functions/v1/school-public-stats';
-  const out=document.getElementById('stats-etat');
-  const ctrl=new AbortController();
-  const timer=setTimeout(()=>ctrl.abort(),9000);
-  fetch(endpoint,{method:'GET',headers:{'Accept':'application/json'},signal:ctrl.signal})
-  .then(async response=>{
-    if(!response.ok)throw new Error('Statistiques indisponibles');
-    return response.json();
-  })
-  .then(data=>{
-    const pairs=[
-      ['stat-eleves',data.eleves_inscrits],
-      ['stat-classes',data.classes_enregistrees],
-      ['stat-personnel',data.personnel_enregistre]
-    ];
-    if(!pairs.every(([,value])=>Number.isSafeInteger(value)&&value>=0))
-      throw new Error('Données incorrectes');
-    for(const [id,value] of pairs)
-      document.getElementById(id).textContent=value.toLocaleString('fr-FR');
-    const at=new Date(data.actualise_le);
+  const b=document.getElementById('burger'),m=document.getElementById('menu');
+  b.addEventListener('click',()=>{const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o);b.textContent=o?'✕':'☰'});
+  m.addEventListener('click',e=>{if(e.target.tagName==='A'){m.classList.remove('open');b.setAttribute('aria-expanded','false');b.textContent='☰'}});
+  // Coordonnées publiques : à renseigner ici (laisser vide pour ne pas afficher la ligne)
+  const CONTACT={telephone:'',whatsapp:'',email:'',adresse:''};
+  const ul=document.getElementById('contact-liste'),add=(i,h)=>{const li=document.createElement('li');li.innerHTML=i+' '+h;ul.appendChild(li)};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  if(CONTACT.adresse)add('🏫','<span>'+esc(CONTACT.adresse)+'</span>');
+  if(/^[+\d ]{8,20}$/.test(CONTACT.telephone))add('📞','<a href="tel:'+CONTACT.telephone.replace(/\s/g,'')+'">'+esc(CONTACT.telephone)+'</a>');
+  if(/^\d{9,15}$/.test(CONTACT.whatsapp))add('💬','<a href="https://wa.me/'+CONTACT.whatsapp+'" rel="noopener">Écrire sur WhatsApp</a>');
+  if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(CONTACT.email))add('✉️','<a href="mailto:'+esc(CONTACT.email)+'">'+esc(CONTACT.email)+'</a>');
+  // Statistiques publiques
+  const out=document.getElementById('stats-etat'),ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),9000);
+  fetch('https://lotzbcvzvgtsvszbigek.supabase.co/functions/v1/school-public-stats',{method:'GET',headers:{'Accept':'application/json'},signal:ctrl.signal})
+  .then(async r=>{if(!r.ok)throw new Error('indisponible');return r.json()})
+  .then(d=>{
+    const pairs=[['stat-eleves',d.eleves_inscrits],['stat-classes',d.classes_enregistrees],['stat-personnel',d.personnel_enregistre]];
+    if(!pairs.every(([,v])=>Number.isSafeInteger(v)&&v>=0))throw new Error('incorrect');
+    for(const [id,v] of pairs)document.getElementById(id).textContent=v.toLocaleString('fr-FR');
+    const at=new Date(d.actualise_le);
     out.textContent='Source : base de gestion scolaire'+(Number.isNaN(at.getTime())?'':' · Mise à jour le '+at.toLocaleDateString('fr-FR'));
   })
   .catch(()=>{out.textContent='Statistiques momentanément indisponibles. Les autres services restent accessibles.'})
