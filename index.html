@@ -22,7 +22,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #e7aa00;outline-offset:3p
 nav.menu{display:flex;align-items:center;gap:4px}
 nav.menu a{text-decoration:none;font-weight:650;font-size:15px;padding:9px 12px;border-radius:10px;color:#2b4538}
 nav.menu a:hover{background:var(--menthe)}
-nav.menu a.cta{background:var(--clair);color:#fff;margin-left:6px}
+nav.menu a.cx{border:2px solid var(--clair);color:var(--clair);margin-left:6px;font-weight:800}nav.menu a.cta{background:var(--clair);color:#fff;margin-left:6px}
 .burger{display:none;width:46px;height:46px;border:1px solid var(--ligne);background:#fff;border-radius:12px;font-size:22px;cursor:pointer;color:var(--vert)}
 @media(max-width:860px){.burger{display:block}nav.menu{display:none;position:absolute;left:0;right:0;top:72px;background:#fff;border-bottom:1px solid var(--ligne);flex-direction:column;align-items:stretch;padding:12px 20px 18px}nav.menu.open{display:flex}nav.menu a{padding:14px 12px}nav.menu a.cta{margin:8px 0 0;text-align:center}}
 .hero{position:relative;color:#fff;background:radial-gradient(900px 420px at 85% -10%,#2f8a69aa,transparent 70%),linear-gradient(160deg,rgba(13,59,42,.94),rgba(8,41,30,.97)),var(--hero-img,none);background-size:cover;background-position:center;overflow:hidden}
@@ -166,6 +166,7 @@ body.fige{overflow:hidden}
  <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="menu">☰</button>
  <nav class="menu" id="menu" aria-label="Navigation principale">
   <a href="#ecole">L'école</a><a href="#sections">Sections</a><a href="#options">Options</a><a href="#admission">Inscription</a><a href="#paiement">Paiement</a><a href="#contact">Contact</a>
+  <a class="cx" href="connexion.html">🔐 Se connecter</a>
   <a class="cta" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">S'inscrire →</a>
  </nav>
 </div></header>
@@ -176,7 +177,7 @@ body.fige{overflow:hidden}
   <span class="eyebrow">🎓 Établissement d'enseignement · Kasumbalesa</span>
   <h1>Collège Merci-Dieu</h1>
   <p class="lead">Une école où l'on apprend, grandit et se prépare à l'avenir : de la maternelle au secondaire, avec des options techniques et un suivi attentif des familles.</p>
-  <div class="btns"><a class="btn or" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Demander une inscription →</a><a class="btn vide" href="#ecole">Découvrir l'école</a></div>
+  <div class="btns"><a class="btn or" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Demander une inscription →</a><a class="btn vide" href="connexion.html">🔐 Se connecter</a></div>
  </div>
  <div class="badge"><img src="logo.png" alt="Blason du Collège Merci-Dieu"><div class="devise"><span>Distinction</span><i>·</i><span>Docilité</span><i>·</i><span>Charité</span></div></div>
 </div></section>
@@ -186,7 +187,7 @@ body.fige{overflow:hidden}
  <a class="tuile" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener"><span class="ic">📝</span><b>Inscription</b><span>Demander l'inscription d'un élève</span></a>
  <a class="tuile" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener"><span class="ic">💳</span><b>Paiement</b><span>Déclarer un versement</span></a>
  <a class="tuile" href="verifier.html"><span class="ic">✓</span><b>Vérifier un reçu</b><span>Contrôler l'authenticité</span></a>
- <a class="tuile" href="connexion.html"><span class="ic">🔐</span><b>Espace du personnel</b><span>Connexion sécurisée</span></a>
+ <a class="tuile" href="connexion.html"><span class="ic">🔐</span><b>Se connecter</b><span>Personnel de l'école</span></a>
 </div></div>
 
 <section class="bloc" id="ecole"><div class="wrap">
