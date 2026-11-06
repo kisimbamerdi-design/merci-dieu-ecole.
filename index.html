@@ -134,13 +134,38 @@ body.fige{overflow:hidden}
 .ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.22;transform:scale(0);pointer-events:none;animation:onde .7s ease-out forwards}
 @keyframes onde{to{transform:scale(1);opacity:0}}
 @media(prefers-reduced-motion:reduce){.tap.pop,.ripple{animation:none}.tap:active{transform:none}}
+
+/* options détaillées */
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.opt{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:24px}
+.opt .ic{width:52px;height:52px;border-radius:15px;background:var(--menthe);display:grid;place-items:center;font-size:26px;margin-bottom:12px}
+.opt h3{margin:0 0 6px;font-size:20px;color:var(--vert)}.opt p{margin:0 0 10px;color:var(--gris);font-size:15px}
+.opt small{display:block;color:var(--clair);font-weight:700;font-size:13px;border-top:1px dashed var(--ligne);padding-top:10px}
+.etiq{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--menthe);color:var(--clair);margin:26px 0 14px}
+.etiq:first-of-type{margin-top:0}
+@media(max-width:860px){.opts{grid-template-columns:1fr 1fr}}@media(max-width:560px){.opts{grid-template-columns:1fr}}
+/* inscription / paiement détaillés */
+.guide{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+@media(max-width:860px){.guide{grid-template-columns:1fr}}
+.panneau2{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:26px}
+.panneau2 h3{margin:0 0 4px;font-size:24px;color:var(--vert)}.panneau2>p{margin:0 0 14px;color:var(--gris)}
+.paie{list-style:none;counter-reset:p;margin:0 0 16px;padding:0;display:grid;gap:10px}
+.paie li{counter-increment:p;display:flex;gap:12px;align-items:flex-start;background:var(--fond);border:1px solid var(--ligne);border-radius:14px;padding:13px 14px;font-size:15px}
+.paie li:before{content:counter(p);flex:none;width:28px;height:28px;border-radius:50%;background:var(--vert);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+.paie b{color:var(--vert)}
+.liste{margin:0 0 16px;padding:0;list-style:none;display:grid;gap:8px;font-size:15px}
+.liste li{padding-left:26px;position:relative}.liste li:before{content:"✓";position:absolute;left:0;color:var(--clair);font-weight:800}
+.faq details{background:#fff;border:1px solid var(--ligne);border-radius:14px;margin-bottom:10px;padding:0 18px}
+.faq summary{cursor:pointer;font-weight:750;color:var(--vert);padding:16px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}.faq summary:after{content:"+";font-size:22px;line-height:1;color:var(--clair);transition:transform .25s}
+.faq details[open] summary:after{transform:rotate(45deg)}.faq details p{margin:0 0 16px;color:var(--gris)}
 </style><script>document.documentElement.classList.add("js")</script></head><body>
 <a class="skip" href="#contenu">Aller au contenu</a>
 <header class="top"><div class="wrap">
  <a class="brand" href="#accueil"><img src="logo.png" alt="Logo du Collège Merci-Dieu"><span><small>Kasumbalesa · RDC</small><b>Collège Merci-Dieu</b></span></a>
  <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="menu">☰</button>
  <nav class="menu" id="menu" aria-label="Navigation principale">
-  <a href="#ecole">L'école</a><a href="#sections">Sections</a><a href="#options">Options</a><a href="#admission">Admission</a><a href="#contact">Contact</a>
+  <a href="#ecole">L'école</a><a href="#sections">Sections</a><a href="#options">Options</a><a href="#admission">Inscription</a><a href="#paiement">Paiement</a><a href="#contact">Contact</a>
   <a class="cta" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">S'inscrire →</a>
  </nav>
 </div></header>
@@ -193,20 +218,86 @@ body.fige{overflow:hidden}
 <section class="bloc gris" id="options"><div class="wrap">
  <p class="kick">Options</p>
  <h2 class="titre">Humanités et métiers : choisir une voie qui prépare à l'avenir.</h2>
- <p class="sous">Les options proposées au secondaire.</p>
- <ul class="options">
-  <li>Commercial et administratif</li><li>Sciences</li><li>Pédagogie générale</li><li>Informatique</li><li>Électricité</li>
-  <li>Mécanique automobile</li><li>Mécanique générale</li><li>Menuiserie</li><li>Maçonnerie</li><li>Coupe et couture</li><li>I.T.M. (Institut technique médical)</li>
- </ul>
+ <p class="sous">Au secondaire, l'élève choisit une option selon ses goûts et son projet. Voici ce que chacune lui apprend.</p>
+ <span class="etiq">Options générales</span>
+ <div class="opts">
+  <article class="opt"><div class="ic">📊</div><h3>Commercial et gestion</h3><p>Initiation à la comptabilité, au commerce, à la correspondance et à l'organisation d'une entreprise ou d'un bureau.</p><small>Après : secrétariat, comptabilité, commerce, études de gestion</small></article>
+  <article class="opt"><div class="ic">🔬</div><h3>Sciences</h3><p>Mathématiques, physique, chimie et biologie : observation, expérience et raisonnement scientifique.</p><small>Après : études supérieures scientifiques, médecine, ingénierie</small></article>
+  <article class="opt"><div class="ic">🎓</div><h3>Pédagogie générale</h3><p>Formation à l'enseignement : psychologie de l'enfant, méthodes d'apprentissage et pratique en classe.</p><small>Après : écoles normales, enseignement, études d'éducation</small></article>
+ </div>
+ <span class="etiq">Options techniques et métiers</span>
+ <div class="opts">
+  <article class="opt"><div class="ic">💻</div><h3>Informatique</h3><p>Bureautique, utilisation et maintenance des ordinateurs, bases de la programmation et du numérique.</p><small>Après : maintenance, secrétariat numérique, études d'informatique</small></article>
+  <article class="opt"><div class="ic">⚡</div><h3>Électricité</h3><p>Installations électriques, lecture de schémas, câblage, sécurité et dépannage.</p><small>Après : électricien, installateur, maintenance</small></article>
+  <article class="opt"><div class="ic">🚗</div><h3>Mécanique automobile</h3><p>Moteurs, freinage, transmission, diagnostic des pannes et entretien des véhicules.</p><small>Après : garage, atelier, concessionnaire</small></article>
+  <article class="opt"><div class="ic">🔧</div><h3>Mécanique générale</h3><p>Ajustage, tournage, soudure et fabrication de pièces avec précision.</p><small>Après : atelier, industrie, mines, fabrication</small></article>
+  <article class="opt"><div class="ic">🪚</div><h3>Menuiserie</h3><p>Travail du bois : lecture de plans, fabrication de meubles, portes et charpentes.</p><small>Après : menuisier, ébéniste, atelier à son compte</small></article>
+  <article class="opt"><div class="ic">🧵</div><h3>Coupe et couture</h3><p>Prise de mesures, patronage, coupe et confection de vêtements.</p><small>Après : couturier(ère), styliste, atelier à son compte</small></article>
+ </div>
+ <p class="petit">Les options peuvent évoluer selon les années : confirmez la disponibilité auprès du secrétariat au moment de l'inscription.</p>
 </div></section>
 
 <section class="bloc" id="admission"><div class="wrap">
- <p class="kick">Admission</p>
- <h2 class="titre">Un parcours d'inscription clair et suivi.</h2>
- <p class="sous">Envoyez une demande depuis votre téléphone : l'administration la retrouve et vous contacte pour finaliser.</p>
- <ol class="etapes"><li>Remplir la demande d'inscription</li><li>Choisir la classe et l'option</li><li>Recevoir l'orientation de l'administration</li><li>Finaliser le dossier à l'école</li></ol>
- <div class="btns"><a class="btn vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Commencer l'inscription →</a><a class="btn contour" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Déclarer un paiement</a></div>
- <p class="note">Une déclaration de paiement n'est pas un reçu : le reçu officiel est délivré par la comptabilité après vérification. Les parents sans smartphone peuvent continuer à utiliser les documents papier de l'école.</p>
+ <p class="kick">Inscription</p>
+ <h2 class="titre">Comment inscrire un enfant au Collège Merci-Dieu.</h2>
+ <p class="sous">Une demande depuis votre téléphone suffit pour commencer : le secrétariat la retrouve, vous contacte et finalise le dossier avec vous à l'école.</p>
+ <div class="guide">
+  <div class="panneau2"><h3>Les étapes</h3><p>De la demande à la rentrée.</p>
+   <ol class="paie">
+    <li><span><b>Faire la demande.</b> Ouvrez « Inscription » et remplissez la fiche : l'élève, ses parents, la classe et l'option souhaitées.</span></li>
+    <li><span><b>Attendre l'appel de l'école.</b> Le secrétariat vérifie la fiche (les doublons sont contrôlés) et vous oriente.</span></li>
+    <li><span><b>Venir finaliser à l'école.</b> Le dossier est complété et l'inscription validée par l'administration.</span></li>
+    <li><span><b>Régler les frais.</b> Les paiements se font ensuite selon le calendrier de l'école (voir ci-dessous).</span></li>
+   </ol>
+   <div class="btns"><a class="btn vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Commencer l'inscription →</a></div></div>
+  <div class="panneau2"><h3>À préparer avant de remplir la fiche</h3><p>Tous les champs sont obligatoires.</p>
+   <ul class="liste">
+    <li>Le nom complet de l'élève (nom, postnom, prénom), son sexe, sa date et son lieu de naissance</li>
+    <li>L'école de provenance et le numéro permanent de l'élève, s'il lui a déjà été attribué</li>
+    <li>La province, le secteur ou la collectivité d'origine et l'adresse actuelle</li>
+    <li>Les noms du père et de la mère</li>
+    <li>Un numéro de téléphone ou WhatsApp des parents, joignable</li>
+    <li>La classe et l'option souhaitées</li>
+   </ul>
+   <p class="note" style="margin-top:0"><b>Famille nombreuse.</b> Quand une même famille (même père et même mère) inscrit 5 enfants, un enfant de l'école primaire bénéficie de la gratuité des mensualités ; les frais de l'État restent dus. Elle est appliquée automatiquement par l'école.</p></div>
+ </div>
+</div></section>
+
+<section class="bloc gris" id="paiement"><div class="wrap">
+ <p class="kick">Paiement</p>
+ <h2 class="titre">Comment payer les frais scolaires.</h2>
+ <p class="sous">Les frais se règlent par mois, de septembre à mai. Chaque paiement donne droit à un reçu officiel, vérifiable en ligne.</p>
+ <div class="guide">
+  <div class="panneau2"><h3>Les étapes</h3><p>Du versement au reçu.</p>
+   <ol class="paie">
+    <li><span><b>Payer.</b> Effectuez le versement selon le mode indiqué par l'école (espèces, mobile money ou banque).</span></li>
+    <li><span><b>Déclarer le paiement.</b> Ouvrez « Paiement » : indiquez le nom de l'élève, le montant, le mois ou le motif et le mode de paiement.</span></li>
+    <li><span><b>Attendre la vérification.</b> La comptabilité contrôle et approuve : une déclaration n'est pas encore un reçu.</span></li>
+    <li><span><b>Recevoir le reçu.</b> Un reçu officiel est émis. Son QR code permet de contrôler qu'il est authentique.</span></li>
+   </ol>
+   <div class="btns"><a class="btn vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Déclarer un paiement →</a><a class="btn contour" href="verifier.html">Vérifier un reçu</a></div></div>
+  <div class="panneau2"><h3>Les règles à connaître</h3><p>Le calendrier de l'année scolaire.</p>
+   <ul class="liste">
+    <li><b>9 mensualités</b>, de septembre à mai. Le mois de juin et les frais de l'État sont déjà répartis dans ces mensualités.</li>
+    <li>Les mensualités se paient <b>dans l'ordre</b> : on règle septembre avant octobre, et ainsi de suite.</li>
+    <li>Le <b>minervale</b> et le <b>frais technique</b> se paient à part, librement.</li>
+    <li>Le montant affiché sur votre reçu est toujours le <b>montant réellement versé</b>.</li>
+    <li>Conservez votre reçu : il prouve le paiement.</li>
+   </ul>
+   <p class="petit">Les montants par classe vous sont communiqués par le secrétariat de l'école.</p></div>
+ </div>
+</div></section>
+
+<section class="bloc" id="faq"><div class="wrap">
+ <p class="kick">Questions fréquentes</p>
+ <h2 class="titre">Les réponses aux questions des parents.</h2>
+ <div class="faq">
+  <details><summary>Dois-je venir à l'école pour inscrire mon enfant ?</summary><p>La demande se fait en ligne, mais l'inscription n'est finalisée qu'à l'école, avec l'administration, après son appel.</p></details>
+  <details><summary>Une déclaration de paiement est-elle un reçu ?</summary><p>Non. Le reçu n'est délivré qu'après vérification par la comptabilité.</p></details>
+  <details><summary>Comment savoir si un reçu est authentique ?</summary><p>Scannez son QR code ou ouvrez « Vérifier un reçu » et saisissez son numéro : l'application confirme s'il a bien été émis par l'école.</p></details>
+  <details><summary>Pourquoi les paiements s'arrêtent-ils en mai ?</summary><p>Cette année, l'école a réparti le mois de juin et les frais de l'État dans les neuf mensualités de septembre à mai.</p></details>
+  <details><summary>Je n'ai pas de smartphone, que faire ?</summary><p>Vous pouvez venir au secrétariat : les documents papier de l'école restent valables.</p></details>
+ </div>
 </div></section>
 
 <section class="bloc gris" id="chiffres" aria-labelledby="chiffres-titre"><div class="wrap">
@@ -252,7 +343,7 @@ body.fige{overflow:hidden}
   b.addEventListener('click',()=>{const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o);b.textContent=o?'✕':'☰'});
   m.addEventListener('click',e=>{if(e.target.tagName==='A'){m.classList.remove('open');b.setAttribute('aria-expanded','false');b.textContent='☰'}});
   // Fenêtres de détail (sans changer de page) : textes à ajuster ici
-  const OPT=['Commercial et administratif','Sciences','Pédagogie générale','Informatique','Électricité','Mécanique automobile','Mécanique générale','Menuiserie','Maçonnerie','Coupe et couture','I.T.M. (Institut technique médical)'];
+  const OPT=['Commercial et gestion','Sciences','Pédagogie générale','Informatique','Électricité','Mécanique automobile','Mécanique générale','Menuiserie','Coupe et couture'];
   const V={
    distinction:{ic:'🏅',t:'Distinction',l:'Viser l\'excellence dans le travail, le comportement et les résultats.',li:['Un travail soigné et régulier, encouragé chaque jour','Une tenue et un comportement exemplaires','Des résultats suivis par les enseignants et la direction']},
    docilite:{ic:'🤝',t:'Docilité',l:'Une vie scolaire structurée, fondée sur le respect et la discipline.',li:['Respect des enseignants, du personnel et des camarades','Ponctualité, ordre et uniforme','Un règlement d\'ordre intérieur connu de tous (voir la page « Règlement »)']},
@@ -280,16 +371,16 @@ body.fige{overflow:hidden}
   window.addEventListener('popstate',()=>fermer(true));
   // Animations : les éléments entrent par le côté ou par le bas quand ils deviennent visibles
   const groupes=[['.hero .wrap>div:first-child','left'],['.badge','right'],['.faits .wrap>div','up'],['.tuile','up'],['.kick,.titre,.sous','up'],
-   ['.sec','zoom'],['.options li','left'],['.etapes li','up'],['.stat','zoom'],['.deux>div:first-child','left'],['.deux>.panneau','right'],['.note','up'],['.btns','up'],['footer .wrap>div','up']];
+   ['.sec','zoom'],['.opt','up'],['.paie li','left'],['.panneau2','up'],['.faq details','up'],['.stat','zoom'],['.deux>div:first-child','left'],['.deux>.panneau','right'],['.note','up'],['.btns','up'],['footer .wrap>div','up']];
   const els=[];
   groupes.forEach(([sel,dir])=>document.querySelectorAll(sel).forEach((e,i)=>{e.classList.add('rv',dir);e.style.setProperty('--i',i%6);els.push(e)}));
   document.querySelectorAll('.carte').forEach((e,i)=>{e.classList.add('rv',['left','up','right'][i%3]);e.style.setProperty('--i',i%3);els.push(e)});
   if('IntersectionObserver' in window){
-    const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');setTimeout(()=>x.target.classList.add('done'),1600);io.unobserve(x.target)}}),{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+    const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');setTimeout(()=>x.target.classList.add('done'),1600);io.unobserve(x.target)}}),{threshold:.12,rootMargin:'0px'});
     els.forEach(e=>io.observe(e));
   }else els.forEach(e=>e.classList.add('in','done'));
   // Effet d'appui sur les cartes
-  const cibles=document.querySelectorAll('.carte,.sec,.options li,.etapes li,.stat,.tuile,.faits .wrap>div,.panneau');
+  const cibles=document.querySelectorAll('.carte,.sec,.opt,.paie li,.panneau2,.stat,.tuile,.faits .wrap>div,.panneau');
   cibles.forEach(c=>{c.classList.add('tap');
     c.addEventListener('pointerdown',e=>{
       const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,d=Math.max(r.width,r.height)*2.2;
