@@ -317,7 +317,7 @@ body.fige{overflow:hidden}
   <p class="kick">Contact</p>
   <h2 class="titre">Admissions et renseignements</h2>
   <ul class="contact" id="contact-liste">
-   <li>📍 <span>Collège Merci-Dieu — Kasumbalesa, République démocratique du Congo</span></li>
+   <li>📍 <span>Collège Merci-Dieu — Kasumbalesa, derrière la station Petrocil, ancien péage, République démocratique du Congo</span></li>
    <li>🕘 <span>Accueil des parents et orientation scolaire</span></li>
   </ul>
  </div>
@@ -395,13 +395,10 @@ body.fige{overflow:hidden}
   const compte=(id,v)=>{const el=document.getElementById(id);if(matchMedia('(prefers-reduced-motion: reduce)').matches||v===0){el.textContent=v.toLocaleString('fr-FR');return}
     const t0=performance.now(),d=1400;(function f(t){const k=Math.min(1,(t-t0)/d),e=1-Math.pow(1-k,3);el.textContent=Math.round(v*e).toLocaleString('fr-FR');if(k<1)requestAnimationFrame(f)})(t0)};
   // Coordonnées publiques : à renseigner ici (laisser vide pour ne pas afficher la ligne)
-  const CONTACT={telephone:'',whatsapp:'',email:'',adresse:''};
+  const TEL=[['Secrétariat et comptabilité',['+243815956926']],['Direction',['+243976009313','+243821697707']]];
   const ul=document.getElementById('contact-liste'),add=(i,h)=>{const li=document.createElement('li');li.innerHTML=i+' '+h;ul.appendChild(li)};
-  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  if(CONTACT.adresse)add('🏫','<span>'+esc(CONTACT.adresse)+'</span>');
-  if(/^[+\d ]{8,20}$/.test(CONTACT.telephone))add('📞','<a href="tel:'+CONTACT.telephone.replace(/\s/g,'')+'">'+esc(CONTACT.telephone)+'</a>');
-  if(/^\d{9,15}$/.test(CONTACT.whatsapp))add('💬','<a href="https://wa.me/'+CONTACT.whatsapp+'" rel="noopener">Écrire sur WhatsApp</a>');
-  if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(CONTACT.email))add('✉️','<a href="mailto:'+esc(CONTACT.email)+'">'+esc(CONTACT.email)+'</a>');
+  const fmt=n=>n.replace(/^\+243(\d{3})(\d{3})(\d{3})$/,'+243 $1 $2 $3');
+  for(const [nom,nums] of TEL)add('📞','<span><b>'+nom+' :</b> '+nums.map(n=>'<a href="tel:'+n+'">'+fmt(n)+'</a> <a href="https://wa.me/'+n.slice(1)+'" rel="noopener" aria-label="WhatsApp '+nom+'" title="WhatsApp">💬</a>').join(' · ')+'</span>');
   // Statistiques publiques
   const out=document.getElementById('stats-etat'),ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),9000);
   fetch('https://lotzbcvzvgtsvszbigek.supabase.co/functions/v1/school-public-stats',{method:'GET',headers:{'Accept':'application/json'},signal:ctrl.signal})
