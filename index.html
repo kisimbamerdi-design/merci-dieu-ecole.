@@ -22,7 +22,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #e7aa00;outline-offset:3p
 nav.menu{display:flex;align-items:center;gap:4px}
 nav.menu a{text-decoration:none;font-weight:650;font-size:15px;padding:9px 12px;border-radius:10px;color:#2b4538}
 nav.menu a:hover{background:var(--menthe)}
-nav.menu a.cx{border:2px solid var(--clair);color:var(--clair);margin-left:6px;font-weight:800}nav.menu a.cta{background:var(--clair);color:#fff;margin-left:6px}
+nav.menu a.cx,nav.menu a.cta{white-space:nowrap}nav.menu a.cx{border:2px solid var(--clair);color:var(--clair);margin-left:6px;font-weight:800}nav.menu a.cta{background:var(--clair);color:#fff;margin-left:6px}
 .burger{display:none;width:46px;height:46px;border:1px solid var(--ligne);background:#fff;border-radius:12px;font-size:22px;cursor:pointer;color:var(--vert)}
 @media(max-width:860px){.burger{display:block}nav.menu{display:none;position:absolute;left:0;right:0;top:72px;background:#fff;border-bottom:1px solid var(--ligne);flex-direction:column;align-items:stretch;padding:12px 20px 18px}nav.menu.open{display:flex}nav.menu a{padding:14px 12px}nav.menu a.cta{margin:8px 0 0;text-align:center}}
 .hero{position:relative;color:#fff;background:radial-gradient(900px 420px at 85% -10%,#2f8a69aa,transparent 70%),linear-gradient(160deg,rgba(13,59,42,.94),rgba(8,41,30,.97)),var(--hero-img,none);background-size:cover;background-position:center;overflow:hidden}
@@ -79,7 +79,7 @@ h2.titre{font-size:clamp(28px,4.2vw,42px);line-height:1.15;margin:0 0 14px;lette
 @media(max-width:520px){.stats-grid{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}}
 .deux{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
 @media(max-width:860px){.deux{grid-template-columns:1fr}}
-.contact{list-style:none;margin:0;padding:0}.contact li{display:flex;gap:14px;padding:15px 0;border-top:1px solid #ffffff22;color:#e3f1ea}.contact li:first-child{border-top:0}.contact a{text-decoration:none;font-weight:700}
+.contact{list-style:none;margin:0;padding:0}.contact li{display:flex;gap:14px;padding:15px 0;border-top:1px solid #ffffff22;color:#e3f1ea}.contact li:first-child{border-top:0}.contact a{text-decoration:none;font-weight:700;color:var(--or)}
 .panneau{background:#fff;color:var(--texte);border-radius:var(--r);padding:28px}.panneau h3{margin:0 0 8px;color:var(--vert);font-size:24px}.panneau p{margin:0 0 18px;color:var(--gris)}
 .note{background:#fff8e6;border-left:4px solid var(--or);padding:14px 16px;border-radius:0 12px 12px 0;font-size:14px;margin-top:22px;color:#4a3d12}
 footer{background:var(--vert2);color:#bcd3c7;padding:48px 0 28px}
@@ -140,7 +140,7 @@ body.fige{overflow:hidden}
 .opt{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:24px}
 .opt .ic{width:52px;height:52px;border-radius:15px;background:var(--menthe);display:grid;place-items:center;font-size:26px;margin-bottom:12px}
 .opt h3{margin:0 0 6px;font-size:20px;color:var(--vert)}.opt p{margin:0 0 10px;color:var(--gris);font-size:15px}
-.opt small{display:block;color:var(--clair);font-weight:700;font-size:13px;border-top:1px dashed var(--ligne);padding-top:10px}
+.opt .duree{display:inline-block;background:var(--menthe);color:var(--vert);font-weight:800;font-size:13px;border-radius:99px;padding:4px 12px;margin:0 0 10px}.opt .deb{margin:0 0 12px;padding-left:18px;color:var(--gris);font-size:14px}.opt .deb li{margin:2px 0}.opt small{display:block;color:var(--clair);font-weight:700;font-size:13px;border-top:1px dashed var(--ligne);padding-top:10px}
 .etiq{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--menthe);color:var(--clair);margin:26px 0 14px}
 .etiq:first-of-type{margin-top:0}
 @media(max-width:860px){.opts{grid-template-columns:1fr 1fr}}@media(max-width:560px){.opts{grid-template-columns:1fr}}
@@ -228,11 +228,11 @@ body.fige{overflow:hidden}
  </div>
  <span class="etiq">Options techniques et métiers</span>
  <div class="opts">
-  <article class="opt"><div class="ic">💻</div><h3>Informatique</h3><p>Bureautique, utilisation et maintenance des ordinateurs, bases de la programmation et du numérique.</p><small>Après : maintenance, secrétariat numérique, études d'informatique</small></article>
-  <article class="opt"><div class="ic">⚡</div><h3>Électricité</h3><p>Installations électriques, lecture de schémas, câblage, sécurité et dépannage.</p><small>Après : électricien, installateur, maintenance</small></article>
-  <article class="opt"><div class="ic">🚗</div><h3>Mécanique automobile</h3><p>Moteurs, freinage, transmission, diagnostic des pannes et entretien des véhicules.</p><small>Après : garage, atelier, concessionnaire</small></article>
-  <article class="opt"><div class="ic">🔧</div><h3>Mécanique générale</h3><p>Ajustage, tournage, soudure et fabrication de pièces avec précision.</p><small>Après : atelier, industrie, mines, fabrication</small></article>
-  <article class="opt"><div class="ic">🧵</div><h3>Coupe et couture</h3><p>Prise de mesures, patronage, coupe et confection de vêtements.</p><small>Après : couturier(ère), styliste, atelier à son compte</small></article>
+  <article class="opt"><div class="ic">💻</div><h3>Informatique</h3><p>Maîtrise des outils numériques et technologies de l'information, entre théorie et pratique.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Technicien informatique</li><li>Assistant en bureautique</li><li>Agent de saisie</li><li>Technicien de maintenance informatique</li><li>Entrepreneur des services numériques</li></ul><small>Admission : cycle secondaire technique, dossier scolaire conforme.</small></article>
+  <article class="opt"><div class="ic">⚡</div><h3>Électricité</h3><p>Installation, maintenance et dépannage des équipements électriques domestiques et industriels, dans le respect des normes de sécurité.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Électricien bâtiment</li><li>Technicien en maintenance électrique</li><li>Installateur électrique</li><li>Entrepreneur en électricité</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription.</small></article>
+  <article class="opt"><div class="ic">🚗</div><h3>Mécanique Automobile</h3><p>Entretien, diagnostic et réparation des véhicules, avec une formation pratique sur les systèmes mécaniques et électriques.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Mécanicien automobile</li><li>Technicien de maintenance</li><li>Chef d'atelier</li><li>Garagiste indépendant</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription complet.</small></article>
+  <article class="opt"><div class="ic">🔧</div><h3>Mécanique Générale</h3><p>Entretien et réparation de moteurs et machines diverses.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Technicien en machines industrielles</li><li>Chef d'atelier</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription.</small></article>
+  <article class="opt"><div class="ic">✂️</div><h3>Coupe et Couture</h3><p>Concevoir, couper, assembler et confectionner différents types de vêtements, entre créativité et techniques modernes.</p><span class="duree">Durée : 4 ans (secondaire technique)</span><ul class="deb"><li>Styliste-modéliste</li><li>Couturier(ère)</li><li>Créateur(trice) de mode</li><li>Chef d'atelier</li><li>Entrepreneur en confection</li></ul><small>Admission : cycle secondaire, dossier complet, procédure d'inscription réussie.</small></article>
  </div>
  <p class="petit">Les options peuvent évoluer selon les années : confirmez la disponibilité auprès du secrétariat au moment de l'inscription.</p>
 </div></section>
@@ -317,12 +317,16 @@ body.fige{overflow:hidden}
   <p class="kick">Contact</p>
   <h2 class="titre">Admissions et renseignements</h2>
   <ul class="contact" id="contact-liste">
-   <li>📍 <span>Collège Merci-Dieu — Kasumbalesa, derrière la station Petrocil, ancien péage, République démocratique du Congo</span></li>
-   <li>🕘 <span>Accueil des parents et orientation scolaire</span></li>
+   <li>📍 <span><b>Collège Merci Dieu</b><br>Kasumbalesa, derrière la station Petrocil, ancien péage<br>République Démocratique du Congo</span></li>
+   <li>🏢 <span><b>Bureau Lubumbashi</b><br>N°27 Avenue Colonel Itambo Prolongée, Quartier Kimbembe, Commune Annexe</span></li>
+   <li>📞 <span><b>Contact général</b><br><a href="tel:+243970524660">+243 97 05 24 660</a> · <a href="https://wa.me/243970524660" rel="noopener">WhatsApp : +243 97 05 24 660</a></span></li>
+   <li>✉️ <span><a href="mailto:m.kisimba@collegemercidieu.com">m.kisimba@collegemercidieu.com</a><br><a href="mailto:equipe.merdi@collegemercidieu.com">equipe.merdi@collegemercidieu.com</a></span></li>
+   <li>🕘 <span>Lundi – Samedi, 8h – 18h</span></li>
   </ul>
  </div>
  <div class="panneau"><h3>Former une personne prête à l'action</h3><p>Notre équipe vous accompagne pour choisir la section, préparer le dossier et finaliser l'inscription.</p>
-  <a class="btn vert" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Préparer une admission →</a></div>
+  <div class="btns"><a class="btn vert" href="tel:+243970524660">📞 Appeler</a><a class="btn contour" href="https://wa.me/243970524660" rel="noopener">💬 WhatsApp</a></div>
+  <a class="btn vert" style="margin-top:12px" href="https://college-merci-dieu-kasumbalesa.netlify.app/" rel="noopener">Préparer une admission →</a></div>
 </div></section>
 </main>
 
@@ -343,7 +347,7 @@ body.fige{overflow:hidden}
   b.addEventListener('click',()=>{const o=m.classList.toggle('open');b.setAttribute('aria-expanded',o);b.textContent=o?'✕':'☰'});
   m.addEventListener('click',e=>{if(e.target.tagName==='A'){m.classList.remove('open');b.setAttribute('aria-expanded','false');b.textContent='☰'}});
   // Fenêtres de détail (sans changer de page) : textes à ajuster ici
-  const OPT=['Commercial et gestion','Sciences','Pédagogie générale','Informatique','Électricité','Mécanique automobile','Mécanique générale','Coupe et couture'];
+  const OPT=['Commercial et gestion','Sciences','Pédagogie générale','Informatique','Électricité','Mécanique Automobile','Mécanique Générale','Coupe et Couture'];
   const V={
    distinction:{ic:'🏅',t:'Distinction',l:'Viser l\'excellence dans le travail, le comportement et les résultats.',li:['Un travail soigné et régulier, encouragé chaque jour','Une tenue et un comportement exemplaires','Des résultats suivis par les enseignants et la direction']},
    docilite:{ic:'🤝',t:'Docilité',l:'Une vie scolaire structurée, fondée sur le respect et la discipline.',li:['Respect des enseignants, du personnel et des camarades','Ponctualité, ordre et uniforme','Un règlement d\'ordre intérieur connu de tous (voir la page « Règlement »)']},
