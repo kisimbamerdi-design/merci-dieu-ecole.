@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.merci_dieu_smart_school.twa",
+        "sha256_cert_fingerprints": ["F3:C2:A7:DD:E2:4F:D1:BD:18:70:C2:71:B9:A5:B0:8B:5E:43:89:EA:7A:02:5D:A3:03:33:13:E1:51:FC:0D:E0"]
+      }
+    }]

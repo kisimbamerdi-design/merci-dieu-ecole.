@@ -13,9 +13,12 @@ for f in dist/* dist/.[!.]*; do
   test -e "$f" || continue
   case "$(basename "$f")" in
     index.html|app.html|connexion.html|verifier.html|confidentialite.html|reglement.html|config.js|sw.js|manifest.webmanifest|version.json|logo.png|icon-192.png|icon-512.png) ;;
+    .well-known) ;;
     *) echo "Publication refusée : fichier non autorisé $(basename "$f")" >&2; exit 1 ;;
   esac
 done
+test -f dist/.well-known/assetlinks.json
+test "$(ls dist/.well-known)" = assetlinks.json
 test ! -e dist/schema.sql
 test ! -e dist/AGENTS.md
 test ! -e dist/supabase
@@ -23,4 +26,4 @@ test ! -e dist/PASSATION.md
 if grep -qiE 'service_role|supabase_service_role|sb_secret_' dist/config.js; then
   echo "Clé Supabase privée ou référence suspecte dans config.js" >&2; exit 1
 fi
-echo "OK : seuls les 13 fichiers autorisés sont publiés"
+echo "OK : seuls les 13 fichiers autorisés + assetlinks.json sont publiés"

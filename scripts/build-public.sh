@@ -9,3 +9,6 @@ for fichier in index.html app.html connexion.html verifier.html confidentialite.
   if [ ! -f "$fichier" ]; then echo "Fichier public manquant : $fichier" >&2; exit 1; fi
   cp -- "$fichier" "dist/$fichier"
 done
+# Lien de confiance Android (application installée sans barre d'adresse) : contenu public
+mkdir -p dist/.well-known
+cp -- well-known/assetlinks.json dist/.well-known/assetlinks.json
