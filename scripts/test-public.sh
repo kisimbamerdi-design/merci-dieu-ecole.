@@ -14,7 +14,7 @@ for f in dist/* dist/.[!.]*; do
   case "$(basename "$f")" in
     index.html|app.html|connexion.html|verifier.html|confidentialite.html|reglement.html|config.js|sw.js|manifest.webmanifest|version.json|logo.png|icon-192.png|icon-512.png) ;;
     .well-known) ;;
-    img) test -z "$(ls dist/img | grep -v '\.svg$')" || { echo "Publication refusée : dist/img contient autre chose que des SVG" >&2; exit 1; } ;;
+    img) test -z "$(ls dist/img | grep -vE '\.(svg|jpg|webp)$')" || { echo "Publication refusée : dist/img contient autre chose que des images" >&2; exit 1; } ;;
     *) echo "Publication refusée : fichier non autorisé $(basename "$f")" >&2; exit 1 ;;
   esac
 done

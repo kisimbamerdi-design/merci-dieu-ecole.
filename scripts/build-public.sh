@@ -11,7 +11,7 @@ for fichier in index.html app.html connexion.html verifier.html confidentialite.
 done
 # Illustrations publiques (SVG uniquement)
 mkdir -p dist/img
-for f in img/*.svg; do cp -- "$f" "dist/$f"; done
+for f in img/*.svg img/*.jpg img/*.webp; do [ -f "$f" ] && cp -- "$f" "dist/$f"; done; true
 # Lien de confiance Android (application installée sans barre d'adresse) : contenu public
 mkdir -p dist/.well-known
 cp -- well-known/assetlinks.json dist/.well-known/assetlinks.json

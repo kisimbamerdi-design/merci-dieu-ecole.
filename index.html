@@ -91,8 +91,8 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tuile{transition:none}}
 
 /* Animations d'entrée (désactivées si la personne préfère moins de mouvement) */
-.js .rv{opacity:0;transition:opacity .5s ease-out,transform .5s ease-out;transition-delay:calc(var(--i,0)*40ms);will-change:opacity,transform}
-.js .rv.left{transform:translateX(-18px)}.js .rv.right{transform:translateX(18px)}.js .rv.up{transform:translateY(16px)}.js .rv.zoom{transform:scale(.97)}
+.js .rv{opacity:0;transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*70ms);will-change:opacity,transform}
+.js .rv.left{transform:translateX(-46px)}.js .rv.right{transform:translateX(46px)}.js .rv.up{transform:translateY(34px)}.js .rv.zoom{transform:scale(.91)}
 .js .rv.in{opacity:1;transform:none}
 .js .badge.rv img{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}.js .badge.rv:not(.in) img{transform:rotate(-6deg) scale(.92)}
 @keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
@@ -126,10 +126,10 @@ body.fige{overflow:hidden}
 /* Effet d'appui : la carte s'incline, rebondit et reste sur place, avec une onde sous le doigt */
 .tap{touch-action:manipulation;position:relative;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .js .rv.in.done.tap{transition:transform .22s ease,box-shadow .22s ease;transition-delay:0s}
-.js .rv.in.tap:active,.tap:active{transform:scale(.99)}
-.tap.pop{animation:pop .4s ease-out}
-@keyframes pop{0%{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.99)}
- 55%{transform:perspective(900px) scale(1.005) translateY(-1px);box-shadow:0 8px 18px #0d3b2a14}
+.js .rv.in.tap:active,.tap:active{transform:scale(.97)}
+.tap.pop{animation:pop .5s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{0%{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.97)}
+ 55%{transform:perspective(900px) scale(1.025) translateY(-4px);box-shadow:0 16px 34px #0d3b2a26}
  100%{transform:none}}
 .ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.12;transform:scale(0);pointer-events:none;animation:onde .6s ease-out forwards}
 @keyframes onde{to{transform:scale(1);opacity:0}}
@@ -143,6 +143,9 @@ body.fige{overflow:hidden}
 .sec .vis{width:calc(100% + 40px);margin:-24px -20px 14px;border-radius:0}
 .ecole-vis{max-width:760px;margin:0 auto 28px;border-radius:var(--r);box-shadow:0 14px 34px #0d3b2a1f}
 html,body{overflow-x:clip}
+.vis.photo{animation:kb 14s ease-in-out infinite alternate}@keyframes kb{from{transform:scale(1)}to{transform:scale(1.08)}}
+.opt,.sec,.ecole-vis{overflow:hidden}
+@media(prefers-reduced-motion:reduce){.vis.photo{animation:none}}
 .opt .ic{width:52px;height:52px;border-radius:15px;background:var(--menthe);display:grid;place-items:center;font-size:26px;margin-bottom:12px}
 .opt h3{margin:0 0 6px;font-size:20px;color:var(--vert)}.opt p{margin:0 0 10px;color:var(--gris);font-size:15px}
 .opt .duree{display:inline-block;background:var(--menthe);color:var(--vert);font-weight:800;font-size:13px;border-radius:99px;padding:4px 12px;margin:0 0 10px}.opt .deb{margin:0 0 12px;padding-left:18px;color:var(--gris);font-size:14px}.opt .deb li{margin:2px 0}.opt small{display:block;color:var(--clair);font-weight:700;font-size:13px;border-top:1px dashed var(--ligne);padding-top:10px}
@@ -389,6 +392,9 @@ html,body{overflow-x:clip}
     const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');setTimeout(()=>x.target.classList.add('done'),1600);io.unobserve(x.target)}}),{threshold:.12,rootMargin:'0px'});
     els.forEach(e=>io.observe(e));
   }else els.forEach(e=>e.classList.add('in','done'));
+  // Vraies photos : si img/<nom>.jpg (ou .webp) existe, elle remplace l'illustration, avec un lent effet de zoom
+  document.querySelectorAll('img.vis').forEach(im=>{const n=(im.getAttribute('src').match(/img\/([^.]+)\.svg/)||[])[1];if(!n)return;
+   const essai=ext=>{const t=new Image();t.onload=()=>{im.src='img/'+n+'.'+ext;im.classList.add('photo')};t.onerror=()=>{if(ext==='jpg')essai('webp')};t.src='img/'+n+'.'+ext};essai('jpg')});
   // Effet d'appui sur les cartes
   const cibles=document.querySelectorAll('.carte,.sec,.opt,.paie li,.panneau2,.stat,.tuile,.faits .wrap>div,.panneau');
   cibles.forEach(c=>{c.classList.add('tap');
@@ -396,7 +402,7 @@ html,body{overflow-x:clip}
       const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,d=Math.max(r.width,r.height)*2.2;
       const o=document.createElement('span');o.className='ripple';o.style.cssText='width:'+d+'px;height:'+d+'px;left:'+(x-d/2)+'px;top:'+(y-d/2)+'px';c.appendChild(o);o.addEventListener('animationend',()=>o.remove());
       if(c.tagName==='A')return;
-      c.style.setProperty('--ry',((x/r.width-.5)*-3).toFixed(1)+'deg');c.style.setProperty('--rx',((y/r.height-.5)*2.5).toFixed(1)+'deg');
+      c.style.setProperty('--ry',((x/r.width-.5)*-9).toFixed(1)+'deg');c.style.setProperty('--rx',((y/r.height-.5)*7).toFixed(1)+'deg');
       c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
     };
     c.addEventListener('pointerdown',e=>{c._t=e.pointerType;if(e.pointerType==='mouse')fx(e)});
