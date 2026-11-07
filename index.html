@@ -91,10 +91,11 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tuile{transition:none}}
 
 /* Animations d'entrée (désactivées si la personne préfère moins de mouvement) */
-.js .rv{opacity:0;transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*90ms);will-change:opacity,transform}
-.js .rv.left{transform:translateX(-70px)}.js .rv.right{transform:translateX(70px)}.js .rv.up{transform:translateY(46px)}.js .rv.zoom{transform:scale(.86)}
+.js .rv{opacity:0;transition:opacity .6s ease-out,transform .6s ease-out;transition-delay:calc(var(--i,0)*50ms);will-change:opacity,transform}
+.js .rv.left{transform:translateX(-26px)}.js .rv.right{transform:translateX(26px)}.js .rv.up{transform:translateY(22px)}.js .rv.zoom{transform:scale(.95)}
+@media(max-width:860px){.js .rv.left,.js .rv.right{transform:translateY(18px)}}
 .js .rv.in{opacity:1;transform:none}
-.js .badge.rv img{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}.js .badge.rv:not(.in) img{transform:rotate(-14deg) scale(.8)}
+.js .badge.rv img{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}.js .badge.rv:not(.in) img{transform:rotate(-6deg) scale(.92)}
 @keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .badge.in img{animation:flotte 5s ease-in-out 1.4s infinite}
 .hero:after{animation:tourne 40s linear infinite}@keyframes tourne{to{transform:rotate(360deg)}}
@@ -124,20 +125,25 @@ body.fige{overflow:hidden}
 @media(prefers-reduced-motion:reduce){#vue .page,#vue .voile,#vue .corps li,#vue .ent>*{transition:none;transform:none;opacity:1}#vue .voile{opacity:1}}
 
 /* Effet d'appui : la carte s'incline, rebondit et reste sur place, avec une onde sous le doigt */
-.tap{position:relative;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.tap{touch-action:manipulation;position:relative;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .js .rv.in.done.tap{transition:transform .22s ease,box-shadow .22s ease;transition-delay:0s}
-.js .rv.in.tap:active,.tap:active{transform:scale(.95)}
-.tap.pop{animation:pop .6s cubic-bezier(.2,.8,.2,1)}
-@keyframes pop{0%{transform:perspective(700px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.95)}
- 55%{transform:perspective(700px) rotateX(calc(var(--rx,0deg)*-.35)) rotateY(calc(var(--ry,0deg)*-.35)) scale(1.045) translateY(-6px);box-shadow:0 22px 44px #0d3b2a30}
+.js .rv.in.tap:active,.tap:active{transform:scale(.985)}
+.tap.pop{animation:pop .4s ease-out}
+@keyframes pop{0%{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.985)}
+ 55%{transform:perspective(900px) scale(1.01) translateY(-2px);box-shadow:0 12px 26px #0d3b2a1c}
  100%{transform:none}}
-.ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.22;transform:scale(0);pointer-events:none;animation:onde .7s ease-out forwards}
+.ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.12;transform:scale(0);pointer-events:none;animation:onde .6s ease-out forwards}
 @keyframes onde{to{transform:scale(1);opacity:0}}
 @media(prefers-reduced-motion:reduce){.tap.pop,.ripple{animation:none}.tap:active{transform:none}}
 
 /* options détaillées */
 .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .opt{background:#fff;border:1px solid var(--ligne);border-radius:var(--r);padding:24px}
+.vis{display:block;max-width:none;width:100%;height:auto;aspect-ratio:5/3;object-fit:cover}
+.opt .vis{width:calc(100% + 48px);margin:-24px -24px 16px;border-radius:0}
+.sec .vis{width:calc(100% + 40px);margin:-24px -20px 14px;border-radius:0}
+.ecole-vis{max-width:760px;margin:0 auto 28px;border-radius:var(--r);box-shadow:0 14px 34px #0d3b2a1f}
+html,body{overflow-x:clip}
 .opt .ic{width:52px;height:52px;border-radius:15px;background:var(--menthe);display:grid;place-items:center;font-size:26px;margin-bottom:12px}
 .opt h3{margin:0 0 6px;font-size:20px;color:var(--vert)}.opt p{margin:0 0 10px;color:var(--gris);font-size:15px}
 .opt .duree{display:inline-block;background:var(--menthe);color:var(--vert);font-weight:800;font-size:13px;border-radius:99px;padding:4px 12px;margin:0 0 10px}.opt .deb{margin:0 0 12px;padding-left:18px;color:var(--gris);font-size:14px}.opt .deb li{margin:2px 0}.opt small{display:block;color:var(--clair);font-weight:700;font-size:13px;border-top:1px dashed var(--ligne);padding-top:10px}
@@ -194,6 +200,7 @@ body.fige{overflow:hidden}
  <p class="kick">Pourquoi Merci-Dieu</p>
  <h2 class="titre">Une école pensée pour accompagner chaque élève et rassurer les familles.</h2>
  <p class="sous">Des valeurs claires, une organisation sérieuse et des outils modernes pour que les parents restent informés.</p>
+ <img class="vis ecole-vis" src="img/ecole.svg" alt="Illustration de l'école" loading="lazy" width="600" height="360">
  <div class="cartes">
   <article class="carte" data-v="distinction" role="button" tabindex="0"><div class="ic">🏅</div><h3>Distinction</h3><p>Viser l'excellence dans le travail, le comportement et les résultats.</p></article>
   <article class="carte" data-v="docilite" role="button" tabindex="0"><div class="ic">🤝</div><h3>Docilité</h3><p>Une vie scolaire structurée, fondée sur le respect et la discipline.</p></article>
@@ -209,10 +216,10 @@ body.fige{overflow:hidden}
  <h2 class="titre">Un parcours complet, de la maternelle au secondaire.</h2>
  <p class="sous">Les enfants sont accompagnés étape par étape, depuis les premières bases jusqu'aux classes d'orientation.</p>
  <div class="sections">
-  <div class="sec" data-v="maternelle" role="button" tabindex="0"><span class="ic">🧸</span><b>Maternelle</b><span>Éveil et premiers apprentissages.</span></div>
-  <div class="sec" data-v="primaire" role="button" tabindex="0"><span class="ic">📚</span><b>Primaire</b><span>1ère à 6ème : bases solides.</span></div>
-  <div class="sec" data-v="eb" role="button" tabindex="0"><span class="ic">🧭</span><b>Éducation de base</b><span>7ème et 8ème : orientation.</span></div>
-  <div class="sec" data-v="secondaire" role="button" tabindex="0"><span class="ic">🎖️</span><b>Secondaire</b><span>1ère à 4ème : options générales et techniques.</span></div>
+  <div class="sec" data-v="maternelle" role="button" tabindex="0"><img class="vis" src="img/maternelle.svg" alt="" loading="lazy" width="600" height="360"><span class="ic">🧸</span><b>Maternelle</b><span>Éveil et premiers apprentissages.</span></div>
+  <div class="sec" data-v="primaire" role="button" tabindex="0"><img class="vis" src="img/primaire.svg" alt="" loading="lazy" width="600" height="360"><span class="ic">📚</span><b>Primaire</b><span>1ère à 6ème : bases solides.</span></div>
+  <div class="sec" data-v="eb" role="button" tabindex="0"><img class="vis" src="img/education-de-base.svg" alt="" loading="lazy" width="600" height="360"><span class="ic">🧭</span><b>Éducation de base</b><span>7ème et 8ème : orientation.</span></div>
+  <div class="sec" data-v="secondaire" role="button" tabindex="0"><img class="vis" src="img/secondaire.svg" alt="" loading="lazy" width="600" height="360"><span class="ic">🎖️</span><b>Secondaire</b><span>1ère à 4ème : options générales et techniques.</span></div>
  </div>
 </div></section>
 
@@ -222,17 +229,17 @@ body.fige{overflow:hidden}
  <p class="sous">Au secondaire, l'élève choisit une option selon ses goûts et son projet. Voici ce que chacune lui apprend.</p>
  <span class="etiq">Options générales</span>
  <div class="opts">
-  <article class="opt"><div class="ic">📊</div><h3>Commercial et gestion</h3><p>Initiation à la comptabilité, au commerce, à la correspondance et à l'organisation d'une entreprise ou d'un bureau.</p><small>Après : secrétariat, comptabilité, commerce, études de gestion</small></article>
-  <article class="opt"><div class="ic">🔬</div><h3>Sciences</h3><p>Mathématiques, physique, chimie et biologie : observation, expérience et raisonnement scientifique.</p><small>Après : études supérieures scientifiques, médecine, ingénierie</small></article>
-  <article class="opt"><div class="ic">🎓</div><h3>Pédagogie générale</h3><p>Formation à l'enseignement : psychologie de l'enfant, méthodes d'apprentissage et pratique en classe.</p><small>Après : écoles normales, enseignement, études d'éducation</small></article>
+  <article class="opt"><img class="vis" src="img/commercial-gestion.svg" alt="" loading="lazy" width="600" height="360"><div class="ic">📊</div><h3>Commercial et gestion</h3><p>Initiation à la comptabilité, au commerce, à la correspondance et à l'organisation d'une entreprise ou d'un bureau.</p><small>Après : secrétariat, comptabilité, commerce, études de gestion</small></article>
+  <article class="opt"><img class="vis" src="img/sciences.svg" alt="" loading="lazy" width="600" height="360"><div class="ic">🔬</div><h3>Sciences</h3><p>Mathématiques, physique, chimie et biologie : observation, expérience et raisonnement scientifique.</p><small>Après : études supérieures scientifiques, médecine, ingénierie</small></article>
+  <article class="opt"><img class="vis" src="img/pedagogie-generale.svg" alt="" loading="lazy" width="600" height="360"><div class="ic">🎓</div><h3>Pédagogie générale</h3><p>Formation à l'enseignement : psychologie de l'enfant, méthodes d'apprentissage et pratique en classe.</p><small>Après : écoles normales, enseignement, études d'éducation</small></article>
  </div>
  <span class="etiq">Options techniques et métiers</span>
  <div class="opts">
-  <article class="opt"><div class="ic">💻</div><h3>Informatique</h3><p>Maîtrise des outils numériques et technologies de l'information, entre théorie et pratique.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Technicien informatique</li><li>Assistant en bureautique</li><li>Agent de saisie</li><li>Technicien de maintenance informatique</li><li>Entrepreneur des services numériques</li></ul><small>Admission : cycle secondaire technique, dossier scolaire conforme.</small></article>
-  <article class="opt"><div class="ic">⚡</div><h3>Électricité</h3><p>Installation, maintenance et dépannage des équipements électriques domestiques et industriels, dans le respect des normes de sécurité.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Électricien bâtiment</li><li>Technicien en maintenance électrique</li><li>Installateur électrique</li><li>Entrepreneur en électricité</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription.</small></article>
-  <article class="opt"><div class="ic">🚗</div><h3>Mécanique Automobile</h3><p>Entretien, diagnostic et réparation des véhicules, avec une formation pratique sur les systèmes mécaniques et électriques.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Mécanicien automobile</li><li>Technicien de maintenance</li><li>Chef d'atelier</li><li>Garagiste indépendant</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription complet.</small></article>
-  <article class="opt"><div class="ic">🔧</div><h3>Mécanique Générale</h3><p>Entretien et réparation de moteurs et machines diverses.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Technicien en machines industrielles</li><li>Chef d'atelier</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription.</small></article>
-  <article class="opt"><div class="ic">✂️</div><h3>Coupe et Couture</h3><p>Concevoir, couper, assembler et confectionner différents types de vêtements, entre créativité et techniques modernes.</p><span class="duree">Durée : 4 ans (secondaire technique)</span><ul class="deb"><li>Styliste-modéliste</li><li>Couturier(ère)</li><li>Créateur(trice) de mode</li><li>Chef d'atelier</li><li>Entrepreneur en confection</li></ul><small>Admission : cycle secondaire, dossier complet, procédure d'inscription réussie.</small></article>
+  <article class="opt"><img class="vis" src="img/informatique.svg" alt="" loading="lazy" width="600" height="360"><div class="ic">💻</div><h3>Informatique</h3><p>Maîtrise des outils numériques et technologies de l'information, entre théorie et pratique.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Technicien informatique</li><li>Assistant en bureautique</li><li>Agent de saisie</li><li>Technicien de maintenance informatique</li><li>Entrepreneur des services numériques</li></ul><small>Admission : cycle secondaire technique, dossier scolaire conforme.</small></article>
+  <article class="opt"><img class="vis" src="img/electricite.svg" alt="" loading="lazy" width="600" height="360"><div class="ic">⚡</div><h3>Électricité</h3><p>Installation, maintenance et dépannage des équipements électriques domestiques et industriels, dans le respect des normes de sécurité.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Électricien bâtiment</li><li>Technicien en maintenance électrique</li><li>Installateur électrique</li><li>Entrepreneur en électricité</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription.</small></article>
+  <article class="opt"><img class="vis" src="img/mecanique-automobile.svg" alt="" loading="lazy" width="600" height="360"><div class="ic">🚗</div><h3>Mécanique Automobile</h3><p>Entretien, diagnostic et réparation des véhicules, avec une formation pratique sur les systèmes mécaniques et électriques.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Mécanicien automobile</li><li>Technicien de maintenance</li><li>Chef d'atelier</li><li>Garagiste indépendant</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription complet.</small></article>
+  <article class="opt"><img class="vis" src="img/mecanique-generale.svg" alt="" loading="lazy" width="600" height="360"><div class="ic">🔧</div><h3>Mécanique Générale</h3><p>Entretien et réparation de moteurs et machines diverses.</p><span class="duree">Durée : 4 ans</span><ul class="deb"><li>Technicien en machines industrielles</li><li>Chef d'atelier</li></ul><small>Admission : cycle secondaire technique, dossier d'inscription.</small></article>
+  <article class="opt"><img class="vis" src="img/coupe-couture.svg" alt="" loading="lazy" width="600" height="360"><div class="ic">✂️</div><h3>Coupe et Couture</h3><p>Concevoir, couper, assembler et confectionner différents types de vêtements, entre créativité et techniques modernes.</p><span class="duree">Durée : 4 ans (secondaire technique)</span><ul class="deb"><li>Styliste-modéliste</li><li>Couturier(ère)</li><li>Créateur(trice) de mode</li><li>Chef d'atelier</li><li>Entrepreneur en confection</li></ul><small>Admission : cycle secondaire, dossier complet, procédure d'inscription réussie.</small></article>
  </div>
  <p class="petit">Les options peuvent évoluer selon les années : confirmez la disponibilité auprès du secrétariat au moment de l'inscription.</p>
 </div></section>
@@ -386,13 +393,15 @@ body.fige{overflow:hidden}
   // Effet d'appui sur les cartes
   const cibles=document.querySelectorAll('.carte,.sec,.opt,.paie li,.panneau2,.stat,.tuile,.faits .wrap>div,.panneau');
   cibles.forEach(c=>{c.classList.add('tap');
-    c.addEventListener('pointerdown',e=>{
+    const fx=e=>{
       const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,d=Math.max(r.width,r.height)*2.2;
       const o=document.createElement('span');o.className='ripple';o.style.cssText='width:'+d+'px;height:'+d+'px;left:'+(x-d/2)+'px;top:'+(y-d/2)+'px';c.appendChild(o);o.addEventListener('animationend',()=>o.remove());
       if(c.tagName==='A')return;
-      c.style.setProperty('--ry',((x/r.width-.5)*-14).toFixed(1)+'deg');c.style.setProperty('--rx',((y/r.height-.5)*10).toFixed(1)+'deg');
+      c.style.setProperty('--ry',((x/r.width-.5)*-5).toFixed(1)+'deg');c.style.setProperty('--rx',((y/r.height-.5)*4).toFixed(1)+'deg');
       c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
-    });
+    };
+    c.addEventListener('pointerdown',e=>{c._t=e.pointerType;if(e.pointerType==='mouse')fx(e)});
+    c.addEventListener('click',e=>{if(c._t!=='mouse')fx(e)});
     c.addEventListener('animationend',e=>{if(e.animationName==='pop')c.classList.remove('pop')});
   });
   // Compteur animé des chiffres

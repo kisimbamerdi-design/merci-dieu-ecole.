@@ -9,6 +9,9 @@ for fichier in index.html app.html connexion.html verifier.html confidentialite.
   if [ ! -f "$fichier" ]; then echo "Fichier public manquant : $fichier" >&2; exit 1; fi
   cp -- "$fichier" "dist/$fichier"
 done
+# Illustrations publiques (SVG uniquement)
+mkdir -p dist/img
+for f in img/*.svg; do cp -- "$f" "dist/$f"; done
 # Lien de confiance Android (application installée sans barre d'adresse) : contenu public
 mkdir -p dist/.well-known
 cp -- well-known/assetlinks.json dist/.well-known/assetlinks.json
