@@ -91,9 +91,8 @@ footer .id{display:flex;gap:14px;align-items:center}footer .id img{width:56px;ba
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tuile{transition:none}}
 
 /* Animations d'entrée (désactivées si la personne préfère moins de mouvement) */
-.js .rv{opacity:0;transition:opacity .6s ease-out,transform .6s ease-out;transition-delay:calc(var(--i,0)*50ms);will-change:opacity,transform}
-.js .rv.left{transform:translateX(-26px)}.js .rv.right{transform:translateX(26px)}.js .rv.up{transform:translateY(22px)}.js .rv.zoom{transform:scale(.95)}
-@media(max-width:860px){.js .rv.left,.js .rv.right{transform:translateY(18px)}}
+.js .rv{opacity:0;transition:opacity .5s ease-out,transform .5s ease-out;transition-delay:calc(var(--i,0)*40ms);will-change:opacity,transform}
+.js .rv.left{transform:translateX(-18px)}.js .rv.right{transform:translateX(18px)}.js .rv.up{transform:translateY(16px)}.js .rv.zoom{transform:scale(.97)}
 .js .rv.in{opacity:1;transform:none}
 .js .badge.rv img{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}.js .badge.rv:not(.in) img{transform:rotate(-6deg) scale(.92)}
 @keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
@@ -127,10 +126,10 @@ body.fige{overflow:hidden}
 /* Effet d'appui : la carte s'incline, rebondit et reste sur place, avec une onde sous le doigt */
 .tap{touch-action:manipulation;position:relative;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .js .rv.in.done.tap{transition:transform .22s ease,box-shadow .22s ease;transition-delay:0s}
-.js .rv.in.tap:active,.tap:active{transform:scale(.985)}
+.js .rv.in.tap:active,.tap:active{transform:scale(.99)}
 .tap.pop{animation:pop .4s ease-out}
-@keyframes pop{0%{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.985)}
- 55%{transform:perspective(900px) scale(1.01) translateY(-2px);box-shadow:0 12px 26px #0d3b2a1c}
+@keyframes pop{0%{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.99)}
+ 55%{transform:perspective(900px) scale(1.005) translateY(-1px);box-shadow:0 8px 18px #0d3b2a14}
  100%{transform:none}}
 .ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.12;transform:scale(0);pointer-events:none;animation:onde .6s ease-out forwards}
 @keyframes onde{to{transform:scale(1);opacity:0}}
@@ -397,7 +396,7 @@ html,body{overflow-x:clip}
       const r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,d=Math.max(r.width,r.height)*2.2;
       const o=document.createElement('span');o.className='ripple';o.style.cssText='width:'+d+'px;height:'+d+'px;left:'+(x-d/2)+'px;top:'+(y-d/2)+'px';c.appendChild(o);o.addEventListener('animationend',()=>o.remove());
       if(c.tagName==='A')return;
-      c.style.setProperty('--ry',((x/r.width-.5)*-5).toFixed(1)+'deg');c.style.setProperty('--rx',((y/r.height-.5)*4).toFixed(1)+'deg');
+      c.style.setProperty('--ry',((x/r.width-.5)*-3).toFixed(1)+'deg');c.style.setProperty('--rx',((y/r.height-.5)*2.5).toFixed(1)+'deg');
       c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
     };
     c.addEventListener('pointerdown',e=>{c._t=e.pointerType;if(e.pointerType==='mouse')fx(e)});
