@@ -22,6 +22,8 @@ jobs:
         run: node --test scripts/test-security.mjs
       - name: Tester le catalogue des modules et la syntaxe JavaScript
         run: node --test scripts/test-release.mjs
+      - name: Tester le pont d'inscription de l'ancien site
+        run: node --test scripts/test-legacy-bridge.mjs
       - name: Construire les fichiers autorisés
         run: sh scripts/build-public.sh
       - name: Vérifier le site publié
